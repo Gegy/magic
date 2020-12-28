@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "magic",
+  "version": "${version}",
+  "name": "Magic",
+  "description": "",
+  "authors": ["Gegy"],
+  "license": "LGPLv3",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["dev.gegy.magic.Magic"]
+  },
+  "depends": {
+    "fabricloader": ">=0.9.1",
+    "fabric": "*",
+    "minecraft": "1.16.x"
+  }
+}
