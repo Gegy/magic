@@ -2,6 +2,7 @@ package dev.gegy.magic.glyph;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.mojang.serialization.Codec;
 import net.minecraft.util.math.Vec2f;
 
 import java.util.*;
@@ -32,6 +33,7 @@ public enum GlyphNode {
     );
 
     public static final GlyphNode[] NODES = values();
+
     public static final GlyphNode[] CENTER_LINE = new GlyphNode[] {
             TOP, CENTER_UPPER, CENTER, CENTER_LOWER, BOTTOM
     };
@@ -61,6 +63,8 @@ public enum GlyphNode {
     };
 
     static final Map<GlyphNode, GlyphNode[]> CONNECTIONS = new EnumMap<>(GlyphNode.class);
+
+    public static final Codec<GlyphNode> CODEC = Codec.BYTE.xmap(b -> NODES[b % NODES.length], n -> (byte) n.ordinal());
 
     static {
         Multimap<GlyphNode, GlyphNode> connections = HashMultimap.create();

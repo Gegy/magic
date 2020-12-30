@@ -8,8 +8,10 @@
   "license": "LGPLv3",
   "environment": "*",
   "entrypoints": {
-    "main": ["dev.gegy.magic.Magic"]
+    "main": ["dev.gegy.magic.Magic"],
+    "client": ["dev.gegy.magic.MagicClient"]
   },
+  "mixins": ["magic.mixins.json"],
   "depends": {
     "fabricloader": ">=0.9.1",
     "fabric": "*",

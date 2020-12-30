@@ -1,6 +1,13 @@
 package dev.gegy.magic.glyph;
 
+import com.mojang.serialization.Codec;
+
+import java.util.Arrays;
+
 public final class Glyph {
+    public static final Codec<Glyph> CODEC = GlyphEdge.CODEC.listOf()
+            .xmap(edges -> new Glyph(edges.toArray(new GlyphEdge[0])), glyph -> Arrays.asList(glyph.edges));
+
     public final GlyphEdge[] edges;
 
     public Glyph(GlyphEdge[] edges) {
