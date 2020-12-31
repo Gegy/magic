@@ -27,6 +27,6 @@ public final class WorldRendererMixin {
     )
     private void renderGlyphs(MatrixStack transform, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmap, Matrix4f projectionMatrix, CallbackInfo ci) {
         GlyphRenderManager glyphRenderManager = GlyphRenderManager.get();
-        glyphRenderManager.render(this.client, transform.peek().getModel(), projectionMatrix);
+        glyphRenderManager.render(this.client, transform.peek().getModel(), projectionMatrix, tickDelta);
     }
 }

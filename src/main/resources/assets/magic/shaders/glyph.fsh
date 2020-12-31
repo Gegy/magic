@@ -3,6 +3,7 @@
 const float RADIUS = 0.9F;
 const float LINE_RADIUS = 0.1F;
 
+uniform float form_progress;
 uniform vec3 color;
 uniform int edges;
 
@@ -86,8 +87,8 @@ float get_intensity_at(vec2 pos) {
 }
 
 void main() {
-    float intensity = get_intensity_at(texture);
-    if (intensity < 0.05) {
+    float intensity = get_intensity_at(texture) * form_progress;
+    if (intensity < 0.01) {
         discard;
     }
 

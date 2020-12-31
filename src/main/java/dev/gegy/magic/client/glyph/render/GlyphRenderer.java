@@ -82,8 +82,8 @@ public final class GlyphRenderer implements AutoCloseable {
             VERTEX_FORMAT.startDrawing(0);
         }
 
-        public void render(Matrix4f glyphToWorld, float centerX, float centerY, float radius, float red, float green, float blue, int edges) {
-            GlyphRenderer.this.shader.set(glyphToWorld, centerX, centerY, radius, red, green, blue, edges);
+        public void render(Matrix4f glyphToWorld, float centerX, float centerY, float radius, float formProgress, float red, float green, float blue, int edges) {
+            GlyphRenderer.this.shader.set(glyphToWorld, centerX, centerY, radius, formProgress, red, green, blue, edges);
             RenderSystem.drawArrays(GL11.GL_QUADS, 0, 4);
         }
 

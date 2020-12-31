@@ -8,6 +8,7 @@ import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -53,9 +54,10 @@ public final class GlyphRenderManager {
         return instance;
     }
 
-    public void render(MinecraftClient client, Matrix4f transformation, Matrix4f projection) {
+    public void render(MinecraftClient client, Matrix4f transformation, Matrix4f projection, float tickDelta) {
+        ClientWorld world = client.world;
         GlyphRenderer glyphRenderer = this.glyphRenderer;
-        if (glyphRenderer == null) {
+        if (glyphRenderer == null || world == null) {
             return;
         }
 
@@ -82,7 +84,9 @@ public final class GlyphRenderManager {
 
                 glyphToWorld.multiply(glyph.glyphToWorld);
 
-                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, glyph.red, glyph.green, glyph.blue, 0b1011011);
+                float formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
+
+                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, formProgress, glyph.red, glyph.green, glyph.blue, 0);
             }
         }
     }

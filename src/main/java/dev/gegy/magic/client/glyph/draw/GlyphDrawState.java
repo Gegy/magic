@@ -36,6 +36,7 @@ public interface GlyphDrawState {
         @Override
         public GlyphDrawState tick(ClientPlayerEntity player) {
             if (player.age % SAMPLE_INTERVAL == 0) {
+                // TODO: draw glyphs further away
                 Vec3d look = player.getRotationVec(1.0F);
                 Vector3f sample = new Vector3f((float) look.x, (float) look.y, (float) look.z);
 
@@ -44,7 +45,8 @@ public interface GlyphDrawState {
                     Matrix4f glyphToWorld = Matrix4fAccess.create(outline.projectGlyphToWorld);
 
                     Vec3d eyePos = player.getPos().add(0.0, player.getStandingEyeHeight(), 0.0);
-                    ClientGlyphTracker.INSTANCE.add(new Glyph(eyePos, glyphToWorld, outline.centerX, outline.centerY, outline.radius, 1.0F, 0.0F, 0.0F));
+                    long time = player.world.getTime();
+                    ClientGlyphTracker.INSTANCE.add(new Glyph(eyePos, glyphToWorld, outline.centerX, outline.centerY, outline.radius, 1.0F, 0.0F, 0.0F, time));
 
                     return new DrawInner(outline);
                 }

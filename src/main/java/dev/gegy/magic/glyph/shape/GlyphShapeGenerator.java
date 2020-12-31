@@ -42,15 +42,15 @@ public final class GlyphShapeGenerator {
     }
 
     private void tryAdvanceFrom(GlyphEdge[] glyph, GlyphNode node, Consumer<GlyphShape> yield) {
-        GlyphEdge[] simplifiedGlyph = simplify(glyph);
+        int size = GlyphShape.getSize(glyph);
 
         // if this glyph has enough edges, yield
-        if (simplifiedGlyph.length >= this.minSize) {
-            yield.accept(new GlyphShape(simplifiedGlyph));
+        if (size >= this.minSize) {
+            yield.accept(new GlyphShape(glyph, size));
         }
 
         // only continue picking new points if this glyph has not exceeded the maximum size
-        if (simplifiedGlyph.length >= this.maxSize) {
+        if (size >= this.maxSize) {
             return;
         }
 
@@ -73,7 +73,7 @@ public final class GlyphShapeGenerator {
         GlyphEdge nextEdge = new GlyphEdge(node, nextNode);
 
         // don't append this edge if we've already used it
-        if (containsEdge(glyph, nextEdge)) {
+        if (GlyphShape.containsEdge(glyph, nextEdge)) {
             return;
         }
 
@@ -81,75 +81,5 @@ public final class GlyphShapeGenerator {
         nextGlyph[glyph.length] = nextEdge;
 
         this.tryAdvanceFrom(nextGlyph, nextNode, yield);
-    }
-
-    private static GlyphEdge[] simplify(GlyphEdge[] glyph) {
-        if (!canSimplify(glyph)) {
-            return glyph;
-        }
-
-        // all the points along the center are colinear, and to give an accurate measurement of the "size" of a glyph,
-        // the merged line across is more meaningful.
-        GlyphNode[] centerLine = GlyphNode.CENTER_LINE;
-
-        List<GlyphEdge> simplified = new ArrayList<>(glyph.length);
-        Collections.addAll(simplified, glyph);
-
-        GlyphNode from = null;
-
-        for (int i = 0; i < centerLine.length - 1; i++) {
-            GlyphEdge edge = new GlyphEdge(centerLine[i], centerLine[i + 1]);
-            if (simplified.remove(edge)) {
-                if (from == null) {
-                    from = centerLine[i];
-                }
-            } else {
-                if (from != null) {
-                    simplified.add(new GlyphEdge(from, centerLine[i]));
-                    from = null;
-                }
-            }
-        }
-
-        if (from != null) {
-            simplified.add(new GlyphEdge(from, centerLine[centerLine.length - 1]));
-        }
-
-        return simplified.toArray(new GlyphEdge[0]);
-    }
-
-    private static boolean canSimplify(GlyphEdge[] glyph) {
-        // we can potentially simplify if we have 2+ edges in the center
-        int count = 0;
-        for (GlyphEdge edge : glyph) {
-            if (isCenterEdge(edge)) {
-                if (++count >= 2) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean isCenterEdge(GlyphEdge edge) {
-        return isCenterNode(edge.from) && isCenterNode(edge.to);
-    }
-
-    private static boolean isCenterNode(GlyphNode node) {
-        for (GlyphNode centerNode : GlyphNode.CENTER_LINE) {
-            if (node == centerNode) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private static boolean containsEdge(GlyphEdge[] glyph, GlyphEdge edge) {
-        for (GlyphEdge other : glyph) {
-            if (other.equals(edge)) {
-                return true;
-            }
-        }
-        return false;
     }
 }

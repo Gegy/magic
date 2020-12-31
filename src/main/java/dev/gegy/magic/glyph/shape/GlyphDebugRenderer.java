@@ -31,7 +31,7 @@ final class GlyphDebugRenderer {
 
         Byte2ObjectMap<List<GlyphShape>> bySize = new Byte2ObjectOpenHashMap<>();
         for (GlyphShape glyph : generator.generateAll()) {
-            bySize.computeIfAbsent((byte) glyph.edges.length, s -> new ArrayList<>()).add(glyph);
+            bySize.computeIfAbsent((byte) glyph.size, s -> new ArrayList<>()).add(glyph);
         }
 
         Random random = new Random();
