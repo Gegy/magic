@@ -1,9 +1,11 @@
-package dev.gegy.magic.client.draw;
+package dev.gegy.magic.client.glyph.draw;
 
-import dev.gegy.magic.client.particle.MagicParticles;
+import dev.gegy.magic.client.Matrix4fAccess;
+import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.glyph.Glyph;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +41,11 @@ public interface GlyphDrawState {
 
                 GlyphOutline outline = this.pushSample(sample);
                 if (outline != null) {
+                    Matrix4f glyphToWorld = Matrix4fAccess.create(outline.projectGlyphToWorld);
+
+                    Vec3d eyePos = player.getPos().add(0.0, player.getStandingEyeHeight(), 0.0);
+                    ClientGlyphTracker.INSTANCE.add(new Glyph(eyePos, glyphToWorld, outline.centerX, outline.centerY, outline.radius, 1.0F, 0.0F, 0.0F));
+
                     return new DrawInner(outline);
                 }
             }
@@ -150,26 +157,6 @@ public interface GlyphDrawState {
         public GlyphDrawState tick(ClientPlayerEntity player) {
             if (player.isSneaking()) {
                 return new Idle();
-            }
-
-            if (player.age % 4 != 0) {
-                return this;
-            }
-
-            GlyphOutline outline = this.outline;
-
-            int count = 20;
-            for (int i = 0; i < count; i++) {
-                float theta = (float) Math.toRadians(i * 360.0F / count);
-                float x = outline.centerX + MathHelper.sin(theta) * outline.radius;
-                float y = outline.centerY + MathHelper.cos(theta) * outline.radius;
-
-                Vector3f projectedPoint = new Vector3f(x, y, 1.0F);
-                projectedPoint.transform(outline.projectGlyphToWorld);
-
-                Vec3d eyePos = player.getPos().add(0.0, player.getStandingEyeHeight(), 0.0);
-                Vec3d pos = eyePos.add(projectedPoint.getX(), projectedPoint.getY(), projectedPoint.getZ());
-                player.clientWorld.addParticle(MagicParticles.GLYPH_DRAW_TRAIL, pos.x, pos.y, pos.z, 0.0, 0.0, 0.0);
             }
 
             return this;

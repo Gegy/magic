@@ -1,4 +1,4 @@
-package dev.gegy.magic.glyph;
+package dev.gegy.magic.glyph.shape;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-final class GlyphRenderer {
+final class GlyphDebugRenderer {
     private static final int IMAGE_SIZE = 64;
     private static final int IMAGE_PADDING = 4;
 
@@ -27,16 +27,16 @@ final class GlyphRenderer {
     private static final int RENDER_PER_SIZE = 10;
 
     public static void main(String[] args) throws IOException {
-        GlyphGenerator generator = new GlyphGenerator(MIN_SIZE, MAX_SIZE);
+        GlyphShapeGenerator generator = new GlyphShapeGenerator(MIN_SIZE, MAX_SIZE);
 
-        Byte2ObjectMap<List<Glyph>> bySize = new Byte2ObjectOpenHashMap<>();
-        for (Glyph glyph : generator.generateAll()) {
+        Byte2ObjectMap<List<GlyphShape>> bySize = new Byte2ObjectOpenHashMap<>();
+        for (GlyphShape glyph : generator.generateAll()) {
             bySize.computeIfAbsent((byte) glyph.edges.length, s -> new ArrayList<>()).add(glyph);
         }
 
         Random random = new Random();
         for (int size = MIN_SIZE; size <= MAX_SIZE; size++) {
-            List<Glyph> glyphsBySize = bySize.get((byte) size);
+            List<GlyphShape> glyphsBySize = bySize.get((byte) size);
             if (glyphsBySize == null || glyphsBySize.isEmpty()) {
                 continue;
             }
@@ -46,7 +46,7 @@ final class GlyphRenderer {
                     break;
                 }
 
-                Glyph glyph = glyphsBySize.remove(random.nextInt(glyphsBySize.size()));
+                GlyphShape glyph = glyphsBySize.remove(random.nextInt(glyphsBySize.size()));
 
                 BufferedImage image = render(glyph);
                 ImageIO.write(image, "png", new File("glyph_" + size + "_" + i + ".png"));
@@ -54,7 +54,7 @@ final class GlyphRenderer {
         }
     }
 
-    private static BufferedImage render(Glyph glyph) {
+    private static BufferedImage render(GlyphShape glyph) {
         BufferedImage image = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
 

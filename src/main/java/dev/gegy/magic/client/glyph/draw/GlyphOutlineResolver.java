@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.draw;
+package dev.gegy.magic.client.glyph.draw;
 
 import dev.gegy.magic.client.Matrix3fAccess;
 import net.minecraft.client.util.math.Vector3f;

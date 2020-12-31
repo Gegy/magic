@@ -1,4 +1,4 @@
-package dev.gegy.magic.glyph;
+package dev.gegy.magic.glyph.shape;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;

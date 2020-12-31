@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.draw;
+package dev.gegy.magic.client.glyph.draw;
 
 import net.minecraft.util.math.Matrix3f;
 
