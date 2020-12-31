@@ -82,7 +82,7 @@ public final class GlyphRenderManager {
 
                 glyphToWorld.multiply(glyph.glyphToWorld);
 
-                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, glyph.red, glyph.green, glyph.blue, 0);
+                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, glyph.red, glyph.green, glyph.blue, 0b1011011);
             }
         }
     }
