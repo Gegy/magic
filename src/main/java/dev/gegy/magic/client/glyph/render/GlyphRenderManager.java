@@ -4,6 +4,7 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.Matrix4fAccess;
 import dev.gegy.magic.glyph.Glyph;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
@@ -46,6 +47,8 @@ public final class GlyphRenderManager {
                 instance.load(resources);
             }
         });
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> instance.tick());
     }
 
     public static GlyphRenderManager get() {
@@ -58,6 +61,13 @@ public final class GlyphRenderManager {
 
     public void add(Glyph glyph) {
         this.glyphs.add(glyph);
+    }
+
+    void tick() {
+        // TODO: should the draw state be totally responsible for ticking glyphs?
+        for (Glyph glyph : this.glyphs) {
+            glyph.tick();
+        }
     }
 
     public void render(MinecraftClient client, Matrix4f transformation, Matrix4f projection, float tickDelta) {
@@ -98,8 +108,9 @@ public final class GlyphRenderManager {
                 renderData.green = glyph.green;
                 renderData.blue = glyph.blue;
                 renderData.edges = glyph.edges;
+                renderData.stroke = glyph.stroke;
 
-                batcher.render(renderData);
+                batcher.render(renderData, tickDelta);
             }
         }
     }

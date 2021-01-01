@@ -1,26 +1,26 @@
 #version 130
 
-const float RADIUS = 0.9;
 const float LINE_RADIUS = 0.1;
-
 const float NODE_RADIUS = 0.05;
 
 uniform float form_progress;
 uniform vec3 color;
 uniform int edges;
 
+uniform vec4 stroke;
+
 varying vec2 texture;
 
 // sqrt(0.75)
-const float SIDE_CENTER_X = RADIUS * 0.866025;
+const float SIDE_CENTER_X = 0.866025;
 
-const vec2 TOP = vec2(0.0, RADIUS);
-const vec2 BOTTOM = vec2(0.0, -RADIUS);
-const vec2 SIDE_UPPER = vec2(SIDE_CENTER_X, RADIUS * 0.5);
-const vec2 SIDE_LOWER = vec2(SIDE_CENTER_X, RADIUS * -0.5);
-const vec2 CENTER_UPPER = vec2(0.0, RADIUS * 0.5);
+const vec2 TOP = vec2(0.0, 1.0);
+const vec2 BOTTOM = vec2(0.0, -1.0);
+const vec2 SIDE_UPPER = vec2(SIDE_CENTER_X, 0.5);
+const vec2 SIDE_LOWER = vec2(SIDE_CENTER_X, -0.5);
+const vec2 CENTER_UPPER = vec2(0.0, 0.5);
 const vec2 CENTER = vec2(0.0, 0.0);
-const vec2 CENTER_LOWER = vec2(0.0, RADIUS * -0.5);
+const vec2 CENTER_LOWER = vec2(0.0, -0.5);
 
 const int NODE_COUNT = 7;
 const int EDGE_COUNT = 15;
@@ -55,10 +55,12 @@ const Edge EDGES[EDGE_COUNT] = Edge[](
     Edge(SIDE_LOWER, SIDE_UPPER, 1 << 14)
 );
 
+const int STROKE_BIT = 1 << 15;
+
 // from: https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
-float get_distance_to_edge(vec2 p, Edge edge) {
-    vec2 pa = p - edge.from;
-    vec2 ba = edge.to - edge.from;
+float get_distance_to_edge(vec2 p, vec2 a, vec2 b) {
+    vec2 pa = p - a;
+    vec2 ba = b - a;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
 }
@@ -67,7 +69,7 @@ float get_outline_intensity_at(vec2 pos) {
     float radius2 = dot(pos, pos);
     float radius = sqrt(radius2);
 
-    float radius_distance = abs(radius - RADIUS);
+    float radius_distance = abs(radius - 1.0);
     return 1.0 - clamp(radius_distance / LINE_RADIUS, 0.0, 1.0);
 }
 
@@ -77,8 +79,12 @@ float get_edge_intensity_at(vec2 pos) {
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
         Edge edge = EDGES[edge_idx];
         if ((edges & edge.bit) != 0) {
-            distance = min(distance, get_distance_to_edge(pos, edge));
+            distance = min(distance, get_distance_to_edge(pos, edge.from, edge.to));
         }
+    }
+
+    if ((edges & STROKE_BIT) != 0) {
+        distance = min(distance, get_distance_to_edge(pos, stroke.xy, stroke.zw));
     }
 
     return 1.0 - clamp(distance / LINE_RADIUS, 0.0, 1.0);

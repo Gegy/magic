@@ -1,5 +1,6 @@
 package dev.gegy.magic.client.glyph.render;
 
+import dev.gegy.magic.glyph.GlyphStroke;
 import net.minecraft.util.math.Matrix4f;
 
 public final class GlyphRenderData {
@@ -12,4 +13,6 @@ public final class GlyphRenderData {
     public float green;
     public float blue;
     public int edges;
+
+    public GlyphStroke stroke;
 }

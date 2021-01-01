@@ -3,6 +3,7 @@ package dev.gegy.magic.glyph;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 
 public final class Glyph {
@@ -22,6 +23,8 @@ public final class Glyph {
     public float blue;
 
     public int edges;
+
+    public GlyphStroke stroke;
 
     public final long createTime;
 
@@ -43,6 +46,12 @@ public final class Glyph {
         this.createTime = createTime;
     }
 
+    public void tick() {
+        if (this.stroke != null) {
+            this.stroke.tick();
+        }
+    }
+
     public void putEdge(GlyphEdge edge) {
         this.edges |= edge.asBit();
     }
@@ -50,5 +59,15 @@ public final class Glyph {
     public float getFormProgress(long time, float tickDelta) {
         float age = (float) (time - this.createTime) + tickDelta;
         return Math.min(age / FORM_TICKS, 1.0F);
+    }
+
+    public GlyphStroke startStroke(Vec2f from) {
+        GlyphStroke stroke = new GlyphStroke(from.x, from.y);
+        this.stroke = stroke;
+        return stroke;
+    }
+
+    public void stopStroke() {
+        this.stroke = null;
     }
 }

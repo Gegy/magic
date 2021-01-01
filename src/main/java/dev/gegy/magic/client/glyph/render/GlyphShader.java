@@ -3,6 +3,7 @@ package dev.gegy.magic.client.glyph.render;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.glyph.GlyphStroke;
 import net.minecraft.client.gl.GlProgram;
 import net.minecraft.client.gl.GlProgramManager;
 import net.minecraft.client.gl.GlShader;
@@ -28,6 +29,9 @@ public final class GlyphShader implements AutoCloseable {
     private static final String UNIFORM_FORM_PROGRESS = "form_progress";
     private static final String UNIFORM_COLOR = "color";
     private static final String UNIFORM_EDGES = "edges";
+    private static final String UNIFORM_STROKE = "stroke";
+
+    private static final int STROKE_ACTIVE_BIT = 1 << 15;
 
     private final Program program;
 
@@ -39,13 +43,21 @@ public final class GlyphShader implements AutoCloseable {
     private final int uniformFormProgress;
     private final int uniformColor;
     private final int uniformEdges;
+    private final int uniformStroke;
 
     private final FloatBuffer glyphToWorldData = MemoryUtil.memAllocFloat(4 * 4);
     private final FloatBuffer worldToScreenData = MemoryUtil.memAllocFloat(4 * 4);
     private final FloatBuffer centerData = MemoryUtil.memAllocFloat(2);
     private final FloatBuffer colorData = MemoryUtil.memAllocFloat(3);
+    private final FloatBuffer strokeData = MemoryUtil.memAllocFloat(4);
 
-    private GlyphShader(Program program, int attributePosition, int uniformGlyphToWorld, int uniformWorldToScreen, int uniformCenter, int uniformRadius, int uniformFormProgress, int uniformColor, int uniformEdges) {
+    private GlyphShader(
+            Program program, int attributePosition,
+            int uniformGlyphToWorld, int uniformWorldToScreen,
+            int uniformCenter, int uniformRadius,
+            int uniformFormProgress, int uniformColor,
+            int uniformEdges, int uniformStroke
+    ) {
         this.program = program;
         this.attributePosition = attributePosition;
         this.uniformGlyphToWorld = uniformGlyphToWorld;
@@ -55,6 +67,7 @@ public final class GlyphShader implements AutoCloseable {
         this.uniformFormProgress = uniformFormProgress;
         this.uniformColor = uniformColor;
         this.uniformEdges = uniformEdges;
+        this.uniformStroke = uniformStroke;
     }
 
     public static GlyphShader create(ResourceManager resources) throws IOException {
@@ -72,8 +85,15 @@ public final class GlyphShader implements AutoCloseable {
         int uniformFormProgress = program.getUniformLocation(UNIFORM_FORM_PROGRESS);
         int uniformColor = program.getUniformLocation(UNIFORM_COLOR);
         int uniformEdges = program.getUniformLocation(UNIFORM_EDGES);
+        int uniformStroke = program.getUniformLocation(UNIFORM_STROKE);
 
-        return new GlyphShader(program, attributePosition, uniformGlyphToWorld, uniformWorldToScreen, uniformCenter, uniformRadius, uniformFormProgress, uniformColor, uniformEdges);
+        return new GlyphShader(
+                program, attributePosition,
+                uniformGlyphToWorld, uniformWorldToScreen,
+                uniformCenter, uniformRadius,
+                uniformFormProgress, uniformColor,
+                uniformEdges, uniformStroke
+        );
     }
 
     private static GlShader compileShader(ResourceManager resources, GlShader.Type type) throws IOException {
@@ -93,7 +113,7 @@ public final class GlyphShader implements AutoCloseable {
         RenderSystem.glUniformMatrix4(this.uniformWorldToScreen, false, worldToScreenData);
     }
 
-    public void set(GlyphRenderData renderData) {
+    public void set(GlyphRenderData renderData, float tickDelta) {
         FloatBuffer glyphToWorldData = this.glyphToWorldData;
         renderData.glyphToWorld.writeToBuffer(glyphToWorldData);
         glyphToWorldData.clear();
@@ -113,7 +133,21 @@ public final class GlyphShader implements AutoCloseable {
         colorData.clear();
         RenderSystem.glUniform3(this.uniformColor, colorData);
 
-        RenderSystem.glUniform1i(this.uniformEdges, renderData.edges);
+        int edges = renderData.edges;
+        GlyphStroke stroke = renderData.stroke;
+
+        if (stroke != null) {
+            edges |= STROKE_ACTIVE_BIT;
+        }
+
+        RenderSystem.glUniform1i(this.uniformEdges, edges);
+
+        FloatBuffer strokeData = this.strokeData;
+        if (stroke != null) {
+            stroke.writeToBuffer(strokeData, tickDelta);
+            strokeData.clear();
+            RenderSystem.glUniform4(this.uniformStroke, strokeData);
+        }
     }
 
     public void unbind() {
@@ -128,6 +162,7 @@ public final class GlyphShader implements AutoCloseable {
         MemoryUtil.memFree(this.worldToScreenData);
         MemoryUtil.memFree(this.centerData);
         MemoryUtil.memFree(this.colorData);
+        MemoryUtil.memFree(this.strokeData);
     }
 
     static final class Program implements GlProgram, AutoCloseable {

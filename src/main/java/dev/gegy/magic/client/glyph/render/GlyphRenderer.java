@@ -82,8 +82,8 @@ public final class GlyphRenderer implements AutoCloseable {
             VERTEX_FORMAT.startDrawing(0);
         }
 
-        public void render(GlyphRenderData renderData) {
-            GlyphRenderer.this.shader.set(renderData);
+        public void render(GlyphRenderData renderData, float tickDelta) {
+            GlyphRenderer.this.shader.set(renderData, tickDelta);
             RenderSystem.drawArrays(GL11.GL_QUADS, 0, 4);
         }
 

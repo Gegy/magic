@@ -1,6 +1,7 @@
 package dev.gegy.magic.client.glyph.draw;
 
 import dev.gegy.magic.glyph.Glyph;
+import dev.gegy.magic.glyph.GlyphStroke;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -9,8 +10,11 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
+// TODO: cursor position is slightly off!
+// TODO: better separation of what logic should be delegated into the Glyph and what should be in the drawing management
+//       need to consider how the server would process drawing state too
 public abstract class DrawingGlyphDrawState implements GlyphDrawState {
-    // 10% of circle radius
+    // 20% of circle radius
     private static final float SELECT_DISTANCE = 0.2F;
     private static final float SELECT_DISTANCE_2 = SELECT_DISTANCE * SELECT_DISTANCE;
 
@@ -18,6 +22,8 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
     private static final float DRAWING_RADIUS_2 = DRAWING_RADIUS * DRAWING_RADIUS;
 
     protected final Glyph glyph;
+
+    private Vec3d lastLook;
 
     DrawingGlyphDrawState(Glyph glyph) {
         this.glyph = glyph;
@@ -29,9 +35,15 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
             return new IdleGlyphDrawState();
         }
 
+        Vec3d look = player.getRotationVec(1.0F);
+        if (look.equals(this.lastLook)) {
+            return this;
+        }
+
+        this.lastLook = look;
+
         Glyph glyph = this.glyph;
 
-        Vec3d look = player.getRotationVec(1.0F);
         Vector3f sample = new Vector3f((float) look.x, (float) look.y, (float) look.z);
         sample.transform(glyph.worldToGlyph);
 
@@ -84,20 +96,28 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
         private final GlyphNode fromNode;
         private final GlyphNode[] connectedNodes;
 
+        private final GlyphStroke stroke;
+
         DrawingLine(Glyph glyph, GlyphNode fromNode) {
             super(glyph);
             this.fromNode = fromNode;
             this.connectedNodes = GlyphEdge.getConnectedNodesTo(fromNode);
+
+            this.stroke = glyph.startStroke(fromNode.getPoint());
         }
 
         @Override
         protected GlyphDrawState tickDraw(float x, float y) {
+            this.stroke.update(x, y);
+
             if (this.isOutsideCircle(x, y)) {
+                this.glyph.stopStroke();
                 return new OutsideCircle(this.glyph);
             }
 
             GlyphNode toNode = this.selectNodeAt(this.connectedNodes, x, y);
             if (toNode != null) {
+                this.glyph.stopStroke();
                 return this.selectNode(toNode);
             } else {
                 return this;
