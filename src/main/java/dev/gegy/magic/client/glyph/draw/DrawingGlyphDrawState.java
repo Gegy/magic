@@ -10,12 +10,11 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
-// TODO: cursor position is slightly off!
 // TODO: better separation of what logic should be delegated into the Glyph and what should be in the drawing management
 //       need to consider how the server would process drawing state too
 public abstract class DrawingGlyphDrawState implements GlyphDrawState {
-    // 20% of circle radius
-    private static final float SELECT_DISTANCE = 0.2F;
+    // 15% of circle radius
+    private static final float SELECT_DISTANCE = 0.15F;
     private static final float SELECT_DISTANCE_2 = SELECT_DISTANCE * SELECT_DISTANCE;
 
     private static final float DRAWING_RADIUS = 1.0F + SELECT_DISTANCE;
@@ -46,6 +45,7 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
 
         Vector3f sample = new Vector3f((float) look.x, (float) look.y, (float) look.z);
         sample.transform(glyph.worldToGlyph);
+        sample.scale(1.0F / sample.getZ());
 
         return this.tickDraw(
                 Math.abs((sample.getX() - glyph.centerX) / glyph.radius),
