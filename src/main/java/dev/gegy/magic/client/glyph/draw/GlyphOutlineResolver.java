@@ -1,9 +1,11 @@
 package dev.gegy.magic.client.glyph.draw;
 
 import dev.gegy.magic.client.Matrix3fAccess;
+import dev.gegy.magic.client.Matrix4fAccess;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix3f;
+import net.minecraft.util.math.Matrix4f;
 import org.jetbrains.annotations.Nullable;
 
 class GlyphOutlineResolver {
@@ -18,9 +20,16 @@ class GlyphOutlineResolver {
 
     private static final float MIN_RADIUS = 0.125F;
 
+    private final Matrix3f worldToGlyph = new Matrix3f();
+    private final Matrix3f glyphToWorld = new Matrix3f();
+
     private final Vector3f forward = new Vector3f();
     private final Vector3f left = new Vector3f();
     private final Vector3f up = new Vector3f();
+
+    float centerX;
+    float centerY;
+    float radius;
 
     @Nullable
     GlyphOutline tryResolve(Vector3f[] points) {
@@ -28,18 +37,32 @@ class GlyphOutlineResolver {
             return null;
         }
 
-        GlyphOutline outline = new GlyphOutline();
-        this.applyProjectionFor(outline, points);
+        Matrix3f glyphToWorld = this.computeGlyphToWorldProjection(points);
 
-        Vector3f[] projectedPoints = projectPoints(points, outline.worldToGlyph);
-        if (this.tryResolveFromProjected(outline, projectedPoints)) {
-            return outline;
+        Matrix3f worldToGlyph = this.worldToGlyph;
+        worldToGlyph.load(glyphToWorld);
+        worldToGlyph.invert();
+
+        Vector3f[] projectedPoints = projectPoints(points, worldToGlyph);
+        if (this.tryResolveFromProjected(projectedPoints)) {
+            GlyphPlane plane = this.createGlyphPlane(this.centerX, this.centerY, glyphToWorld);
+            return new GlyphOutline(plane, this.radius);
         } else {
             return null;
         }
     }
 
-    private boolean tryResolveFromProjected(GlyphOutline outline, Vector3f[] points) {
+    private GlyphPlane createGlyphPlane(float centerX, float centerY, Matrix3f glyphToWorld) {
+        Matrix4f shiftedGlyphToWorld = Matrix4f.translate(centerX, centerY, 0.0F);
+        shiftedGlyphToWorld.multiply(Matrix4fAccess.create(glyphToWorld));
+
+        Matrix4f shiftedWorldToGlyph = shiftedGlyphToWorld.copy();
+        shiftedWorldToGlyph.invert();
+
+        return new GlyphPlane(shiftedGlyphToWorld, shiftedWorldToGlyph);
+    }
+
+    private boolean tryResolveFromProjected(Vector3f[] points) {
         // compute encompassing bounds of these points
         float minX = Float.MAX_VALUE;
         float minY = Float.MAX_VALUE;
@@ -85,9 +108,9 @@ class GlyphOutlineResolver {
             return false;
         }
 
-        outline.centerX = centerX;
-        outline.centerY = centerY;
-        outline.radius = meanRadius;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.radius = meanRadius;
 
         return true;
     }
@@ -126,7 +149,7 @@ class GlyphOutlineResolver {
         return projectedPoints;
     }
 
-    private void applyProjectionFor(GlyphOutline outline, Vector3f[] points) {
+    private Matrix3f computeGlyphToWorldProjection(Vector3f[] points) {
         Vector3f forward = this.getForwardVectorFor(points);
 
         Vector3f left = this.left;
@@ -139,8 +162,7 @@ class GlyphOutlineResolver {
         up.cross(left);
         up.normalize();
 
-        Matrix3f glyphToWorld = outline.glyphToWorld;
-        Matrix3f worldToGlyph = outline.worldToGlyph;
+        Matrix3f glyphToWorld = this.glyphToWorld;
 
         Matrix3fAccess.set(glyphToWorld,
                 left.getX(), up.getX(), forward.getX(),
@@ -148,8 +170,7 @@ class GlyphOutlineResolver {
                 left.getZ(), up.getZ(), forward.getZ()
         );
 
-        worldToGlyph.load(glyphToWorld);
-        worldToGlyph.invert();
+        return glyphToWorld;
     }
 
     private Vector3f getForwardVectorFor(Vector3f[] points) {

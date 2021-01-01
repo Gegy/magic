@@ -1,12 +1,11 @@
 package dev.gegy.magic.client.glyph.draw;
 
-import net.minecraft.util.math.Matrix3f;
-
 final class GlyphOutline {
-    final Matrix3f worldToGlyph = new Matrix3f();
-    final Matrix3f glyphToWorld = new Matrix3f();
+    final GlyphPlane plane;
+    final float radius;
 
-    float centerX;
-    float centerY;
-    float radius;
+    GlyphOutline(GlyphPlane plane, float radius) {
+        this.plane = plane;
+        this.radius = radius;
+    }
 }

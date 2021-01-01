@@ -1,12 +1,9 @@
 package dev.gegy.magic.client.glyph.draw;
 
-import dev.gegy.magic.client.Matrix4fAccess;
 import dev.gegy.magic.client.glyph.render.GlyphRenderManager;
 import dev.gegy.magic.glyph.Glyph;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.util.math.Matrix3f;
-import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,13 +37,12 @@ final class IdleGlyphDrawState implements GlyphDrawState {
 
             GlyphOutline outline = this.pushSample(sample);
             if (outline != null) {
-                Matrix4f glyphToWorld = Matrix4fAccess.create(outline.glyphToWorld);
-                Matrix3f worldToGlyph = outline.worldToGlyph;
+                GlyphPlane plane = outline.plane;
 
                 Vec3d eyePos = player.getPos().add(0.0, player.getStandingEyeHeight(), 0.0);
                 long time = player.world.getTime();
 
-                Glyph glyph = new Glyph(eyePos, glyphToWorld, worldToGlyph, outline.centerX, outline.centerY, outline.radius, 1.0F, 0.0F, 0.0F, time);
+                Glyph glyph = new Glyph(eyePos, plane, outline.radius, 1.0F, 0.0F, 0.0F, time);
                 GlyphRenderManager.get().add(glyph);
 
                 return new DrawingGlyphDrawState.OutsideCircle(glyph);

@@ -5,7 +5,7 @@ import dev.gegy.magic.glyph.GlyphStroke;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.client.util.math.Vector4f;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -43,13 +43,12 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
 
         Glyph glyph = this.glyph;
 
-        Vector3f sample = new Vector3f((float) look.x, (float) look.y, (float) look.z);
-        sample.transform(glyph.worldToGlyph);
-        sample.scale(1.0F / sample.getZ());
+        Vector4f sample = new Vector4f((float) look.x, (float) look.y, (float) look.z, 1.0F);
+        glyph.plane.transformWorldToGlyph(sample);
 
         return this.tickDraw(
-                Math.abs((sample.getX() - glyph.centerX) / glyph.radius),
-                (sample.getY() - glyph.centerY) / glyph.radius
+                Math.abs(sample.getX() / glyph.radius),
+                sample.getY() / glyph.radius
         );
     }
 
