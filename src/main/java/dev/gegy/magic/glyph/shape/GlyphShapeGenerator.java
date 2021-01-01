@@ -36,8 +36,8 @@ public final class GlyphShapeGenerator {
     }
 
     private void advanceFromRoot(GlyphEdge[] glyph, GlyphNode node, Consumer<GlyphShape> yield) {
-        for (GlyphNode nextNode : node.getConnections()) {
-            this.tryAdvanceWithEdge(glyph, node, nextNode, yield);
+        for (GlyphEdge nextEdge : GlyphEdge.getConnectionsTo(node)) {
+            this.tryAdvanceWithEdge(glyph, node, nextEdge, yield);
         }
     }
 
@@ -64,18 +64,18 @@ public final class GlyphShapeGenerator {
         }
 
         // find the all next nodes to travel to
-        for (GlyphNode nextNode : node.getConnections()) {
-            this.tryAdvanceWithEdge(glyph, node, nextNode, yield);
+        for (GlyphEdge nextEdge : GlyphEdge.getConnectionsTo(node)) {
+            this.tryAdvanceWithEdge(glyph, node, nextEdge, yield);
         }
     }
 
-    private void tryAdvanceWithEdge(GlyphEdge[] glyph, GlyphNode node, GlyphNode nextNode, Consumer<GlyphShape> yield) {
-        GlyphEdge nextEdge = new GlyphEdge(node, nextNode);
-
+    private void tryAdvanceWithEdge(GlyphEdge[] glyph, GlyphNode node, GlyphEdge nextEdge, Consumer<GlyphShape> yield) {
         // don't append this edge if we've already used it
         if (GlyphShape.containsEdge(glyph, nextEdge)) {
             return;
         }
+
+        GlyphNode nextNode = nextEdge.getOther(node);
 
         GlyphEdge[] nextGlyph = Arrays.copyOf(glyph, glyph.length + 1);
         nextGlyph[glyph.length] = nextEdge;

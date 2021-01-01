@@ -21,34 +21,39 @@ const vec2 CENTER = vec2(0.0, 0.0);
 const vec2 CENTER_LOWER = vec2(0.0, RADIUS * -0.5);
 
 const int EDGE_COUNT = 15;
-const int EDGE_VERTEX_COUNT = 30;
 
-const vec2 EDGES[EDGE_VERTEX_COUNT] = vec2[](
-    CENTER, CENTER_UPPER,
-    CENTER, CENTER_LOWER,
-    CENTER, SIDE_UPPER,
-    CENTER, SIDE_LOWER,
+struct Edge {
+    vec2 from;
+    vec2 to;
+    int bit;
+};
 
-    CENTER_UPPER, SIDE_UPPER,
-    CENTER_UPPER, SIDE_LOWER,
-    CENTER_LOWER, SIDE_UPPER,
-    CENTER_LOWER, SIDE_LOWER,
+const Edge EDGES[EDGE_COUNT] = Edge[](
+    Edge(CENTER, CENTER_UPPER, 1 << 0),
+    Edge(CENTER, CENTER_LOWER, 1 << 1),
+    Edge(CENTER, SIDE_UPPER, 1 << 2),
+    Edge(CENTER, SIDE_LOWER, 1 << 3),
 
-    TOP, CENTER_UPPER,
-    TOP, SIDE_UPPER,
-    TOP, SIDE_LOWER,
+    Edge(CENTER_UPPER, SIDE_UPPER, 1 << 4),
+    Edge(CENTER_UPPER, SIDE_LOWER, 1 << 5),
+    Edge(CENTER_LOWER, SIDE_UPPER, 1 << 6),
+    Edge(CENTER_LOWER, SIDE_LOWER, 1 << 7),
 
-    BOTTOM, CENTER_LOWER,
-    BOTTOM, SIDE_UPPER,
-    BOTTOM, SIDE_LOWER,
+    Edge(TOP, CENTER_UPPER, 1 << 8),
+    Edge(TOP, SIDE_UPPER, 1 << 9),
+    Edge(TOP, SIDE_LOWER, 1 << 10),
 
-    SIDE_LOWER, SIDE_UPPER
+    Edge(BOTTOM, CENTER_LOWER, 1 << 11),
+    Edge(BOTTOM, SIDE_UPPER, 1 << 12),
+    Edge(BOTTOM, SIDE_LOWER, 1 << 13),
+
+    Edge(SIDE_LOWER, SIDE_UPPER, 1 << 14)
 );
 
 // from: https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
-float get_distance_to_line(vec2 p, vec2 a, vec2 b) {
-    vec2 pa = p - a;
-    vec2 ba = b - a;
+float get_distance_to_edge(vec2 p, Edge edge) {
+    vec2 pa = p - edge.from;
+    vec2 ba = edge.to - edge.from;
     float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
     return length(pa - ba * h);
 }
@@ -67,11 +72,9 @@ float get_edge_intensity_at(vec2 pos) {
     float distance = 999.0;
 
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
-        if (((edges >> edge_idx) & 1) != 0) {
-            int vertex_idx = edge_idx * 2;
-            vec2 from = EDGES[vertex_idx];
-            vec2 to = EDGES[vertex_idx + 1];
-            distance = min(distance, get_distance_to_line(pos, from, to));
+        Edge edge = EDGES[edge_idx];
+        if ((edges & edge.bit) != 0) {
+            distance = min(distance, get_distance_to_edge(pos, edge));
         }
     }
 

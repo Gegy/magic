@@ -4,6 +4,8 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.Matrix4fAccess;
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import dev.gegy.magic.glyph.Glyph;
+import dev.gegy.magic.glyph.shape.GlyphShape;
+import dev.gegy.magic.glyph.shape.GlyphShapeGenerator;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
@@ -16,6 +18,8 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public final class GlyphRenderManager {
@@ -24,6 +28,9 @@ public final class GlyphRenderManager {
     private GlyphRenderer glyphRenderer;
 
     private final Matrix4f glyphToWorld = new Matrix4f();
+
+    // TODO: temporary
+    private GlyphShape glyphShape;
 
     public static void onInitialize() {
         if (GlyphRenderManager.instance != null) {
@@ -86,13 +93,17 @@ public final class GlyphRenderManager {
 
                 float formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
 
-                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, formProgress, glyph.red, glyph.green, glyph.blue, 0);
+                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, formProgress, glyph.red, glyph.green, glyph.blue, this.glyphShape.asBits());
             }
         }
     }
 
     private void load(ResourceManager resources) {
         this.close();
+
+        GlyphShapeGenerator generator = new GlyphShapeGenerator(3, 3);
+        List<GlyphShape> glyphs = generator.generateAll();
+        this.glyphShape = glyphs.get(new Random().nextInt(glyphs.size()));
 
         try {
             this.glyphRenderer = GlyphRenderer.create(resources);

@@ -1,11 +1,9 @@
 package dev.gegy.magic.glyph.shape;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.mojang.serialization.Codec;
 import net.minecraft.util.math.Vec2f;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public enum GlyphNode {
     TOP(true,
@@ -34,48 +32,9 @@ public enum GlyphNode {
 
     public static final GlyphNode[] NODES = values();
 
-    public static final GlyphNode[] CENTER_LINE = new GlyphNode[] {
-            TOP, CENTER_UPPER, CENTER, CENTER_LOWER, BOTTOM
-    };
-
     public static final GlyphNode[] CIRCUMFERENCE;
 
-    private static final GlyphEdge[] EDGES = new GlyphEdge[] {
-            new GlyphEdge(GlyphNode.CENTER, GlyphNode.CENTER_UPPER),
-            new GlyphEdge(GlyphNode.CENTER, GlyphNode.CENTER_LOWER),
-            new GlyphEdge(GlyphNode.CENTER, GlyphNode.SIDE_UPPER),
-            new GlyphEdge(GlyphNode.CENTER, GlyphNode.SIDE_LOWER),
-
-            new GlyphEdge(GlyphNode.CENTER_UPPER, GlyphNode.SIDE_UPPER),
-            new GlyphEdge(GlyphNode.CENTER_UPPER, GlyphNode.SIDE_LOWER),
-            new GlyphEdge(GlyphNode.CENTER_LOWER, GlyphNode.SIDE_UPPER),
-            new GlyphEdge(GlyphNode.CENTER_LOWER, GlyphNode.SIDE_LOWER),
-
-            new GlyphEdge(GlyphNode.TOP, GlyphNode.CENTER_UPPER),
-            new GlyphEdge(GlyphNode.TOP, GlyphNode.SIDE_UPPER),
-            new GlyphEdge(GlyphNode.TOP, GlyphNode.SIDE_LOWER),
-
-            new GlyphEdge(GlyphNode.BOTTOM, GlyphNode.CENTER_LOWER),
-            new GlyphEdge(GlyphNode.BOTTOM, GlyphNode.SIDE_UPPER),
-            new GlyphEdge(GlyphNode.BOTTOM, GlyphNode.SIDE_LOWER),
-
-            new GlyphEdge(GlyphNode.SIDE_LOWER, GlyphNode.SIDE_UPPER),
-    };
-
-    static final Map<GlyphNode, GlyphNode[]> CONNECTIONS = new EnumMap<>(GlyphNode.class);
-
-    public static final Codec<GlyphNode> CODEC = Codec.BYTE.xmap(b -> NODES[b % NODES.length], n -> (byte) n.ordinal());
-
     static {
-        Multimap<GlyphNode, GlyphNode> connections = HashMultimap.create();
-        for (GlyphEdge edge : EDGES) {
-            connections.put(edge.from, edge.to);
-            connections.put(edge.to, edge.from);
-        }
-        for (Map.Entry<GlyphNode, Collection<GlyphNode>> entry : connections.asMap().entrySet()) {
-            CONNECTIONS.put(entry.getKey(), entry.getValue().toArray(new GlyphNode[0]));
-        }
-
         List<GlyphNode> circumference = new ArrayList<>();
         for (GlyphNode node : NODES) {
             if (node.circumference) {
@@ -100,9 +59,5 @@ public enum GlyphNode {
 
     public Vec2f[] getPoints() {
         return this.points;
-    }
-
-    public GlyphNode[] getConnections() {
-        return CONNECTIONS.get(this);
     }
 }

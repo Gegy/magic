@@ -1,16 +1,12 @@
 package dev.gegy.magic.glyph.shape;
 
-import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.DataResult;
 import dev.gegy.magic.Magic;
+import net.fabricmc.fabric.api.util.NbtType;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.nbt.Tag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.PersistentState;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 public final class GlyphShapeStorage extends PersistentState {
@@ -45,10 +41,7 @@ public final class GlyphShapeStorage extends PersistentState {
     @Override
     public CompoundTag toTag(CompoundTag tag) {
         if (this.testGlyph != null) {
-            Optional<Tag> glyphResult = GlyphShape.CODEC.encodeStart(NbtOps.INSTANCE, this.testGlyph).result();
-            glyphResult.ifPresent(glyphTag -> {
-                tag.put("test_glyph", glyphTag);
-            });
+            tag.putInt("test_glyph", this.testGlyph.asBits());
         }
 
         return tag;
@@ -56,9 +49,8 @@ public final class GlyphShapeStorage extends PersistentState {
 
     @Override
     public void fromTag(CompoundTag tag) {
-        DataResult<GlyphShape> result = GlyphShape.CODEC.decode(NbtOps.INSTANCE, tag.getCompound("test_glyph")).map(Pair::getFirst);
-        result.result().ifPresent(glyph -> {
-            this.testGlyph = glyph;
-        });
+        if (tag.contains("test_glyph", NbtType.INT)) {
+            this.testGlyph = new GlyphShape(tag.getInt("test_glyph"));
+        }
     }
 }

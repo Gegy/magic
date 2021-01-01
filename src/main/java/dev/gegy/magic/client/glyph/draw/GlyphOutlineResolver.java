@@ -16,6 +16,8 @@ class GlyphOutlineResolver {
     // short side of bounds is allowed to be at least 7/10 of long side
     private static final float MIN_SQUARENESS = 0.7F;
 
+    private static final float MIN_RADIUS = 0.125F;
+
     private final Vector3f forward = new Vector3f();
     private final Vector3f left = new Vector3f();
     private final Vector3f up = new Vector3f();
@@ -91,6 +93,10 @@ class GlyphOutlineResolver {
     }
 
     private boolean isValidCircle(Vector3f[] points, float[] radii, float meanRadius) {
+        if (meanRadius < MIN_RADIUS) {
+            return false;
+        }
+
         int maxDeviations = MathHelper.ceil(points.length * MAX_DEVIATION_PERCENT);
         float radiusDeviationThreshold = meanRadius * RADIUS_DEVIATION_THRESHOLD;
 

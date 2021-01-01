@@ -1,19 +1,23 @@
 package dev.gegy.magic.glyph.shape;
 
-import com.mojang.serialization.Codec;
-
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class GlyphShape {
-    public static final Codec<GlyphShape> CODEC = GlyphEdge.CODEC.listOf()
-            .xmap(edges -> new GlyphShape(edges.toArray(new GlyphEdge[0])), glyph -> Arrays.asList(glyph.edges));
-
     public final GlyphEdge[] edges;
     public final int size;
+    private final int bits;
 
     public GlyphShape(GlyphEdge[] edges, int size) {
         this.edges = edges;
         this.size = size;
+        this.bits = edgesToBits(edges);
+    }
+
+    public GlyphShape(int bits) {
+        this.edges = bitsToEdges(bits);
+        this.size = getSize(this.edges);
+        this.bits = bits;
     }
 
     public GlyphShape(GlyphEdge[] edges) {
@@ -27,31 +31,47 @@ public final class GlyphShape {
 
         // all the points along the center are colinear, and to give an accurate measurement of the "size" of a glyph,
         // the merged line across is more meaningful.
-        GlyphNode[] centerLine = GlyphNode.CENTER_LINE;
+        GlyphEdge[] centerLine = GlyphEdge.CENTER_LINE;
 
         int simplifiedSize = glyph.length;
 
-        GlyphNode from = null;
+        int mergedLength = 0;
 
-        for (int i = 0; i < centerLine.length - 1; i++) {
-            GlyphEdge edge = new GlyphEdge(centerLine[i], centerLine[i + 1]);
+        for (GlyphEdge edge : centerLine) {
             if (containsEdge(glyph, edge)) {
-                if (from == null) {
-                    from = centerLine[i];
-                }
+                mergedLength++;
+                simplifiedSize--;
             } else {
-                if (from != null) {
+                if (mergedLength > 0) {
+                    mergedLength = 0;
                     simplifiedSize++;
-                    from = null;
                 }
             }
         }
 
-        if (from != null) {
+        if (mergedLength > 0) {
             simplifiedSize++;
         }
 
         return simplifiedSize;
+    }
+
+    static int edgesToBits(GlyphEdge[] glyph) {
+        int mask = 0;
+        for (GlyphEdge edge : glyph) {
+            mask |= edge.asBit();
+        }
+        return mask;
+    }
+
+    static GlyphEdge[] bitsToEdges(int bits) {
+        List<GlyphEdge> edges = new ArrayList<>(GlyphEdge.EDGES.length);
+        for (GlyphEdge edge : GlyphEdge.EDGES) {
+            if ((bits & edge.asBit()) != 0) {
+                edges.add(edge);
+            }
+        }
+        return edges.toArray(new GlyphEdge[0]);
     }
 
     private static boolean canSimplify(GlyphEdge[] glyph) {
@@ -68,25 +88,20 @@ public final class GlyphShape {
     }
 
     private static boolean isCenterEdge(GlyphEdge edge) {
-        return isCenterNode(edge.from) && isCenterNode(edge.to);
-    }
-
-    private static boolean isCenterNode(GlyphNode node) {
-        for (GlyphNode centerNode : GlyphNode.CENTER_LINE) {
-            if (node == centerNode) {
-                return true;
-            }
-        }
-        return false;
+        return containsEdge(GlyphEdge.CENTER_LINE, edge);
     }
 
     static boolean containsEdge(GlyphEdge[] glyph, GlyphEdge edge) {
         for (GlyphEdge other : glyph) {
-            if (other.equals(edge)) {
+            if (edge == other) {
                 return true;
             }
         }
         return false;
+    }
+
+    public int asBits() {
+        return this.bits;
     }
 
     @Override
@@ -95,29 +110,7 @@ public final class GlyphShape {
             return true;
         }
 
-        return obj instanceof GlyphShape && this.equals((GlyphShape) obj);
-    }
-
-    private boolean equals(GlyphShape glyph) {
-        if (glyph.edges.length != this.edges.length) {
-            return false;
-        }
-
-        // evaluate whether the glyphs are equal independent of order!
-        for (GlyphEdge edge : this.edges) {
-            boolean matched = false;
-            for (GlyphEdge otherEdge : glyph.edges) {
-                if (edge.equals(otherEdge)) {
-                    matched = true;
-                    break;
-                }
-            }
-            if (!matched) {
-                return false;
-            }
-        }
-
-        return true;
+        return obj instanceof GlyphShape && ((GlyphShape) obj).bits == this.bits;
     }
 
     @Override
