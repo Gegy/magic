@@ -1,7 +1,9 @@
 #version 130
 
-const float RADIUS = 0.9F;
-const float LINE_RADIUS = 0.1F;
+const float RADIUS = 0.9;
+const float LINE_RADIUS = 0.1;
+
+const float NODE_RADIUS = 0.05;
 
 uniform float form_progress;
 uniform vec3 color;
@@ -20,7 +22,10 @@ const vec2 CENTER_UPPER = vec2(0.0, RADIUS * 0.5);
 const vec2 CENTER = vec2(0.0, 0.0);
 const vec2 CENTER_LOWER = vec2(0.0, RADIUS * -0.5);
 
+const int NODE_COUNT = 7;
 const int EDGE_COUNT = 15;
+
+const vec2 NODES[NODE_COUNT] = vec2[](TOP, BOTTOM, SIDE_UPPER, SIDE_LOWER, CENTER_UPPER, CENTER, CENTER_LOWER);
 
 struct Edge {
     vec2 from;
@@ -67,8 +72,6 @@ float get_outline_intensity_at(vec2 pos) {
 }
 
 float get_edge_intensity_at(vec2 pos) {
-    pos.x = abs(pos.x);
-
     float distance = 999.0;
 
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
@@ -89,11 +92,28 @@ float get_intensity_at(vec2 pos) {
     return max(outline_intensity, edge_intensity);
 }
 
+vec4 apply_node_glow(vec2 pos, vec4 color) {
+    float distance = 999.0;
+    for (int i = 0; i < NODE_COUNT; i++) {
+        vec2 node = NODES[i];
+        distance = min(distance, length(node - pos));
+    }
+
+    float glow = 1.0 - clamp(distance / NODE_RADIUS, 0.0, 1.0);
+    return color + vec4(glow);
+}
+
 void main() {
-    float intensity = get_intensity_at(texture) * form_progress;
-    if (intensity < 0.01) {
+    vec2 pos = texture;
+    pos.x = abs(pos.x);
+
+    float intensity = get_intensity_at(pos) * form_progress;
+    vec4 edges = vec4(color, intensity);
+
+    vec4 edges_with_nodes = apply_node_glow(pos, edges);
+    if (edges_with_nodes.a < 0.01) {
         discard;
     }
 
-    gl_FragColor = vec4(color, intensity);
+    gl_FragColor = edges_with_nodes;
 }

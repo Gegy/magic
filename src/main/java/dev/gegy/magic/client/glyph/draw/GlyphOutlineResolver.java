@@ -31,7 +31,7 @@ class GlyphOutlineResolver {
         GlyphOutline outline = new GlyphOutline();
         this.applyProjectionFor(outline, points);
 
-        Vector3f[] projectedPoints = projectPoints(points, outline.projectWorldToGlyph);
+        Vector3f[] projectedPoints = projectPoints(points, outline.worldToGlyph);
         if (this.tryResolveFromProjected(outline, projectedPoints)) {
             return outline;
         } else {
@@ -139,8 +139,8 @@ class GlyphOutlineResolver {
         up.cross(left);
         up.normalize();
 
-        Matrix3f glyphToWorld = outline.projectGlyphToWorld;
-        Matrix3f worldToGlyph = outline.projectWorldToGlyph;
+        Matrix3f glyphToWorld = outline.glyphToWorld;
+        Matrix3f worldToGlyph = outline.worldToGlyph;
 
         Matrix3fAccess.set(glyphToWorld,
                 left.getX(), up.getX(), forward.getX(),

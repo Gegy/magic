@@ -93,27 +93,27 @@ public final class GlyphShader implements AutoCloseable {
         RenderSystem.glUniformMatrix4(this.uniformWorldToScreen, false, worldToScreenData);
     }
 
-    public void set(Matrix4f glyphToWorld, float centerX, float centerY, float radius, float formProgress, float red, float green, float blue, int edges) {
+    public void set(GlyphRenderData renderData) {
         FloatBuffer glyphToWorldData = this.glyphToWorldData;
-        glyphToWorld.writeToBuffer(glyphToWorldData);
+        renderData.glyphToWorld.writeToBuffer(glyphToWorldData);
         glyphToWorldData.clear();
         RenderSystem.glUniformMatrix4(this.uniformGlyphToWorld, false, glyphToWorldData);
 
         FloatBuffer centerData = this.centerData;
-        centerData.put(centerX).put(centerY);
+        centerData.put(renderData.centerX).put(renderData.centerY);
         centerData.clear();
         RenderSystem.glUniform2(this.uniformCenter, centerData);
 
-        GL20.glUniform1f(this.uniformRadius, radius);
+        GL20.glUniform1f(this.uniformRadius, renderData.radius);
 
-        GL20.glUniform1f(this.uniformFormProgress, formProgress);
+        GL20.glUniform1f(this.uniformFormProgress, renderData.formProgress);
 
         FloatBuffer colorData = this.colorData;
-        colorData.put(red).put(green).put(blue);
+        colorData.put(renderData.red).put(renderData.green).put(renderData.blue);
         colorData.clear();
         RenderSystem.glUniform3(this.uniformColor, colorData);
 
-        RenderSystem.glUniform1i(this.uniformEdges, edges);
+        RenderSystem.glUniform1i(this.uniformEdges, renderData.edges);
     }
 
     public void unbind() {

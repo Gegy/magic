@@ -2,10 +2,8 @@ package dev.gegy.magic.client.glyph.render;
 
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.Matrix4fAccess;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import dev.gegy.magic.glyph.Glyph;
-import dev.gegy.magic.glyph.shape.GlyphShape;
-import dev.gegy.magic.glyph.shape.GlyphShapeGenerator;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
@@ -18,8 +16,6 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 public final class GlyphRenderManager {
@@ -27,10 +23,9 @@ public final class GlyphRenderManager {
 
     private GlyphRenderer glyphRenderer;
 
-    private final Matrix4f glyphToWorld = new Matrix4f();
+    private final Set<Glyph> glyphs = new ReferenceOpenHashSet<>();
 
-    // TODO: temporary
-    private GlyphShape glyphShape;
+    private final GlyphRenderData renderData = new GlyphRenderData();
 
     public static void onInitialize() {
         if (GlyphRenderManager.instance != null) {
@@ -61,6 +56,10 @@ public final class GlyphRenderManager {
         return instance;
     }
 
+    public void add(Glyph glyph) {
+        this.glyphs.add(glyph);
+    }
+
     public void render(MinecraftClient client, Matrix4f transformation, Matrix4f projection, float tickDelta) {
         ClientWorld world = client.world;
         GlyphRenderer glyphRenderer = this.glyphRenderer;
@@ -68,7 +67,7 @@ public final class GlyphRenderManager {
             return;
         }
 
-        Set<Glyph> glyphs = ClientGlyphTracker.INSTANCE.getGlyphs();
+        Set<Glyph> glyphs = this.glyphs;
         if (glyphs.isEmpty()) {
             return;
         }
@@ -76,34 +75,37 @@ public final class GlyphRenderManager {
         Camera camera = client.gameRenderer.getCamera();
         Vec3d cameraPos = camera.getPos();
 
-        Matrix4f glyphToWorld = this.glyphToWorld;
+        GlyphRenderData renderData = this.renderData;
 
         try (GlyphRenderer.Batcher batcher = glyphRenderer.start(projection)) {
             for (Glyph glyph : glyphs) {
                 Vec3d source = glyph.source;
 
-                Matrix4fAccess.set(glyphToWorld, transformation);
+                Matrix4fAccess.set(renderData.glyphToWorld, transformation);
 
                 float translationX = (float) (source.x - cameraPos.x);
                 float translationY = (float) (source.y - cameraPos.y);
                 float translationZ = (float) (source.z - cameraPos.z);
-                Matrix4fAccess.translate(glyphToWorld, translationX, translationY, translationZ);
+                Matrix4fAccess.translate(renderData.glyphToWorld, translationX, translationY, translationZ);
 
-                glyphToWorld.multiply(glyph.glyphToWorld);
+                renderData.glyphToWorld.multiply(glyph.glyphToWorld);
 
-                float formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
+                renderData.centerX = glyph.centerX;
+                renderData.centerY = glyph.centerY;
+                renderData.radius = glyph.radius;
+                renderData.formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
+                renderData.red = glyph.red;
+                renderData.green = glyph.green;
+                renderData.blue = glyph.blue;
+                renderData.edges = glyph.edges;
 
-                batcher.render(glyphToWorld, glyph.centerX, glyph.centerY, glyph.radius, formProgress, glyph.red, glyph.green, glyph.blue, this.glyphShape.asBits());
+                batcher.render(renderData);
             }
         }
     }
 
     private void load(ResourceManager resources) {
         this.close();
-
-        GlyphShapeGenerator generator = new GlyphShapeGenerator(3, 3);
-        List<GlyphShape> glyphs = generator.generateAll();
-        this.glyphShape = glyphs.get(new Random().nextInt(glyphs.size()));
 
         try {
             this.glyphRenderer = GlyphRenderer.create(resources);

@@ -26,7 +26,7 @@ public final class GlyphDrawTracker {
     private void onDrawingTick(ClientPlayerEntity player) {
         GlyphDrawState state = this.state;
         if (state == null) {
-            this.state = state = new GlyphDrawState.Idle();
+            this.state = state = new IdleGlyphDrawState();
         }
 
         this.state = state.tick(player);

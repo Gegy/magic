@@ -6,29 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public enum GlyphNode {
-    TOP(true,
-            new Vec2f(0.0F, 1.0F)
-    ),
-    BOTTOM(true,
-            new Vec2f(0.0F, -1.0F)
-    ),
-    SIDE_UPPER(true,
-            new Vec2f((float) Math.sqrt(0.75F), 0.5F),
-            new Vec2f((float) -Math.sqrt(0.75F), 0.5F)
-    ),
-    SIDE_LOWER(true,
-            new Vec2f((float) Math.sqrt(0.75F), -0.5F),
-            new Vec2f((float) -Math.sqrt(0.75F), -0.5F)
-    ),
-    CENTER_UPPER(false,
-            new Vec2f(0.0F, 0.5F)
-    ),
-    CENTER(false,
-            new Vec2f(0.0F, 0.0F)
-    ),
-    CENTER_LOWER(false,
-            new Vec2f(0.0F, -0.5F)
-    );
+    TOP(true, 0.0F, 1.0F),
+    BOTTOM(true, 0.0F, -1.0F),
+    SIDE_UPPER(true, (float) Math.sqrt(0.75F), 0.5F),
+    SIDE_LOWER(true, (float) Math.sqrt(0.75F), -0.5F),
+    CENTER_UPPER(false, 0.0F, 0.5F),
+    CENTER(false, 0.0F, 0.0F),
+    CENTER_LOWER(false, 0.0F, -0.5F);
 
     public static final GlyphNode[] NODES = values();
 
@@ -46,18 +30,30 @@ public enum GlyphNode {
     }
 
     private final boolean circumference;
-    private final Vec2f[] points;
+    private final Vec2f point;
 
-    GlyphNode(boolean circumference, Vec2f... points) {
+    private final Vec2f[] mirroredPoints;
+
+    GlyphNode(boolean circumference, float x, float y) {
         this.circumference = circumference;
-        this.points = points;
+        this.point = new Vec2f(x, y);
+
+        if (x != 0.0F) {
+            this.mirroredPoints = new Vec2f[] { this.point, new Vec2f(-x, y) };
+        } else {
+            this.mirroredPoints = new Vec2f[] { this.point };
+        }
     }
 
     public boolean isAtCircumference() {
         return this.circumference;
     }
 
-    public Vec2f[] getPoints() {
-        return this.points;
+    public Vec2f getPoint() {
+        return this.point;
+    }
+
+    public Vec2f[] getMirroredPoints() {
+        return this.mirroredPoints;
     }
 }

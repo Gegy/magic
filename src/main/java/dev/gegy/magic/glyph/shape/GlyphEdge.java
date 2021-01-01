@@ -2,8 +2,9 @@ package dev.gegy.magic.glyph.shape;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -34,16 +35,21 @@ public enum GlyphEdge {
             TOP_TO_CENTER_UPPER, CENTER_TO_CENTER_UPPER, CENTER_TO_CENTER_LOWER, BOTTOM_TO_CENTER_LOWER
     };
 
-    static final Map<GlyphNode, GlyphEdge[]> CONNECTIONS = new EnumMap<>(GlyphNode.class);
+    static final Map<GlyphNode, GlyphNode[]> CONNECTED_NODES = new EnumMap<>(GlyphNode.class);
+    static final Map<GlyphNode, GlyphEdge[]> CONNECTED_EDGES = new EnumMap<>(GlyphNode.class);
 
     static {
-        Multimap<GlyphNode, GlyphEdge> connections = HashMultimap.create();
+        Multimap<GlyphNode, GlyphEdge> connectedEdges = HashMultimap.create();
+        Multimap<GlyphNode, GlyphNode> connectedNodes = HashMultimap.create();
         for (GlyphEdge edge : EDGES) {
-            connections.put(edge.from, edge);
-            connections.put(edge.to, edge);
+            connectedEdges.put(edge.from, edge);
+            connectedEdges.put(edge.to, edge);
+            connectedNodes.put(edge.from, edge.to);
+            connectedNodes.put(edge.to, edge.from);
         }
-        for (Map.Entry<GlyphNode, Collection<GlyphEdge>> entry : connections.asMap().entrySet()) {
-            CONNECTIONS.put(entry.getKey(), entry.getValue().toArray(new GlyphEdge[0]));
+        for (GlyphNode node : GlyphNode.NODES) {
+            CONNECTED_EDGES.put(node, connectedEdges.get(node).toArray(new GlyphEdge[0]));
+            CONNECTED_NODES.put(node, connectedNodes.get(node).toArray(new GlyphNode[0]));
         }
     }
 
@@ -60,8 +66,23 @@ public enum GlyphEdge {
         }
     }
 
+    @Nullable
+    public static GlyphEdge between(GlyphNode from, GlyphNode to) {
+        GlyphEdge[] edges = getConnectedEdgesTo(from);
+        for (GlyphEdge edge : edges) {
+            if (edge.contains(to)) {
+                return edge;
+            }
+        }
+        return null;
+    }
+
     public int asBit() {
         return 1 << this.ordinal();
+    }
+
+    public boolean contains(GlyphNode node) {
+        return node == this.from || node == this.to;
     }
 
     public GlyphNode getOther(GlyphNode node) {
@@ -74,7 +95,13 @@ public enum GlyphEdge {
         }
     }
 
-    public static GlyphEdge[] getConnectionsTo(GlyphNode node) {
-        return CONNECTIONS.get(node);
+    @NotNull
+    public static GlyphEdge[] getConnectedEdgesTo(GlyphNode node) {
+        return CONNECTED_EDGES.get(node);
+    }
+
+    @NotNull
+    public static GlyphNode[] getConnectedNodesTo(GlyphNode node) {
+        return CONNECTED_NODES.get(node);
     }
 }

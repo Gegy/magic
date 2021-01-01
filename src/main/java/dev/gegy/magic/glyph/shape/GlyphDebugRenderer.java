@@ -63,8 +63,8 @@ final class GlyphDebugRenderer {
 
         graphics.setColor(Color.BLUE);
         for (GlyphEdge edge : glyph.edges) {
-            Vec2f[] fromPoints = edge.from.getPoints();
-            Vec2f[] toPoints = edge.to.getPoints();
+            Vec2f[] fromPoints = edge.from.getMirroredPoints();
+            Vec2f[] toPoints = edge.to.getMirroredPoints();
             for (Vec2f from : fromPoints) {
                 for (Vec2f to : toPoints) {
                     graphics.drawLine(
