@@ -17,13 +17,17 @@ public final class FinishGlyphS2CPacket {
     static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
             int networkId = buf.readVarInt();
-            client.submit(() -> ClientGlyphTracker.INSTANCE.finishDrawingGlyph(networkId, Spell.TEST));
+            Spell spell = Spell.REGISTRY.get(buf.readVarInt());
+            if (spell != null) {
+                client.submit(() -> ClientGlyphTracker.INSTANCE.finishDrawingGlyph(networkId, spell));
+            }
         });
     }
 
-    public static PacketByteBuf create(ServerGlyph glyph) {
+    public static PacketByteBuf create(ServerGlyph glyph, Spell spell) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(glyph.getNetworkId());
+        buf.writeVarInt(Spell.REGISTRY.getRawId(spell));
         return buf;
     }
 

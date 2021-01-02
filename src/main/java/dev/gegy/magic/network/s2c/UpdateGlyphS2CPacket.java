@@ -19,8 +19,7 @@ public final class UpdateGlyphS2CPacket {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
             int networkId = buf.readVarInt();
             int shape = buf.readShort();
-            // TODO: registry for spells
-            Spell matchedSpell = buf.readBoolean() ? Spell.TEST : null;
+            Spell matchedSpell = Spell.REGISTRY.get(buf.readVarInt());
 
             client.submit(() -> {
                 ClientGlyph glyph = ClientGlyphTracker.INSTANCE.getGlyphById(networkId);
@@ -38,7 +37,10 @@ public final class UpdateGlyphS2CPacket {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(glyph.getNetworkId());
         buf.writeShort(glyph.getShape());
-        buf.writeBoolean(glyph.getMatchedSpell() != null);
+
+        Spell matchedSpell = glyph.getMatchedSpell();
+        buf.writeVarInt(matchedSpell != null ? Spell.REGISTRY.getRawId(matchedSpell) : -1);
+
         return buf;
     }
 

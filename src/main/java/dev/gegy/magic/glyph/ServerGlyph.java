@@ -1,7 +1,7 @@
 package dev.gegy.magic.glyph;
 
 import dev.gegy.magic.spell.Spell;
-import dev.gegy.magic.spell.SpellStorage;
+import dev.gegy.magic.spell.SpellGlyphStorage;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -42,14 +42,11 @@ public final class ServerGlyph {
         this.shape = shape;
     }
 
-    public boolean tryMatchSpell() {
-        SpellStorage spellStorage = SpellStorage.get(this.source.server);
+    public Spell tryMatchSpell() {
+        SpellGlyphStorage spellStorage = SpellGlyphStorage.get(this.source.server);
         Spell spell = spellStorage.matchSpell(this.shape);
-        if (spell != null) {
-            this.matchedSpell = spell;
-            return true;
-        }
-        return false;
+        this.matchedSpell = spell;
+        return spell;
     }
 
     public int getShape() {

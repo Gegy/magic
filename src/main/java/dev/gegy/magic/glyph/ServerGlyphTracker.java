@@ -5,6 +5,7 @@ import dev.gegy.magic.network.s2c.CreateGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.FinishGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.RemoveGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.UpdateGlyphS2CPacket;
+import dev.gegy.magic.spell.Spell;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -81,8 +82,10 @@ public final class ServerGlyphTracker {
         ServerGlyph glyph = this.drawingBySource.get(source.getUuid());
         if (glyph != null) {
             glyph.setShape(shape);
-            if (glyph.tryMatchSpell()) {
-                PacketByteBuf packet = FinishGlyphS2CPacket.create(glyph);
+
+            Spell spell = glyph.tryMatchSpell();
+            if (spell != null) {
+                PacketByteBuf packet = FinishGlyphS2CPacket.create(glyph, spell);
                 FinishGlyphS2CPacket.sendTo(source, packet);
             }
 
