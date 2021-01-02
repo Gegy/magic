@@ -10,7 +10,8 @@ public final class GlyphRenderData {
     public float red;
     public float green;
     public float blue;
-    public int edges;
+    public int shape;
 
+    public boolean highlightNodes;
     public GlyphStroke stroke;
 }

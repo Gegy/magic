@@ -7,8 +7,8 @@ import dev.gegy.magic.math.Matrix4fAccess;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.Camera;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
@@ -56,9 +56,9 @@ public final class GlyphRenderManager {
     }
 
     public void render(MinecraftClient client, Matrix4f transformation, Matrix4f projection, float tickDelta) {
-        ClientWorld world = client.world;
+        ClientPlayerEntity player = client.player;
         GlyphRenderer glyphRenderer = this.glyphRenderer;
-        if (glyphRenderer == null || world == null) {
+        if (glyphRenderer == null || player == null) {
             return;
         }
 
@@ -74,16 +74,16 @@ public final class GlyphRenderManager {
 
         try (GlyphRenderer.Batcher batcher = glyphRenderer.start(projection)) {
             for (ClientGlyph glyph : glyphs) {
-                this.renderGlyph(batcher, glyph, world, cameraPos, transformation, tickDelta);
+                this.renderGlyph(batcher, glyph, player, cameraPos, transformation, tickDelta);
             }
 
             if (drawingGlyph != null) {
-                this.renderGlyph(batcher, drawingGlyph, world, cameraPos, transformation, tickDelta);
+                this.renderGlyph(batcher, drawingGlyph, player, cameraPos, transformation, tickDelta);
             }
         }
     }
 
-    private void renderGlyph(GlyphRenderer.Batcher batcher, ClientGlyph glyph, ClientWorld world, Vec3d cameraPos, Matrix4f transformation, float tickDelta) {
+    private void renderGlyph(GlyphRenderer.Batcher batcher, ClientGlyph glyph, ClientPlayerEntity player, Vec3d cameraPos, Matrix4f transformation, float tickDelta) {
         Entity source = glyph.source;
         Vec3d sourcePos = source.getCameraPosVec(tickDelta);
 
@@ -99,11 +99,12 @@ public final class GlyphRenderManager {
         renderData.glyphToWorld.multiply(glyph.plane.getRenderGlyphToWorldMatrix());
 
         renderData.radius = glyph.radius;
-        renderData.formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
-        renderData.red = glyph.red;
-        renderData.green = glyph.green;
-        renderData.blue = glyph.blue;
-        renderData.edges = glyph.shape;
+        renderData.formProgress = glyph.getFormProgress(player.world.getTime(), tickDelta);
+        renderData.red = glyph.getRed(tickDelta);
+        renderData.green = glyph.getGreen(tickDelta);
+        renderData.blue = glyph.getBlue(tickDelta);
+        renderData.shape = glyph.shape;
+        renderData.highlightNodes = glyph.source == player;
         renderData.stroke = glyph.stroke;
 
         batcher.render(renderData, tickDelta);

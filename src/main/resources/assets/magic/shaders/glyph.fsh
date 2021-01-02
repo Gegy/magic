@@ -5,7 +5,7 @@ const float NODE_RADIUS = 0.05;
 
 uniform float form_progress;
 uniform vec3 color;
-uniform int edges;
+uniform int flags;
 
 uniform vec4 stroke;
 
@@ -34,28 +34,29 @@ struct Edge {
 };
 
 const Edge EDGES[EDGE_COUNT] = Edge[](
-    Edge(CENTER, CENTER_UPPER, 1 << 0),
-    Edge(CENTER, CENTER_LOWER, 1 << 1),
-    Edge(CENTER, SIDE_UPPER, 1 << 2),
-    Edge(CENTER, SIDE_LOWER, 1 << 3),
+Edge(CENTER, CENTER_UPPER, 1 << 0),
+Edge(CENTER, CENTER_LOWER, 1 << 1),
+Edge(CENTER, SIDE_UPPER, 1 << 2),
+Edge(CENTER, SIDE_LOWER, 1 << 3),
 
-    Edge(CENTER_UPPER, SIDE_UPPER, 1 << 4),
-    Edge(CENTER_UPPER, SIDE_LOWER, 1 << 5),
-    Edge(CENTER_LOWER, SIDE_UPPER, 1 << 6),
-    Edge(CENTER_LOWER, SIDE_LOWER, 1 << 7),
+Edge(CENTER_UPPER, SIDE_UPPER, 1 << 4),
+Edge(CENTER_UPPER, SIDE_LOWER, 1 << 5),
+Edge(CENTER_LOWER, SIDE_UPPER, 1 << 6),
+Edge(CENTER_LOWER, SIDE_LOWER, 1 << 7),
 
-    Edge(TOP, CENTER_UPPER, 1 << 8),
-    Edge(TOP, SIDE_UPPER, 1 << 9),
-    Edge(TOP, SIDE_LOWER, 1 << 10),
+Edge(TOP, CENTER_UPPER, 1 << 8),
+Edge(TOP, SIDE_UPPER, 1 << 9),
+Edge(TOP, SIDE_LOWER, 1 << 10),
 
-    Edge(BOTTOM, CENTER_LOWER, 1 << 11),
-    Edge(BOTTOM, SIDE_UPPER, 1 << 12),
-    Edge(BOTTOM, SIDE_LOWER, 1 << 13),
+Edge(BOTTOM, CENTER_LOWER, 1 << 11),
+Edge(BOTTOM, SIDE_UPPER, 1 << 12),
+Edge(BOTTOM, SIDE_LOWER, 1 << 13),
 
-    Edge(SIDE_LOWER, SIDE_UPPER, 1 << 14)
+Edge(SIDE_LOWER, SIDE_UPPER, 1 << 14)
 );
 
 const int STROKE_BIT = 1 << 15;
+const int HIGHLIGHT_NODES_BIT = 1 << 16;
 
 // from: https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
 float get_distance_to_edge(vec2 p, vec2 a, vec2 b) {
@@ -78,12 +79,12 @@ float get_edge_intensity_at(vec2 pos) {
 
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
         Edge edge = EDGES[edge_idx];
-        if ((edges & edge.bit) != 0) {
+        if ((flags & edge.bit) != 0) {
             distance = min(distance, get_distance_to_edge(pos, edge.from, edge.to));
         }
     }
 
-    if ((edges & STROKE_BIT) != 0) {
+    if ((flags & STROKE_BIT) != 0) {
         distance = min(distance, get_distance_to_edge(pos, stroke.xy, stroke.zw));
     }
 
@@ -99,6 +100,10 @@ float get_intensity_at(vec2 pos) {
 }
 
 vec4 apply_node_glow(vec2 pos, vec4 color) {
+    if ((flags & HIGHLIGHT_NODES_BIT) == 0) {
+        return color;
+    }
+
     float distance = 999.0;
     for (int i = 0; i < NODE_COUNT; i++) {
         vec2 node = NODES[i];

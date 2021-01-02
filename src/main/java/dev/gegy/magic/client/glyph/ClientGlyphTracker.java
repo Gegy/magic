@@ -2,6 +2,7 @@ package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.client.glyph.draw.GlyphDrawTracker;
 import dev.gegy.magic.glyph.GlyphPlane;
+import dev.gegy.magic.spell.Spell;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -68,11 +69,12 @@ public final class ClientGlyphTracker {
         return this.glyphsById.values();
     }
 
-    public void finishDrawingGlyph(int networkId) {
+    public void finishDrawingGlyph(int networkId, Spell spell) {
         ClientGlyph glyph = this.drawTracker.getDrawingGlyph();
         this.drawTracker.clear();
 
         if (glyph != null) {
+            glyph.applySpell(spell);
             this.glyphsById.put(networkId, glyph);
         }
     }

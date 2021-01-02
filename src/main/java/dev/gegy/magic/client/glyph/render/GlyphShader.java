@@ -27,10 +27,11 @@ public final class GlyphShader implements AutoCloseable {
     private static final String UNIFORM_RADIUS = "radius";
     private static final String UNIFORM_FORM_PROGRESS = "form_progress";
     private static final String UNIFORM_COLOR = "color";
-    private static final String UNIFORM_EDGES = "edges";
+    private static final String UNIFORM_FLAGS = "flags";
     private static final String UNIFORM_STROKE = "stroke";
 
     private static final int STROKE_ACTIVE_BIT = 1 << 15;
+    private static final int HIGHLIGHT_NODES_BIT = 1 << 16;
 
     private final Program program;
 
@@ -40,7 +41,7 @@ public final class GlyphShader implements AutoCloseable {
     private final int uniformRadius;
     private final int uniformFormProgress;
     private final int uniformColor;
-    private final int uniformEdges;
+    private final int uniformFlags;
     private final int uniformStroke;
 
     private final FloatBuffer glyphToWorldData = MemoryUtil.memAllocFloat(4 * 4);
@@ -53,7 +54,7 @@ public final class GlyphShader implements AutoCloseable {
             int uniformGlyphToWorld, int uniformWorldToScreen,
             int uniformRadius,
             int uniformFormProgress, int uniformColor,
-            int uniformEdges, int uniformStroke
+            int uniformFlags, int uniformStroke
     ) {
         this.program = program;
         this.attributePosition = attributePosition;
@@ -62,7 +63,7 @@ public final class GlyphShader implements AutoCloseable {
         this.uniformRadius = uniformRadius;
         this.uniformFormProgress = uniformFormProgress;
         this.uniformColor = uniformColor;
-        this.uniformEdges = uniformEdges;
+        this.uniformFlags = uniformFlags;
         this.uniformStroke = uniformStroke;
     }
 
@@ -79,7 +80,7 @@ public final class GlyphShader implements AutoCloseable {
         int uniformRadius = program.getUniformLocation(UNIFORM_RADIUS);
         int uniformFormProgress = program.getUniformLocation(UNIFORM_FORM_PROGRESS);
         int uniformColor = program.getUniformLocation(UNIFORM_COLOR);
-        int uniformEdges = program.getUniformLocation(UNIFORM_EDGES);
+        int uniformFlags = program.getUniformLocation(UNIFORM_FLAGS);
         int uniformStroke = program.getUniformLocation(UNIFORM_STROKE);
 
         return new GlyphShader(
@@ -87,7 +88,7 @@ public final class GlyphShader implements AutoCloseable {
                 uniformGlyphToWorld, uniformWorldToScreen,
                 uniformRadius,
                 uniformFormProgress, uniformColor,
-                uniformEdges, uniformStroke
+                uniformFlags, uniformStroke
         );
     }
 
@@ -123,14 +124,18 @@ public final class GlyphShader implements AutoCloseable {
         colorData.clear();
         RenderSystem.glUniform3(this.uniformColor, colorData);
 
-        int edges = renderData.edges;
+        int flags = renderData.shape;
         GlyphStroke stroke = renderData.stroke;
 
         if (stroke != null) {
-            edges |= STROKE_ACTIVE_BIT;
+            flags |= STROKE_ACTIVE_BIT;
         }
 
-        RenderSystem.glUniform1i(this.uniformEdges, edges);
+        if (renderData.highlightNodes) {
+            flags |= HIGHLIGHT_NODES_BIT;
+        }
+
+        RenderSystem.glUniform1i(this.uniformFlags, flags);
 
         FloatBuffer strokeData = this.strokeData;
         if (stroke != null) {

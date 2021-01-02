@@ -2,7 +2,7 @@ package dev.gegy.magic.glyph;
 
 import com.google.common.collect.ImmutableList;
 import dev.gegy.magic.network.s2c.CreateGlyphS2CPacket;
-import dev.gegy.magic.network.s2c.MatchGlyphSpellS2CPacket;
+import dev.gegy.magic.network.s2c.FinishGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.RemoveGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.UpdateGlyphS2CPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -82,8 +82,8 @@ public final class ServerGlyphTracker {
         if (glyph != null) {
             glyph.setShape(shape);
             if (glyph.tryMatchSpell()) {
-                PacketByteBuf packet = MatchGlyphSpellS2CPacket.create(glyph);
-                MatchGlyphSpellS2CPacket.sendTo(source, packet);
+                PacketByteBuf packet = FinishGlyphS2CPacket.create(glyph);
+                FinishGlyphS2CPacket.sendTo(source, packet);
             }
 
             this.sendGlyphUpdateToTracking(glyph);
