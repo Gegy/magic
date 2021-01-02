@@ -12,23 +12,15 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
-public final class UpdateGlyphS2CPacket {
-    private static final Identifier CHANNEL = Magic.identifier("update_glyph");
+public final class MatchGlyphSpellS2CPacket {
+    private static final Identifier CHANNEL = Magic.identifier("match_glyph_spell");
 
     static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
-            int networkId = buf.readVarInt();
-            int shape = buf.readShort();
-            // TODO: registry for spells
-            Spell matchedSpell = buf.readBoolean() ? Spell.TEST : null;
-
             client.submit(() -> {
-                ClientGlyph glyph = ClientGlyphTracker.INSTANCE.getGlyphById(networkId);
+                ClientGlyph glyph = ClientGlyphTracker.INSTANCE.getDrawingGlyph();
                 if (glyph != null) {
-                    glyph.shape = shape;
-                    if (matchedSpell != null) {
-                        glyph.applySpell(matchedSpell);
-                    }
+                    glyph.applySpell(Spell.TEST);
                 }
             });
         });
@@ -36,9 +28,6 @@ public final class UpdateGlyphS2CPacket {
 
     public static PacketByteBuf create(ServerGlyph glyph) {
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(glyph.getNetworkId());
-        buf.writeShort(glyph.getShape());
-        buf.writeBoolean(glyph.getMatchedSpell() != null);
         return buf;
     }
 

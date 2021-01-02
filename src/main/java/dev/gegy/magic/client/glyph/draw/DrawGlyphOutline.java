@@ -45,7 +45,7 @@ final class DrawGlyphOutline implements GlyphDrawState {
     }
 
     private GlyphDrawState createGlyph(ClientPlayerEntity player, GlyphOutline outline) {
-        ClientGlyph glyph = new ClientGlyph(player, outline.plane, outline.radius, 1.0F, 0.0F, 0.0F, GlyphShape.EMPTY.asBits());
+        ClientGlyph glyph = new ClientGlyph(player, outline.plane, outline.radius, GlyphShape.EMPTY.asBits());
         BeginGlyphC2SPacket.sendToServer(outline.plane, outline.radius);
 
         return new DrawGlyphEdges.OutsideCircle(glyph);

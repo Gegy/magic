@@ -35,6 +35,8 @@ public abstract class DrawGlyphEdges implements GlyphDrawState {
             return new DrawGlyphOutline();
         }
 
+        this.glyph.tick();
+
         Vec3d look = player.getRotationVec(1.0F);
         if (look.equals(this.lastLook)) {
             return this;
@@ -148,7 +150,9 @@ public abstract class DrawGlyphEdges implements GlyphDrawState {
                 throw new IllegalStateException("missing edge between " + this.fromNode + " to " + toNode);
             }
 
-            if (!this.putEdge(edge) || toNode.isAtCircumference()) {
+            this.putEdge(edge);
+
+            if (toNode.isAtCircumference()) {
                 return new OutsideCircle(this.glyph);
             } else {
                 return new DrawingLine(this.glyph, toNode);

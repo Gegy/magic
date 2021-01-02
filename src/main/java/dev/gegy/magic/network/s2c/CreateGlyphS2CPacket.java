@@ -1,9 +1,11 @@
 package dev.gegy.magic.network.s2c;
 
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import dev.gegy.magic.glyph.GlyphPlane;
 import dev.gegy.magic.glyph.ServerGlyph;
+import dev.gegy.magic.spell.Spell;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -22,13 +24,17 @@ public final class CreateGlyphS2CPacket {
             int sourceId = buf.readVarInt();
             GlyphPlane plane = GlyphPlane.readFrom(buf);
             float radius = buf.readFloat();
-            int shape = buf.readInt();
+            int shape = buf.readShort();
+            Spell matchedSpell = buf.readBoolean() ? Spell.TEST : null;
 
             client.submit(() -> {
                 ClientWorld world = handler.getWorld();
                 Entity sourceEntity = world.getEntityById(sourceId);
                 if (sourceEntity != null) {
-                    ClientGlyphTracker.INSTANCE.addGlyph(networkId, sourceEntity, plane, radius, shape);
+                    ClientGlyph glyph = ClientGlyphTracker.INSTANCE.addGlyph(networkId, sourceEntity, plane, radius, shape);
+                    if (matchedSpell != null) {
+                        glyph.applySpell(matchedSpell);
+                    }
                 }
             });
         });
@@ -41,7 +47,8 @@ public final class CreateGlyphS2CPacket {
         buf.writeVarInt(glyph.getSource().getEntityId());
         glyph.getPlane().writeTo(buf);
         buf.writeFloat(glyph.getRadius());
-        buf.writeInt(glyph.getShape());
+        buf.writeShort(glyph.getShape());
+        buf.writeBoolean(glyph.getMatchedSpell() != null);
 
         return buf;
     }

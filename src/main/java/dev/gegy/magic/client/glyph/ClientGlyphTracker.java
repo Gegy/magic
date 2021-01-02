@@ -41,7 +41,7 @@ public final class ClientGlyphTracker {
     public ClientGlyph addGlyph(int networkId, Entity source, GlyphPlane plane, float radius, int shape) {
         long time = source.world.getTime();
 
-        ClientGlyph glyph = new ClientGlyph(source, plane, radius, 1.0F, 0.0F, 0.0F, time);
+        ClientGlyph glyph = new ClientGlyph(source, plane, radius, time);
         glyph.shape = shape;
 
         this.glyphsById.put(networkId, glyph);

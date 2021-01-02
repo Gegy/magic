@@ -15,9 +15,7 @@ public final class DrawGlyphC2SPacket {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
             int shape = buf.readShort();
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.updateDrawing(player, glyph -> {
-                    glyph.setShape(shape);
-                });
+                ServerGlyphTracker.INSTANCE.updateDrawing(player, shape);
             });
         });
     }

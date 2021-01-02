@@ -2,6 +2,7 @@ package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.glyph.GlyphPlane;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
+import dev.gegy.magic.spell.Spell;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
 
@@ -13,9 +14,9 @@ public final class ClientGlyph {
 
     public float radius;
 
-    public float red;
-    public float green;
-    public float blue;
+    public float red = 1.0F;
+    public float green = 1.0F;
+    public float blue = 1.0F;
 
     public int shape;
 
@@ -23,18 +24,10 @@ public final class ClientGlyph {
 
     public final long createTime;
 
-    public ClientGlyph(
-            Entity source, GlyphPlane plane,
-            float radius,
-            float red, float green, float blue,
-            long createTime
-    ) {
+    public ClientGlyph(Entity source, GlyphPlane plane, float radius, long createTime) {
         this.source = source;
         this.plane = plane;
         this.radius = radius;
-        this.red = red;
-        this.green = green;
-        this.blue = blue;
         this.createTime = createTime;
     }
 
@@ -69,5 +62,11 @@ public final class ClientGlyph {
 
     public void stopStroke() {
         this.stroke = null;
+    }
+
+    public void applySpell(Spell spell) {
+        this.red = spell.red;
+        this.green = spell.green;
+        this.blue = spell.blue;
     }
 }

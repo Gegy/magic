@@ -2,6 +2,7 @@ package dev.gegy.magic.glyph;
 
 import com.google.common.collect.ImmutableList;
 import dev.gegy.magic.network.s2c.CreateGlyphS2CPacket;
+import dev.gegy.magic.network.s2c.MatchGlyphSpellS2CPacket;
 import dev.gegy.magic.network.s2c.RemoveGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.UpdateGlyphS2CPacket;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public final class ServerGlyphTracker {
     public static final ServerGlyphTracker INSTANCE = new ServerGlyphTracker();
@@ -77,10 +77,15 @@ public final class ServerGlyphTracker {
         return glyph;
     }
 
-    public void updateDrawing(ServerPlayerEntity source, Consumer<ServerGlyph> modify) {
+    public void updateDrawing(ServerPlayerEntity source, int shape) {
         ServerGlyph glyph = this.drawingBySource.get(source.getUuid());
         if (glyph != null) {
-            modify.accept(glyph);
+            glyph.setShape(shape);
+            if (glyph.tryMatchSpell()) {
+                PacketByteBuf packet = MatchGlyphSpellS2CPacket.create(glyph);
+                MatchGlyphSpellS2CPacket.sendTo(source, packet);
+            }
+
             this.sendGlyphUpdateToTracking(glyph);
         }
     }
