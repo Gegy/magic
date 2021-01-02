@@ -23,7 +23,7 @@ public final class ClientGlyph {
 
     public final long createTime;
 
-    ClientGlyph(
+    public ClientGlyph(
             Entity source, GlyphPlane plane,
             float radius,
             float red, float green, float blue,

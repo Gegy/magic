@@ -11,9 +11,6 @@ import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
-// TODO: better separation of what logic should be delegated into the Glyph and what should be in the drawing management
-//       need to consider how the server would process drawing state too
-// TODO: a finished glyph should be validated by the server. the client should never have all the information for glyph shapes
 public abstract class DrawGlyphEdges implements GlyphDrawState {
     // 15% of circle radius
     private static final float SELECT_DISTANCE = 0.15F;

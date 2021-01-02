@@ -1,7 +1,6 @@
 package dev.gegy.magic.client.glyph.draw;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.network.c2s.BeginGlyphC2SPacket;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -46,8 +45,7 @@ final class DrawGlyphOutline implements GlyphDrawState {
     }
 
     private GlyphDrawState createGlyph(ClientPlayerEntity player, GlyphOutline outline) {
-        // TODO
-        ClientGlyph glyph = ClientGlyphTracker.INSTANCE.addGlyph(-1, player, outline.plane, outline.radius, GlyphShape.EMPTY.asBits());
+        ClientGlyph glyph = new ClientGlyph(player, outline.plane, outline.radius, 1.0F, 0.0F, 0.0F, GlyphShape.EMPTY.asBits());
         BeginGlyphC2SPacket.sendToServer(outline.plane, outline.radius);
 
         return new DrawGlyphEdges.OutsideCircle(glyph);
