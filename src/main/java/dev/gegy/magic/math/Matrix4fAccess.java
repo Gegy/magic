@@ -1,4 +1,4 @@
-package dev.gegy.magic.client;
+package dev.gegy.magic.math;
 
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;

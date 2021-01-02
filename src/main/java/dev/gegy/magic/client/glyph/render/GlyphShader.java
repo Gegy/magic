@@ -3,7 +3,7 @@ package dev.gegy.magic.client.glyph.render;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.glyph.GlyphStroke;
+import dev.gegy.magic.client.glyph.GlyphStroke;
 import net.minecraft.client.gl.GlProgram;
 import net.minecraft.client.gl.GlProgramManager;
 import net.minecraft.client.gl.GlShader;

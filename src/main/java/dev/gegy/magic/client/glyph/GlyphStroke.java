@@ -1,4 +1,4 @@
-package dev.gegy.magic.glyph;
+package dev.gegy.magic.client.glyph;
 
 import net.minecraft.util.math.MathHelper;
 

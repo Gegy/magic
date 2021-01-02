@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class GlyphShape {
+    public static final GlyphShape EMPTY = new GlyphShape(new GlyphEdge[0]);
+
     public final GlyphEdge[] edges;
     public final int size;
     private final int bits;

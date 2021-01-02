@@ -1,18 +1,20 @@
 package dev.gegy.magic.client.glyph.draw;
 
-import dev.gegy.magic.glyph.Glyph;
-import dev.gegy.magic.glyph.GlyphStroke;
+import dev.gegy.magic.client.glyph.ClientGlyph;
+import dev.gegy.magic.client.glyph.GlyphStroke;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.network.c2s.DrawGlyphC2SPacket;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.Vector4f;
+import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 // TODO: better separation of what logic should be delegated into the Glyph and what should be in the drawing management
 //       need to consider how the server would process drawing state too
-public abstract class DrawingGlyphDrawState implements GlyphDrawState {
+// TODO: a finished glyph should be validated by the server. the client should never have all the information for glyph shapes
+public abstract class DrawGlyphEdges implements GlyphDrawState {
     // 15% of circle radius
     private static final float SELECT_DISTANCE = 0.15F;
     private static final float SELECT_DISTANCE_2 = SELECT_DISTANCE * SELECT_DISTANCE;
@@ -20,18 +22,20 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
     private static final float DRAWING_RADIUS = 1.0F + SELECT_DISTANCE;
     private static final float DRAWING_RADIUS_2 = DRAWING_RADIUS * DRAWING_RADIUS;
 
-    protected final Glyph glyph;
+    protected final ClientGlyph glyph;
+
+    private final Vector3f sample = new Vector3f();
 
     private Vec3d lastLook;
 
-    DrawingGlyphDrawState(Glyph glyph) {
+    DrawGlyphEdges(ClientGlyph glyph) {
         this.glyph = glyph;
     }
 
     @Override
-    public GlyphDrawState tick(ClientPlayerEntity player) {
+    public final GlyphDrawState tick(ClientPlayerEntity player) {
         if (player.isSneaking()) {
-            return new IdleGlyphDrawState();
+            return new DrawGlyphOutline();
         }
 
         Vec3d look = player.getRotationVec(1.0F);
@@ -41,10 +45,11 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
 
         this.lastLook = look;
 
-        Glyph glyph = this.glyph;
+        ClientGlyph glyph = this.glyph;
 
-        Vector4f sample = new Vector4f((float) look.x, (float) look.y, (float) look.z, 1.0F);
-        glyph.plane.transformWorldToGlyph(sample);
+        Vector3f sample = this.sample;
+        sample.set((float) look.x, (float) look.y, (float) look.z);
+        glyph.plane.projectOntoPlane(sample);
 
         return this.tickDraw(
                 Math.abs(sample.getX() / glyph.radius),
@@ -52,14 +57,24 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
         );
     }
 
+    @Override
+    @Nullable
+    public final ClientGlyph getDrawingGlyph() {
+        return this.glyph;
+    }
+
     protected abstract GlyphDrawState tickDraw(float x, float y);
+
+    protected boolean putEdge(GlyphEdge edge) {
+        if (this.glyph.putEdge(edge)) {
+            DrawGlyphC2SPacket.sendToServer(this.glyph.shape);
+            return true;
+        }
+        return false;
+    }
 
     protected boolean isOutsideCircle(float x, float y) {
         return x * x + y * y > DRAWING_RADIUS_2;
-    }
-
-    protected void putEdge(GlyphEdge edge) {
-        this.glyph.putEdge(edge);
     }
 
     @Nullable
@@ -75,8 +90,8 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
         return null;
     }
 
-    static final class OutsideCircle extends DrawingGlyphDrawState {
-        OutsideCircle(Glyph glyph) {
+    static final class OutsideCircle extends DrawGlyphEdges {
+        OutsideCircle(ClientGlyph glyph) {
             super(glyph);
         }
 
@@ -91,13 +106,13 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
         }
     }
 
-    static final class DrawingLine extends DrawingGlyphDrawState {
+    static final class DrawingLine extends DrawGlyphEdges {
         private final GlyphNode fromNode;
         private final GlyphNode[] connectedNodes;
 
         private final GlyphStroke stroke;
 
-        DrawingLine(Glyph glyph, GlyphNode fromNode) {
+        DrawingLine(ClientGlyph glyph, GlyphNode fromNode) {
             super(glyph);
             this.fromNode = fromNode;
             this.connectedNodes = GlyphEdge.getConnectedNodesTo(fromNode);
@@ -107,12 +122,19 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
 
         @Override
         protected GlyphDrawState tickDraw(float x, float y) {
-            this.stroke.update(x, y);
-
             if (this.isOutsideCircle(x, y)) {
                 this.glyph.stopStroke();
                 return new OutsideCircle(this.glyph);
             }
+
+            float radius2 = x * x + y * y;
+            if (radius2 >= 1.0F) {
+                float radius = (float) Math.sqrt(radius2);
+                x /= radius;
+                y /= radius;
+            }
+
+            this.stroke.update(x, y);
 
             GlyphNode toNode = this.selectNodeAt(this.connectedNodes, x, y);
             if (toNode != null) {
@@ -123,15 +145,13 @@ public abstract class DrawingGlyphDrawState implements GlyphDrawState {
             }
         }
 
-        private DrawingGlyphDrawState selectNode(GlyphNode toNode) {
+        private DrawGlyphEdges selectNode(GlyphNode toNode) {
             GlyphEdge edge = GlyphEdge.between(this.fromNode, toNode);
             if (edge == null) {
                 throw new IllegalStateException("missing edge between " + this.fromNode + " to " + toNode);
             }
 
-            this.putEdge(edge);
-
-            if (toNode.isAtCircumference()) {
+            if (!this.putEdge(edge) || toNode.isAtCircumference()) {
                 return new OutsideCircle(this.glyph);
             } else {
                 return new DrawingLine(this.glyph, toNode);

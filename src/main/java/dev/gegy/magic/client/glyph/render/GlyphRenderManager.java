@@ -1,15 +1,15 @@
 package dev.gegy.magic.client.glyph.render;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.client.Matrix4fAccess;
-import dev.gegy.magic.glyph.Glyph;
-import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import dev.gegy.magic.client.glyph.ClientGlyph;
+import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.math.Matrix4fAccess;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.entity.Entity;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -17,14 +17,12 @@ import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Collection;
 
 public final class GlyphRenderManager {
     private static GlyphRenderManager instance;
 
     private GlyphRenderer glyphRenderer;
-
-    private final Set<Glyph> glyphs = new ReferenceOpenHashSet<>();
 
     private final GlyphRenderData renderData = new GlyphRenderData();
 
@@ -47,8 +45,6 @@ public final class GlyphRenderManager {
                 instance.load(resources);
             }
         });
-
-        ClientTickEvents.END_CLIENT_TICK.register(client -> instance.tick());
     }
 
     public static GlyphRenderManager get() {
@@ -59,17 +55,6 @@ public final class GlyphRenderManager {
         return instance;
     }
 
-    public void add(Glyph glyph) {
-        this.glyphs.add(glyph);
-    }
-
-    void tick() {
-        // TODO: should the draw state be totally responsible for ticking glyphs?
-        for (Glyph glyph : this.glyphs) {
-            glyph.tick();
-        }
-    }
-
     public void render(MinecraftClient client, Matrix4f transformation, Matrix4f projection, float tickDelta) {
         ClientWorld world = client.world;
         GlyphRenderer glyphRenderer = this.glyphRenderer;
@@ -77,40 +62,51 @@ public final class GlyphRenderManager {
             return;
         }
 
-        Set<Glyph> glyphs = this.glyphs;
-        if (glyphs.isEmpty()) {
+        ClientGlyphTracker glyphTracker = ClientGlyphTracker.INSTANCE;
+        Collection<ClientGlyph> glyphs = glyphTracker.getGlyphs();
+        ClientGlyph drawingGlyph = glyphTracker.getDrawingGlyph();
+        if (glyphs.isEmpty() && drawingGlyph == null) {
             return;
         }
 
         Camera camera = client.gameRenderer.getCamera();
         Vec3d cameraPos = camera.getPos();
 
-        GlyphRenderData renderData = this.renderData;
-
         try (GlyphRenderer.Batcher batcher = glyphRenderer.start(projection)) {
-            for (Glyph glyph : glyphs) {
-                Vec3d source = glyph.source;
+            for (ClientGlyph glyph : glyphs) {
+                this.renderGlyph(batcher, glyph, world, cameraPos, transformation, tickDelta);
+            }
 
-                Matrix4fAccess.set(renderData.glyphToWorld, transformation);
-
-                float translationX = (float) (source.x - cameraPos.x);
-                float translationY = (float) (source.y - cameraPos.y);
-                float translationZ = (float) (source.z - cameraPos.z);
-                Matrix4fAccess.translate(renderData.glyphToWorld, translationX, translationY, translationZ);
-
-                renderData.glyphToWorld.multiply(glyph.plane.getGlyphToWorld());
-
-                renderData.radius = glyph.radius;
-                renderData.formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
-                renderData.red = glyph.red;
-                renderData.green = glyph.green;
-                renderData.blue = glyph.blue;
-                renderData.edges = glyph.edges;
-                renderData.stroke = glyph.stroke;
-
-                batcher.render(renderData, tickDelta);
+            if (drawingGlyph != null) {
+                this.renderGlyph(batcher, drawingGlyph, world, cameraPos, transformation, tickDelta);
             }
         }
+    }
+
+    private void renderGlyph(GlyphRenderer.Batcher batcher, ClientGlyph glyph, ClientWorld world, Vec3d cameraPos, Matrix4f transformation, float tickDelta) {
+        Entity source = glyph.source;
+        Vec3d sourcePos = source.getCameraPosVec(tickDelta);
+
+        GlyphRenderData renderData = this.renderData;
+
+        Matrix4fAccess.set(renderData.glyphToWorld, transformation);
+
+        float translationX = (float) (sourcePos.x - cameraPos.x);
+        float translationY = (float) (sourcePos.y - cameraPos.y);
+        float translationZ = (float) (sourcePos.z - cameraPos.z);
+        Matrix4fAccess.translate(renderData.glyphToWorld, translationX, translationY, translationZ);
+
+        renderData.glyphToWorld.multiply(glyph.plane.getRenderGlyphToWorldMatrix());
+
+        renderData.radius = glyph.radius;
+        renderData.formProgress = glyph.getFormProgress(world.getTime(), tickDelta);
+        renderData.red = glyph.red;
+        renderData.green = glyph.green;
+        renderData.blue = glyph.blue;
+        renderData.edges = glyph.shape;
+        renderData.stroke = glyph.stroke;
+
+        batcher.render(renderData, tickDelta);
     }
 
     private void load(ResourceManager resources) {

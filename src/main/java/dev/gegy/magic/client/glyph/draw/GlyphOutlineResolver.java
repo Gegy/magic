@@ -1,11 +1,9 @@
 package dev.gegy.magic.client.glyph.draw;
 
-import dev.gegy.magic.client.Matrix3fAccess;
-import dev.gegy.magic.client.Matrix4fAccess;
+import dev.gegy.magic.glyph.GlyphPlane;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Matrix3f;
-import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec2f;
 import org.jetbrains.annotations.Nullable;
 
 class GlyphOutlineResolver {
@@ -20,13 +18,6 @@ class GlyphOutlineResolver {
 
     private static final float MIN_RADIUS = 0.125F;
 
-    private final Matrix3f worldToGlyph = new Matrix3f();
-    private final Matrix3f glyphToWorld = new Matrix3f();
-
-    private final Vector3f forward = new Vector3f();
-    private final Vector3f left = new Vector3f();
-    private final Vector3f up = new Vector3f();
-
     float centerX;
     float centerY;
     float radius;
@@ -37,40 +28,27 @@ class GlyphOutlineResolver {
             return null;
         }
 
-        Matrix3f glyphToWorld = this.computeGlyphToWorldProjection(points);
+        Vector3f forward = this.getForwardVectorFor(points);
+        GlyphPlane plane = GlyphPlane.createTowards(forward);
 
-        Matrix3f worldToGlyph = this.worldToGlyph;
-        worldToGlyph.load(glyphToWorld);
-        worldToGlyph.invert();
-
-        Vector3f[] projectedPoints = projectPoints(points, worldToGlyph);
+        Vec2f[] projectedPoints = projectPoints(points, plane);
         if (this.tryResolveFromProjected(projectedPoints)) {
-            GlyphPlane plane = this.createGlyphPlane(this.centerX, this.centerY, glyphToWorld);
+            plane = plane.centered(this.centerX, this.centerY);
             return new GlyphOutline(plane, this.radius);
         } else {
             return null;
         }
     }
 
-    private GlyphPlane createGlyphPlane(float centerX, float centerY, Matrix3f glyphToWorld) {
-        Matrix4f shiftedGlyphToWorld = Matrix4f.translate(centerX, centerY, 0.0F);
-        shiftedGlyphToWorld.multiply(Matrix4fAccess.create(glyphToWorld));
-
-        Matrix4f shiftedWorldToGlyph = shiftedGlyphToWorld.copy();
-        shiftedWorldToGlyph.invert();
-
-        return new GlyphPlane(shiftedGlyphToWorld, shiftedWorldToGlyph);
-    }
-
-    private boolean tryResolveFromProjected(Vector3f[] points) {
+    private boolean tryResolveFromProjected(Vec2f[] points) {
         // compute encompassing bounds of these points
         float minX = Float.MAX_VALUE;
         float minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE;
         float maxY = -Float.MAX_VALUE;
-        for (Vector3f point : points) {
-            float x = point.getX();
-            float y = point.getY();
+        for (Vec2f point : points) {
+            float x = point.x;
+            float y = point.y;
             if (x < minX) minX = x;
             if (y < minY) minY = y;
             if (x > maxX) maxX = x;
@@ -93,9 +71,9 @@ class GlyphOutlineResolver {
 
         // compute apparent radii from each point and find mean
         for (int i = 0; i < points.length; i++) {
-            Vector3f point = points[i];
-            float dx = point.getX() - centerX;
-            float dy = point.getY() - centerY;
+            Vec2f point = points[i];
+            float dx = point.x - centerX;
+            float dy = point.y - centerY;
 
             float radius = (float) Math.sqrt(dx * dx + dy * dy);
 
@@ -104,7 +82,7 @@ class GlyphOutlineResolver {
         }
 
         // validate this circle by counting the number of outliers based on radius
-        if (!this.isValidCircle(points, radii, meanRadius)) {
+        if (!this.isValidCircle(radii, meanRadius)) {
             return false;
         }
 
@@ -115,12 +93,12 @@ class GlyphOutlineResolver {
         return true;
     }
 
-    private boolean isValidCircle(Vector3f[] points, float[] radii, float meanRadius) {
+    private boolean isValidCircle(float[] radii, float meanRadius) {
         if (meanRadius < MIN_RADIUS) {
             return false;
         }
 
-        int maxDeviations = MathHelper.ceil(points.length * MAX_DEVIATION_PERCENT);
+        int maxDeviations = MathHelper.ceil(radii.length * MAX_DEVIATION_PERCENT);
         float radiusDeviationThreshold = meanRadius * RADIUS_DEVIATION_THRESHOLD;
 
         int deviations = 0;
@@ -137,44 +115,25 @@ class GlyphOutlineResolver {
         return true;
     }
 
-    private static Vector3f[] projectPoints(Vector3f[] points, Matrix3f projection) {
-        Vector3f[] projectedPoints = new Vector3f[points.length];
+    private static Vec2f[] projectPoints(Vector3f[] points, GlyphPlane plane) {
+        Vec2f[] projectedPoints = new Vec2f[points.length];
+
+        Vector3f projected = new Vector3f();
 
         for (int i = 0; i < projectedPoints.length; i++) {
-            Vector3f projectedPoint = points[i].copy();
-            projectedPoint.transform(projection);
-            projectedPoints[i] = projectedPoint;
+            Vector3f point = points[i];
+
+            projected.set(point.getX(), point.getY(), point.getZ());
+            plane.projectOntoPlane(projected);
+
+            projectedPoints[i] = new Vec2f(projected.getX(), projected.getY());
         }
 
         return projectedPoints;
     }
 
-    private Matrix3f computeGlyphToWorldProjection(Vector3f[] points) {
-        Vector3f forward = this.getForwardVectorFor(points);
-
-        Vector3f left = this.left;
-        left.set(0.0F, 1.0F, 0.0F);
-        left.cross(forward);
-        left.normalize();
-
-        Vector3f up = this.up;
-        up.set(forward.getX(), forward.getY(), forward.getZ());
-        up.cross(left);
-        up.normalize();
-
-        Matrix3f glyphToWorld = this.glyphToWorld;
-
-        Matrix3fAccess.set(glyphToWorld,
-                left.getX(), up.getX(), forward.getX(),
-                left.getY(), up.getY(), forward.getY(),
-                left.getZ(), up.getZ(), forward.getZ()
-        );
-
-        return glyphToWorld;
-    }
-
     private Vector3f getForwardVectorFor(Vector3f[] points) {
-        Vector3f forward = this.forward;
+        Vector3f forward = new Vector3f();
 
         float x = 0.0F;
         float y = 0.0F;

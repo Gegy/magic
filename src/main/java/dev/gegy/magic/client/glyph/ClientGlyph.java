@@ -1,14 +1,14 @@
-package dev.gegy.magic.glyph;
+package dev.gegy.magic.client.glyph;
 
-import dev.gegy.magic.client.glyph.draw.GlyphPlane;
+import dev.gegy.magic.glyph.GlyphPlane;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 
-public final class Glyph {
+public final class ClientGlyph {
     public static final float FORM_TICKS = 2;
 
-    public final Vec3d source;
+    public final Entity source;
     public final GlyphPlane plane;
 
     public float radius;
@@ -17,14 +17,14 @@ public final class Glyph {
     public float green;
     public float blue;
 
-    public int edges;
+    public int shape;
 
     public GlyphStroke stroke;
 
     public final long createTime;
 
-    public Glyph(
-            Vec3d source, GlyphPlane plane,
+    ClientGlyph(
+            Entity source, GlyphPlane plane,
             float radius,
             float red, float green, float blue,
             long createTime
@@ -38,14 +38,22 @@ public final class Glyph {
         this.createTime = createTime;
     }
 
-    public void tick() {
-        if (this.stroke != null) {
-            this.stroke.tick();
+    public boolean tick() {
+        GlyphStroke stroke = this.stroke;
+        if (stroke != null) {
+            stroke.tick();
         }
+        return this.source.removed;
     }
 
-    public void putEdge(GlyphEdge edge) {
-        this.edges |= edge.asBit();
+    public boolean putEdge(GlyphEdge edge) {
+        int bit = edge.asBit();
+        if ((this.shape & bit) == 0) {
+            this.shape |= bit;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public float getFormProgress(long time, float tickDelta) {

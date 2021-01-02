@@ -1,34 +1,30 @@
 package dev.gegy.magic.client.glyph.draw;
 
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
+import dev.gegy.magic.client.glyph.ClientGlyph;
 import net.minecraft.client.network.ClientPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 public final class GlyphDrawTracker {
     private GlyphDrawState state;
 
-    private GlyphDrawTracker() {
-    }
-
-    public static void onInitialize() {
-        GlyphDrawTracker drawTracker = new GlyphDrawTracker();
-        ClientTickEvents.END_CLIENT_TICK.register(drawTracker::onClientTick);
-    }
-
-    private void onClientTick(MinecraftClient client) {
-        if (client.player != null) {
-            this.onDrawingTick(client.player);
-        } else {
-            this.state = null;
-        }
-    }
-
-    private void onDrawingTick(ClientPlayerEntity player) {
+    public void tick(ClientPlayerEntity player) {
         GlyphDrawState state = this.state;
         if (state == null) {
-            this.state = state = new IdleGlyphDrawState();
+            this.state = state = new DrawGlyphOutline();
         }
-
         this.state = state.tick(player);
+    }
+
+    public void clear() {
+        this.state = null;
+    }
+
+    @Nullable
+    public ClientGlyph getDrawingGlyph() {
+        GlyphDrawState state = this.state;
+        if (state != null) {
+            return state.getDrawingGlyph();
+        }
+        return null;
     }
 }

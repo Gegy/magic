@@ -1,7 +1,9 @@
 package dev.gegy.magic.client.glyph.draw;
 
-import dev.gegy.magic.client.glyph.render.GlyphRenderManager;
-import dev.gegy.magic.glyph.Glyph;
+import dev.gegy.magic.client.glyph.ClientGlyph;
+import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.glyph.shape.GlyphShape;
+import dev.gegy.magic.network.c2s.BeginGlyphC2SPacket;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Vec3d;
@@ -9,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 
-final class IdleGlyphDrawState implements GlyphDrawState {
+final class DrawGlyphOutline implements GlyphDrawState {
     private static final int SAMPLE_INTERVAL = 2;
     private static final int SAMPLE_PERIOD = 80;
     private static final int SAMPLE_BUFFER_SIZE = SAMPLE_PERIOD / SAMPLE_INTERVAL;
@@ -31,25 +33,24 @@ final class IdleGlyphDrawState implements GlyphDrawState {
     @Override
     public GlyphDrawState tick(ClientPlayerEntity player) {
         if (player.age % SAMPLE_INTERVAL == 0) {
-            // TODO: draw glyphs further away
             Vec3d look = player.getRotationVec(1.0F);
             Vector3f sample = new Vector3f((float) look.x, (float) look.y, (float) look.z);
 
             GlyphOutline outline = this.pushSample(sample);
             if (outline != null) {
-                GlyphPlane plane = outline.plane;
-
-                Vec3d eyePos = player.getPos().add(0.0, player.getStandingEyeHeight(), 0.0);
-                long time = player.world.getTime();
-
-                Glyph glyph = new Glyph(eyePos, plane, outline.radius, 1.0F, 0.0F, 0.0F, time);
-                GlyphRenderManager.get().add(glyph);
-
-                return new DrawingGlyphDrawState.OutsideCircle(glyph);
+                return this.createGlyph(player, outline);
             }
         }
 
         return this;
+    }
+
+    private GlyphDrawState createGlyph(ClientPlayerEntity player, GlyphOutline outline) {
+        // TODO
+        ClientGlyph glyph = ClientGlyphTracker.INSTANCE.addGlyph(-1, player, outline.plane, outline.radius, GlyphShape.EMPTY.asBits());
+        BeginGlyphC2SPacket.sendToServer(outline.plane, outline.radius);
+
+        return new DrawGlyphEdges.OutsideCircle(glyph);
     }
 
     @Nullable

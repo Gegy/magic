@@ -1,6 +1,6 @@
 package dev.gegy.magic.client.glyph.render;
 
-import dev.gegy.magic.glyph.GlyphStroke;
+import dev.gegy.magic.client.glyph.GlyphStroke;
 import net.minecraft.util.math.Matrix4f;
 
 public final class GlyphRenderData {

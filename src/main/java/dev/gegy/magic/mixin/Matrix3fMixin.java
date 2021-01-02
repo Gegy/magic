@@ -1,7 +1,7 @@
-package dev.gegy.magic.mixin.client;
+package dev.gegy.magic.mixin;
 
-import dev.gegy.magic.client.Matrix3fAccess;
-import dev.gegy.magic.client.Matrix4fAccess;
+import dev.gegy.magic.math.Matrix3fAccess;
+import dev.gegy.magic.math.Matrix4fAccess;
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;

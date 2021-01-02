@@ -3,8 +3,8 @@
   "minVersion": "0.8",
   "package": "dev.gegy.magic.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": [],
-  "client": ["client.Matrix3fMixin", "client.Matrix4fMixin", "client.WorldRendererMixin"],
+  "mixins": ["Matrix3fMixin", "Matrix4fMixin"],
+  "client": ["client.WorldRendererMixin"],
   "injectors": {
     "defaultRequire": 1
   }
