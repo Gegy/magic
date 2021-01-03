@@ -1,7 +1,10 @@
 #version 130
 
-const float LINE_RADIUS = 0.1;
-const float NODE_RADIUS = 0.05;
+const int TEXTURE_RADIUS = 16;
+const float PIXEL_SIZE = 1.0 / float(TEXTURE_RADIUS);
+
+const float LINE_RADIUS = PIXEL_SIZE * 1.5;
+const float NODE_RADIUS = PIXEL_SIZE / 2.0;
 
 uniform float form_progress;
 uniform vec3 color;
@@ -34,97 +37,129 @@ struct Edge {
 };
 
 const Edge EDGES[EDGE_COUNT] = Edge[](
-Edge(CENTER, CENTER_UPPER, 1 << 0),
-Edge(CENTER, CENTER_LOWER, 1 << 1),
-Edge(CENTER, SIDE_UPPER, 1 << 2),
-Edge(CENTER, SIDE_LOWER, 1 << 3),
+    Edge(CENTER, CENTER_UPPER, 1 << 0),
+    Edge(CENTER, CENTER_LOWER, 1 << 1),
+    Edge(CENTER, SIDE_UPPER, 1 << 2),
+    Edge(CENTER, SIDE_LOWER, 1 << 3),
 
-Edge(CENTER_UPPER, SIDE_UPPER, 1 << 4),
-Edge(CENTER_UPPER, SIDE_LOWER, 1 << 5),
-Edge(CENTER_LOWER, SIDE_UPPER, 1 << 6),
-Edge(CENTER_LOWER, SIDE_LOWER, 1 << 7),
+    Edge(CENTER_UPPER, SIDE_UPPER, 1 << 4),
+    Edge(CENTER_UPPER, SIDE_LOWER, 1 << 5),
+    Edge(CENTER_LOWER, SIDE_UPPER, 1 << 6),
+    Edge(CENTER_LOWER, SIDE_LOWER, 1 << 7),
 
-Edge(TOP, CENTER_UPPER, 1 << 8),
-Edge(TOP, SIDE_UPPER, 1 << 9),
-Edge(TOP, SIDE_LOWER, 1 << 10),
+    Edge(TOP, CENTER_UPPER, 1 << 8),
+    Edge(TOP, SIDE_UPPER, 1 << 9),
+    Edge(TOP, SIDE_LOWER, 1 << 10),
 
-Edge(BOTTOM, CENTER_LOWER, 1 << 11),
-Edge(BOTTOM, SIDE_UPPER, 1 << 12),
-Edge(BOTTOM, SIDE_LOWER, 1 << 13),
+    Edge(BOTTOM, CENTER_LOWER, 1 << 11),
+    Edge(BOTTOM, SIDE_UPPER, 1 << 12),
+    Edge(BOTTOM, SIDE_LOWER, 1 << 13),
 
-Edge(SIDE_LOWER, SIDE_UPPER, 1 << 14)
+    Edge(SIDE_LOWER, SIDE_UPPER, 1 << 14)
 );
 
 const int STROKE_BIT = 1 << 15;
 const int HIGHLIGHT_NODES_BIT = 1 << 16;
 
-// from: https://www.iquilezles.org/www/articles/distfunctions2d/distfunctions2d.htm
-float get_distance_to_edge(vec2 p, vec2 a, vec2 b) {
-    vec2 pa = p - a;
+float line_segment(vec2 p, vec2 a, vec2 b) {
     vec2 ba = b - a;
-    float h = clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
-    return length(pa - ba * h);
+    vec2 pa = p - a;
+    float m = ba.y / ba.x;
+    if (m >= -1.0 && m <= 1.0) {
+        // distance along the line as per x
+        float h = pa.x / ba.x;
+        float ty = a.y + ba.y * clamp(h, 0.0, 1.0);
+        float ey = abs(p.y - ty);
+        if (h < 0.0) ey += abs(a.x - p.x);
+        else if (h > 1.0) ey += abs(p.x - b.x);
+        return ey;
+    } else {
+        // distance along the line as per y
+        float h = pa.y / ba.y;
+        float tx = a.x + ba.x * clamp(h, 0.0, 1.0);
+        float ex = abs(p.x - tx);
+        if (h < 0.0) ex += abs(a.y - p.y);
+        else if (h > 1.0) ex += abs(p.y - b.y);
+        return ex;
+    }
 }
 
-float get_outline_intensity_at(vec2 pos) {
-    float radius2 = dot(pos, pos);
-    float radius = sqrt(radius2);
-
-    float radius_distance = abs(radius - 1.0);
-    return 1.0 - clamp(radius_distance / LINE_RADIUS, 0.0, 1.0);
+float circle_outline(vec2 p, float r) {
+    float r2 = r * r;
+    float m = p.y / p.x;
+    if (m >= -1.0 && m <= 1.0) {
+        float y2 = p.y * p.y;
+        float x2 = abs(r2 - y2);
+        return abs(sqrt(x2) - abs(p.x));
+    } else {
+        float x2 = p.x * p.x;
+        float y2 = abs(r2 - x2);
+        return abs(sqrt(y2) - abs(p.y));
+    }
 }
 
-float get_edge_intensity_at(vec2 pos) {
-    float distance = 999.0;
+// TODO: optimize
+int get_lines_at(vec2 pos) {
+    float line = circle_outline(pos, 1.0);
 
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
         Edge edge = EDGES[edge_idx];
         if ((flags & edge.bit) != 0) {
-            distance = min(distance, get_distance_to_edge(pos, edge.from, edge.to));
+            line = min(distance, line_segment(pos, edge.from, edge.to));
         }
     }
 
     if ((flags & STROKE_BIT) != 0) {
-        distance = min(distance, get_distance_to_edge(pos, stroke.xy, stroke.zw));
+        line = min(distance, line_segment(pos, stroke.xy, stroke.zw));
     }
 
-    return 1.0 - clamp(distance / LINE_RADIUS, 0.0, 1.0);
+    return int(round(line / PIXEL_SIZE));
 }
 
-// TODO: optimize
-float get_intensity_at(vec2 pos) {
-    float outline_intensity = get_outline_intensity_at(pos);
-    float edge_intensity = get_edge_intensity_at(pos);
-
-    return max(outline_intensity, edge_intensity);
-}
-
-vec4 apply_node_glow(vec2 pos, vec4 color) {
+bool should_highlight_node(vec2 pos) {
     if ((flags & HIGHLIGHT_NODES_BIT) == 0) {
-        return color;
+        return false;
     }
 
-    float distance = 999.0;
     for (int i = 0; i < NODE_COUNT; i++) {
         vec2 node = NODES[i];
-        distance = min(distance, length(node - pos));
+        // TODO: not good
+        if (floor(pos.x / PIXEL_SIZE) == floor(node.x / PIXEL_SIZE) && floor(pos.y / PIXEL_SIZE) == floor(node.y / PIXEL_SIZE)) {
+            return true;
+        }
     }
 
-    float glow = 1.0 - clamp(distance / NODE_RADIUS, 0.0, 1.0);
-    return color + vec4(glow);
+    return false;
+}
+
+// TODO: render to framebuffer first
+vec2 remap_texture(vec2 texture) {
+    return vec2(
+        abs(floor(texture.x / PIXEL_SIZE)) * PIXEL_SIZE,
+        (floor(texture.y / PIXEL_SIZE)) * PIXEL_SIZE
+    );
 }
 
 void main() {
-    vec2 pos = texture;
-    pos.x = abs(pos.x);
+    vec2 pos = remap_texture(texture);
 
-    float intensity = get_intensity_at(pos) * form_progress;
-    vec4 edges = vec4(color, intensity);
+    if (should_highlight_node(pos)) {
+        gl_FragColor = vec4(vec3(1.0), form_progress);
+        return;
+    }
 
-    vec4 edges_with_nodes = apply_node_glow(pos, edges);
-    if (edges_with_nodes.a < 0.01) {
+    vec3 outline_color = color * 0.5;
+
+    int lines = get_lines_at(pos);
+
+    vec3 result = vec3(0.0);
+    if (lines == 0) {
+        result = color;
+    } else if (lines == 1) {
+        result = outline_color;
+    } else {
         discard;
     }
 
-    gl_FragColor = edges_with_nodes;
+    gl_FragColor = vec4(result, form_progress);
 }
