@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-final class GlyphDebugRenderer {
+public final class GlyphDebugRenderer {
     private static final int IMAGE_SIZE = 64;
     private static final int IMAGE_PADDING = 4;
 
@@ -28,9 +28,10 @@ final class GlyphDebugRenderer {
 
     public static void main(String[] args) throws IOException {
         GlyphShapeGenerator generator = new GlyphShapeGenerator(MIN_SIZE, MAX_SIZE);
+        List<GlyphShape> all = generator.generateAll();
 
         Byte2ObjectMap<List<GlyphShape>> bySize = new Byte2ObjectOpenHashMap<>();
-        for (GlyphShape glyph : generator.generateAll()) {
+        for (GlyphShape glyph : all) {
             bySize.computeIfAbsent((byte) glyph.size, s -> new ArrayList<>()).add(glyph);
         }
 
@@ -54,7 +55,7 @@ final class GlyphDebugRenderer {
         }
     }
 
-    private static BufferedImage render(GlyphShape glyph) {
+    public static BufferedImage render(GlyphShape glyph) {
         BufferedImage image = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = image.createGraphics();
 
@@ -68,8 +69,8 @@ final class GlyphDebugRenderer {
             for (Vec2f from : fromPoints) {
                 for (Vec2f to : toPoints) {
                     graphics.drawLine(
-                            transformCoordinate(from.x), transformCoordinate(from.y),
-                            transformCoordinate(to.x), transformCoordinate(to.y)
+                            transformCoordinate(from.x), transformCoordinate(-from.y),
+                            transformCoordinate(to.x), transformCoordinate(-to.y)
                     );
                 }
             }

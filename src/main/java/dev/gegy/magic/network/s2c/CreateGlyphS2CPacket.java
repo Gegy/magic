@@ -25,7 +25,7 @@ public final class CreateGlyphS2CPacket {
             GlyphPlane plane = GlyphPlane.readFrom(buf);
             float radius = buf.readFloat();
             int shape = buf.readShort();
-            Spell matchedSpell = buf.readBoolean() ? Spell.TEST : null;
+            Spell matchedSpell = Spell.REGISTRY.get(buf.readVarInt());
 
             client.submit(() -> {
                 ClientWorld world = handler.getWorld();
@@ -48,7 +48,9 @@ public final class CreateGlyphS2CPacket {
         glyph.getPlane().writeTo(buf);
         buf.writeFloat(glyph.getRadius());
         buf.writeShort(glyph.getShape());
-        buf.writeBoolean(glyph.getMatchedSpell() != null);
+
+        Spell matchedSpell = glyph.getMatchedSpell();
+        buf.writeVarInt(matchedSpell != null ? Spell.REGISTRY.getRawId(matchedSpell) : -1);
 
         return buf;
     }
