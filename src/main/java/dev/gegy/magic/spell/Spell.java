@@ -11,8 +11,8 @@ public final class Spell {
             .attribute(RegistryAttribute.SYNCED)
             .buildAndRegister();
 
-    public static final Spell CYAN = Registry.register(REGISTRY, Magic.identifier("cyan"), new Spell(0.0F, 1.0F, 1.0F));
-    public static final Spell RED = Registry.register(REGISTRY, Magic.identifier("red"), new Spell(1.0F, 0.0F, 0.0F));
+    public static final Spell CYAN = Registry.register(REGISTRY, Magic.identifier("cyan"), new Spell(0.1F, 0.9F, 1.0F));
+    public static final Spell RED = Registry.register(REGISTRY, Magic.identifier("red"), new Spell(1.0F, 0.3F, 0.1F));
 
     public final float red;
     public final float green;

@@ -3,6 +3,7 @@ package dev.gegy.magic.client.glyph.render;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.client.glyph.GlyphColor;
 import dev.gegy.magic.math.Matrix4fAccess;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
@@ -107,9 +108,17 @@ public final class GlyphRenderManager {
 
         renderData.radius = glyph.radius;
         renderData.formProgress = glyph.getFormProgress(player.world.getTime(), tickDelta);
-        renderData.red = glyph.getRed(tickDelta);
-        renderData.green = glyph.getGreen(tickDelta);
-        renderData.blue = glyph.getBlue(tickDelta);
+
+        GlyphColor primaryColor = glyph.getPrimaryColor();
+        renderData.primaryRed = primaryColor.getRed(tickDelta);
+        renderData.primaryGreen = primaryColor.getGreen(tickDelta);
+        renderData.primaryBlue = primaryColor.getBlue(tickDelta);
+
+        GlyphColor secondaryColor = glyph.getSecondaryColor();
+        renderData.secondaryRed = secondaryColor.getRed(tickDelta);
+        renderData.secondaryGreen = secondaryColor.getGreen(tickDelta);
+        renderData.secondaryBlue = secondaryColor.getBlue(tickDelta);
+
         renderData.shape = glyph.shape;
         renderData.highlightNodes = glyph.source == player;
         renderData.stroke = glyph.stroke;

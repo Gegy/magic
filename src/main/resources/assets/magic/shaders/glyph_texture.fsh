@@ -4,7 +4,8 @@ uniform float texel_size;
 uniform float render_size;
 
 uniform float form_progress;
-uniform vec3 color;
+uniform vec3 primary_color;
+uniform vec3 secondary_color;
 uniform int flags;
 
 uniform vec4 stroke;
@@ -143,15 +144,13 @@ void main() {
         return;
     }
 
-    vec3 outline_color = color * 0.5;
-
     int lines = get_lines_at(mirrored_texel);
 
     vec3 result = vec3(0.0);
     if (lines == 0) {
-        result = color;
+        result = secondary_color;
     } else if (lines == 1) {
-        result = outline_color;
+        result = primary_color;
     } else {
         discard;
     }

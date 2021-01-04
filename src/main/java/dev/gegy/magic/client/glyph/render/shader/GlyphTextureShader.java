@@ -14,13 +14,6 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 
 public final class GlyphTextureShader implements AutoCloseable {
-    private static final String UNIFORM_TEXEL_SIZE = "texel_size";
-    private static final String UNIFORM_RENDER_SIZE = "render_size";
-    private static final String UNIFORM_FORM_PROGRESS = "form_progress";
-    private static final String UNIFORM_COLOR = "color";
-    private static final String UNIFORM_FLAGS = "flags";
-    private static final String UNIFORM_STROKE = "stroke";
-
     private static final int STROKE_ACTIVE_BIT = 1 << 15;
     private static final int HIGHLIGHT_NODES_BIT = 1 << 16;
 
@@ -29,24 +22,28 @@ public final class GlyphTextureShader implements AutoCloseable {
     private final int uniformTexelSize;
     private final int uniformRenderSize;
     private final int uniformFormProgress;
-    private final int uniformColor;
+    private final int uniformPrimaryColor;
+    private final int uniformSecondaryColor;
     private final int uniformFlags;
     private final int uniformStroke;
 
-    private final FloatBuffer colorData = MemoryUtil.memAllocFloat(3);
+    private final FloatBuffer primaryColorData = MemoryUtil.memAllocFloat(3);
+    private final FloatBuffer secondaryColorData = MemoryUtil.memAllocFloat(3);
     private final FloatBuffer strokeData = MemoryUtil.memAllocFloat(4);
 
     private GlyphTextureShader(
             GlyphShaderProgram program,
             int uniformTexelSize, int uniformRenderSize,
-            int uniformFormProgress, int uniformColor,
+            int uniformFormProgress,
+            int uniformPrimaryColor, int uniformSecondaryColor,
             int uniformFlags, int uniformStroke
     ) {
         this.program = program;
         this.uniformTexelSize = uniformTexelSize;
         this.uniformRenderSize = uniformRenderSize;
         this.uniformFormProgress = uniformFormProgress;
-        this.uniformColor = uniformColor;
+        this.uniformPrimaryColor = uniformPrimaryColor;
+        this.uniformSecondaryColor = uniformSecondaryColor;
         this.uniformFlags = uniformFlags;
         this.uniformStroke = uniformStroke;
     }
@@ -54,17 +51,19 @@ public final class GlyphTextureShader implements AutoCloseable {
     public static GlyphTextureShader create(ResourceManager resources) throws IOException {
         GlyphShaderProgram program = GlyphShaderProgram.compile(resources, Magic.identifier("glyph_texture"));
 
-        int uniformTexelSize = program.getUniformLocation(UNIFORM_TEXEL_SIZE);
-        int uniformRenderSize = program.getUniformLocation(UNIFORM_RENDER_SIZE);
-        int uniformFormProgress = program.getUniformLocation(UNIFORM_FORM_PROGRESS);
-        int uniformColor = program.getUniformLocation(UNIFORM_COLOR);
-        int uniformFlags = program.getUniformLocation(UNIFORM_FLAGS);
-        int uniformStroke = program.getUniformLocation(UNIFORM_STROKE);
+        int uniformTexelSize = program.getUniformLocation("texel_size");
+        int uniformRenderSize = program.getUniformLocation("render_size");
+        int uniformFormProgress = program.getUniformLocation("form_progress");
+        int uniformPrimaryColor = program.getUniformLocation("primary_color");
+        int uniformSecondaryColor = program.getUniformLocation("secondary_color");
+        int uniformFlags = program.getUniformLocation("flags");
+        int uniformStroke = program.getUniformLocation("stroke");
 
         return new GlyphTextureShader(
                 program,
                 uniformTexelSize, uniformRenderSize,
-                uniformFormProgress, uniformColor,
+                uniformFormProgress,
+                uniformPrimaryColor, uniformSecondaryColor,
                 uniformFlags, uniformStroke
         );
     }
@@ -77,10 +76,15 @@ public final class GlyphTextureShader implements AutoCloseable {
 
         GL20.glUniform1f(this.uniformFormProgress, renderData.formProgress);
 
-        FloatBuffer colorData = this.colorData;
-        colorData.put(renderData.red).put(renderData.green).put(renderData.blue);
-        colorData.clear();
-        RenderSystem.glUniform3(this.uniformColor, colorData);
+        FloatBuffer primaryColorData = this.primaryColorData;
+        primaryColorData.put(renderData.primaryRed).put(renderData.primaryGreen).put(renderData.primaryBlue);
+        primaryColorData.clear();
+        RenderSystem.glUniform3(this.uniformPrimaryColor, primaryColorData);
+
+        FloatBuffer secondaryColorData = this.secondaryColorData;
+        secondaryColorData.put(renderData.secondaryRed).put(renderData.secondaryGreen).put(renderData.secondaryBlue);
+        secondaryColorData.clear();
+        RenderSystem.glUniform3(this.uniformSecondaryColor, secondaryColorData);
 
         int flags = renderData.shape;
         GlyphStroke stroke = renderData.stroke;
@@ -111,7 +115,8 @@ public final class GlyphTextureShader implements AutoCloseable {
     public void close() {
         this.program.close();
 
-        MemoryUtil.memFree(this.colorData);
+        MemoryUtil.memFree(this.primaryColorData);
+        MemoryUtil.memFree(this.secondaryColorData);
         MemoryUtil.memFree(this.strokeData);
     }
 }

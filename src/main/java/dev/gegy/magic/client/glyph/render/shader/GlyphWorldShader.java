@@ -14,12 +14,6 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 
 public final class GlyphWorldShader implements AutoCloseable {
-    private static final String UNIFORM_GLYPH_TO_WORLD = "glyph_to_world";
-    private static final String UNIFORM_WORLD_TO_SCREEN = "world_to_screen";
-    private static final String UNIFORM_RENDER_SCALE = "render_scale";
-    private static final String UNIFORM_RADIUS = "radius";
-    private static final String UNIFORM_SAMPLER = "sampler";
-
     private final GlyphShaderProgram program;
 
     private final int uniformGlyphToWorld;
@@ -49,11 +43,11 @@ public final class GlyphWorldShader implements AutoCloseable {
     public static GlyphWorldShader create(ResourceManager resources) throws IOException {
         GlyphShaderProgram program = GlyphShaderProgram.compile(resources, Magic.identifier("glyph_world"));
 
-        int uniformGlyphToWorld = program.getUniformLocation(UNIFORM_GLYPH_TO_WORLD);
-        int uniformWorldToScreen = program.getUniformLocation(UNIFORM_WORLD_TO_SCREEN);
-        int uniformRenderScale = program.getUniformLocation(UNIFORM_RENDER_SCALE);
-        int uniformRadius = program.getUniformLocation(UNIFORM_RADIUS);
-        int uniformSampler = program.getUniformLocation(UNIFORM_SAMPLER);
+        int uniformGlyphToWorld = program.getUniformLocation("glyph_to_world");
+        int uniformWorldToScreen = program.getUniformLocation("world_to_screen");
+        int uniformRenderScale = program.getUniformLocation("render_scale");
+        int uniformRadius = program.getUniformLocation("radius");
+        int uniformSampler = program.getUniformLocation("sampler");
 
         return new GlyphWorldShader(
                 program,

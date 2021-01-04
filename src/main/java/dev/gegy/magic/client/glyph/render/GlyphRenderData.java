@@ -7,9 +7,8 @@ public final class GlyphRenderData {
     public Matrix4f glyphToWorld = new Matrix4f();
     public float radius;
     public float formProgress;
-    public float red;
-    public float green;
-    public float blue;
+    public float primaryRed, primaryGreen, primaryBlue;
+    public float secondaryRed, secondaryGreen, secondaryBlue;
     public int shape;
 
     public boolean highlightNodes;

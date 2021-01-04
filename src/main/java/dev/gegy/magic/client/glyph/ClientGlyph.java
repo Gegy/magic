@@ -4,24 +4,18 @@ import dev.gegy.magic.glyph.GlyphPlane;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.spell.Spell;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 
 public final class ClientGlyph {
     public static final float FORM_TICKS = 2;
-
-    private static final float DEFAULT_RED = 1.0F;
-    private static final float DEFAULT_GREEN = 1.0F;
-    private static final float DEFAULT_BLUE = 0.7F;
 
     public final Entity source;
     public final GlyphPlane plane;
 
     public float radius;
 
-    private float red = DEFAULT_RED, green = DEFAULT_GREEN, blue = DEFAULT_BLUE;
-    private float targetRed = this.red, targetGreen = this.green, targetBlue = this.blue;
-    private float prevRed = this.red, prevGreen = this.green, prevBlue = this.blue;
+    private final GlyphColor primaryColor = new GlyphColor(GlyphColor.DEFAULT_PRIMARY);
+    private final GlyphColor secondaryColor = new GlyphColor(GlyphColor.DEFAULT_SECONDARY);
 
     public int shape;
 
@@ -37,13 +31,8 @@ public final class ClientGlyph {
     }
 
     public boolean tick() {
-        this.prevRed = this.red;
-        this.prevGreen = this.green;
-        this.prevBlue = this.blue;
-
-        this.red += (this.targetRed - this.red) * 0.15F;
-        this.green += (this.targetGreen - this.green) * 0.15F;
-        this.blue += (this.targetBlue - this.blue) * 0.15F;
+        this.primaryColor.tick(0.15F);
+        this.secondaryColor.tick(0.15F);
 
         GlyphStroke stroke = this.stroke;
         if (stroke != null) {
@@ -79,20 +68,15 @@ public final class ClientGlyph {
     }
 
     public void applySpell(Spell spell) {
-        this.targetRed = spell.red;
-        this.targetGreen = spell.green;
-        this.targetBlue = spell.blue;
+        this.primaryColor.set(spell.red, spell.green, spell.blue);
+        this.secondaryColor.set(GlyphColor.primaryToSecondary(spell.red, spell.green, spell.blue));
     }
 
-    public float getRed(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevRed, this.red);
+    public GlyphColor getPrimaryColor() {
+        return this.primaryColor;
     }
 
-    public float getGreen(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevGreen, this.green);
-    }
-
-    public float getBlue(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevBlue, this.blue);
+    public GlyphColor getSecondaryColor() {
+        return this.secondaryColor;
     }
 }
