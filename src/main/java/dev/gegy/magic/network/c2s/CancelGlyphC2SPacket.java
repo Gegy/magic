@@ -9,26 +9,19 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
-public final class BeginGlyphC2SPacket {
-    private static final Identifier CHANNEL = Magic.identifier("begin_glyph");
+public final class CancelGlyphC2SPacket {
+    private static final Identifier CHANNEL = Magic.identifier("cancel_glyph");
 
     static void registerReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
-            // TODO: any sort of validation
-            GlyphPlane plane = GlyphPlane.readFrom(buf);
-            float radius = buf.readFloat();
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.startDrawing(player, plane, radius);
+                ServerGlyphTracker.INSTANCE.cancelDrawingGlyph(player);
             });
         });
     }
 
-    public static void sendToServer(GlyphPlane plane, float radius) {
+    public static void sendToServer() {
         PacketByteBuf buf = PacketByteBufs.create();
-
-        plane.writeTo(buf);
-        buf.writeFloat(radius);
-
         ClientPlayNetworking.send(CHANNEL, buf);
     }
 }

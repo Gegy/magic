@@ -10,10 +10,12 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +34,8 @@ public final class ServerGlyphTracker {
     private int nextNetworkId;
 
     static {
+        ServerLifecycleEvents.SERVER_STOPPING.register(INSTANCE::onServerStop);
+
         EntityTrackingEvents.START_TRACKING.register(INSTANCE::onPlayerStartTracking);
         EntityTrackingEvents.STOP_TRACKING.register(INSTANCE::onPlayerStopTracking);
     }
@@ -39,7 +43,7 @@ public final class ServerGlyphTracker {
     private ServerGlyphTracker() {
     }
 
-    public ServerGlyph startDrawingGlyph(ServerPlayerEntity source, GlyphPlane plane, float radius) {
+    public ServerGlyph startDrawing(ServerPlayerEntity source, GlyphPlane plane, float radius) {
         ServerGlyph glyph = this.addGlyph(source, plane, radius);
         this.drawingBySource.put(source.getUuid(), glyph);
 
@@ -93,6 +97,13 @@ public final class ServerGlyphTracker {
         }
     }
 
+    public void cancelDrawingGlyph(ServerPlayerEntity source) {
+        ServerGlyph glyph = this.drawingBySource.remove(source.getUuid());
+        if (glyph != null) {
+            this.removeGlyph(glyph.getNetworkId());
+        }
+    }
+
     private void sendGlyphUpdateToTracking(ServerGlyph glyph) {
         PacketByteBuf packet = UpdateGlyphS2CPacket.create(glyph);
         for (ServerPlayerEntity trackingPlayer : PlayerLookup.tracking(glyph.getSource())) {
@@ -112,6 +123,13 @@ public final class ServerGlyphTracker {
         for (ServerPlayerEntity trackingPlayer : PlayerLookup.tracking(glyph.getSource())) {
             RemoveGlyphS2CPacket.sendTo(trackingPlayer, packet);
         }
+    }
+
+    private void onServerStop(MinecraftServer server) {
+        this.glyphsById.clear();
+        this.glyphsBySource.clear();
+        this.drawingBySource.clear();
+        this.nextNetworkId = 0;
     }
 
     private void onPlayerStartTracking(Entity trackedEntity, ServerPlayerEntity player) {

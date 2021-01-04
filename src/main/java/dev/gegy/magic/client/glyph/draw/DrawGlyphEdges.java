@@ -4,6 +4,7 @@ import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.GlyphStroke;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.network.c2s.CancelGlyphC2SPacket;
 import dev.gegy.magic.network.c2s.DrawGlyphC2SPacket;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.Vector3f;
@@ -32,6 +33,7 @@ public abstract class DrawGlyphEdges implements GlyphDrawState {
     @Override
     public final GlyphDrawState tick(ClientPlayerEntity player) {
         if (player.isSneaking()) {
+            CancelGlyphC2SPacket.sendToServer();
             return new DrawGlyphOutline();
         }
 
