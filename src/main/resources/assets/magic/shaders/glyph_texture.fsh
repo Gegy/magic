@@ -1,10 +1,7 @@
 #version 130
 
-const int TEXTURE_RADIUS = 16;
-const float PIXEL_SIZE = 1.0 / float(TEXTURE_RADIUS);
-
-const float LINE_RADIUS = PIXEL_SIZE * 1.5;
-const float NODE_RADIUS = PIXEL_SIZE / 2.0;
+uniform float texel_size;
+uniform float render_size;
 
 uniform float form_progress;
 uniform vec3 color;
@@ -12,7 +9,7 @@ uniform int flags;
 
 uniform vec4 stroke;
 
-varying vec2 texture;
+varying vec2 texel;
 
 // sqrt(0.75)
 const float SIDE_CENTER_X = 0.866025;
@@ -61,6 +58,11 @@ const Edge EDGES[EDGE_COUNT] = Edge[](
 const int STROKE_BIT = 1 << 15;
 const int HIGHLIGHT_NODES_BIT = 1 << 16;
 
+vec2 glyph_to_texel(vec2 glyph) {
+    return glyph * 0.5 * render_size;
+}
+
+// TODO: optimize! a lot of branching here
 float line_segment(vec2 p, vec2 a, vec2 b) {
     vec2 ba = b - a;
     vec2 pa = p - a;
@@ -99,32 +101,32 @@ float circle_outline(vec2 p, float r) {
 }
 
 // TODO: optimize
-int get_lines_at(vec2 pos) {
-    float line = circle_outline(pos, 1.0);
+int get_lines_at(vec2 texel) {
+    float circle_radius = render_size / 2.0;
+    float line = circle_outline(texel, circle_radius);
 
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
         Edge edge = EDGES[edge_idx];
         if ((flags & edge.bit) != 0) {
-            line = min(distance, line_segment(pos, edge.from, edge.to));
+            line = min(line, line_segment(texel, glyph_to_texel(edge.from), glyph_to_texel(edge.to)));
         }
     }
 
     if ((flags & STROKE_BIT) != 0) {
-        line = min(distance, line_segment(pos, stroke.xy, stroke.zw));
+        line = min(line, line_segment(texel, glyph_to_texel(stroke.xy), glyph_to_texel(stroke.zw)));
     }
 
-    return int(round(line / PIXEL_SIZE));
+    return int(round(line));
 }
 
-bool should_highlight_node(vec2 pos) {
+bool should_highlight_node(vec2 texel) {
     if ((flags & HIGHLIGHT_NODES_BIT) == 0) {
         return false;
     }
 
     for (int i = 0; i < NODE_COUNT; i++) {
-        vec2 node = NODES[i];
-        // TODO: not good
-        if (floor(pos.x / PIXEL_SIZE) == floor(node.x / PIXEL_SIZE) && floor(pos.y / PIXEL_SIZE) == floor(node.y / PIXEL_SIZE)) {
+        vec2 node = floor(glyph_to_texel(NODES[i]));
+        if (texel.x == node.x && texel.y == node.y) {
             return true;
         }
     }
@@ -132,25 +134,18 @@ bool should_highlight_node(vec2 pos) {
     return false;
 }
 
-// TODO: render to framebuffer first
-vec2 remap_texture(vec2 texture) {
-    return vec2(
-        abs(floor(texture.x / PIXEL_SIZE)) * PIXEL_SIZE,
-        (floor(texture.y / PIXEL_SIZE)) * PIXEL_SIZE
-    );
-}
-
 void main() {
-    vec2 pos = remap_texture(texture);
+    vec2 mirrored_texel = floor(texel);
+    mirrored_texel.x = abs(mirrored_texel.x);
 
-    if (should_highlight_node(pos)) {
+    if (should_highlight_node(mirrored_texel)) {
         gl_FragColor = vec4(vec3(1.0), form_progress);
         return;
     }
 
     vec3 outline_color = color * 0.5;
 
-    int lines = get_lines_at(pos);
+    int lines = get_lines_at(mirrored_texel);
 
     vec3 result = vec3(0.0);
     if (lines == 0) {

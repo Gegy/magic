@@ -1,19 +1,18 @@
 #version 130
 
-const float QUAD_SCALE = 1.2;
-
 attribute vec2 Position;
 
 uniform float radius;
+uniform float render_scale;
 
 uniform mat4 glyph_to_world;
 uniform mat4 world_to_screen;
 
-varying vec2 texture;
+varying vec2 uv;
 
 void main() {
-    texture = Position * QUAD_SCALE;
+    uv = (Position + 1.0) * 0.5;
 
-    vec4 world_position = glyph_to_world * vec4(Position * radius * QUAD_SCALE, 1.0, 1.0);
+    vec4 world_position = glyph_to_world * vec4(Position * render_scale * radius, 1.0, 1.0);
     gl_Position = world_to_screen * world_position;
 }

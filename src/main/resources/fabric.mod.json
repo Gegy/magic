@@ -14,7 +14,7 @@
   "mixins": ["magic.mixins.json"],
   "depends": {
     "fabricloader": ">=0.9.1",
-    "fabric": "*",
+    "fabric": ">=0.29",
     "minecraft": "1.16.x"
   }
 }
