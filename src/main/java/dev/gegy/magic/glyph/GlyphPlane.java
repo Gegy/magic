@@ -3,75 +3,92 @@ package dev.gegy.magic.glyph;
 import dev.gegy.magic.math.Matrix3fAccess;
 import dev.gegy.magic.math.Matrix4fAccess;
 import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
 
-// TODO: place glyph plane further away from source
 public final class GlyphPlane {
-    private final Vector3f direction;
-    private final Matrix3f glyphToWorld;
-    private final Matrix3f worldToGlyph;
+    public static final float DRAW_DISTANCE = 1.5F;
 
-    private Matrix4f renderGlyphToWorldMatrix;
+    private final Vector3f direction = new Vector3f();
+    private final Vector3f left = new Vector3f();
+    private final Vector3f up = new Vector3f();
 
-    GlyphPlane(Vector3f direction, Matrix3f glyphToWorld, Matrix3f worldToGlyph) {
-        this.direction = direction;
-        this.glyphToWorld = glyphToWorld;
-        this.worldToGlyph = worldToGlyph;
+    private float distance = 1.0F;
+
+    private final Matrix3f glyphToWorld = new Matrix3f();
+    private final Matrix3f worldToGlyph = new Matrix3f();
+
+    private final Matrix4f renderGlyphToWorldMatrix = new Matrix4f();
+
+    private GlyphPlane() {
     }
 
-    public static GlyphPlane createTowards(Vector3f direction) {
-        Vector3f left = Vector3f.POSITIVE_Y.copy();
-        left.cross(direction);
+    public static GlyphPlane create(Vector3f direction, float distance) {
+        GlyphPlane plane = new GlyphPlane();
+        plane.set(direction, distance);
+        return plane;
+    }
+
+    public static GlyphPlane create(float directionX, float directionY, float directionZ, float distance) {
+        GlyphPlane plane = new GlyphPlane();
+        plane.set(directionX, directionY, directionZ, distance);
+        return plane;
+    }
+
+    public void set(Vector3f direction, float distance) {
+        this.set(direction.getX(), direction.getY(), direction.getZ(), distance);
+    }
+
+    public void set(float directionX, float directionY, float directionZ, float distance) {
+        this.direction.set(directionX, directionY, directionZ);
+        this.distance = distance;
+
+        Vector3f left = this.left;
+        Vector3f up = this.up;
+
+        left.set(0.0F, 1.0F, 0.0F);
+        left.cross(this.direction);
         left.normalize();
 
-        Vector3f up = direction.copy();
+        up.set(directionX, directionY, directionZ);
         up.cross(left);
         up.normalize();
 
-        Matrix3f glyphToWorld = Matrix3fAccess.create(
-                left.getX(), up.getX(), direction.getX(),
-                left.getY(), up.getY(), direction.getY(),
-                left.getZ(), up.getZ(), direction.getZ()
+        Matrix3fAccess.set(this.glyphToWorld,
+                left.getX(), up.getX(), directionX,
+                left.getY(), up.getY(), directionY,
+                left.getZ(), up.getZ(), directionZ
         );
 
-        Matrix3f worldToGlyph = glyphToWorld.copy();
-        worldToGlyph.invert();
+        this.worldToGlyph.load(this.glyphToWorld);
+        this.worldToGlyph.invert();
 
-        return new GlyphPlane(direction, glyphToWorld, worldToGlyph);
+        Matrix4fAccess.set(this.renderGlyphToWorldMatrix, this.glyphToWorld);
+        this.renderGlyphToWorldMatrix.multiply(Matrix4f.scale(1.0F, 1.0F, distance));
     }
 
-    public GlyphPlane centered(float x, float y) {
+    public void setCentered(float x, float y) {
         Vector3f direction = new Vector3f(x, y, 1.0F);
         direction.transform(this.glyphToWorld);
-        return createTowards(direction);
+        this.set(direction, this.distance);
     }
 
     public void projectOntoPlane(Vector3f vector) {
         vector.transform(this.worldToGlyph);
 
-        // once we're in plane space, move it onto the plane by scaling such that z=1
-        vector.scale(1.0F / vector.getZ());
+        // once we're in plane space, move it onto the plane by scaling such that z=distance
+        vector.scale(this.distance / vector.getZ());
     }
 
     public Matrix4f getRenderGlyphToWorldMatrix() {
-        Matrix4f renderMatrix = this.renderGlyphToWorldMatrix;
-        if (renderMatrix == null) {
-            this.renderGlyphToWorldMatrix = renderMatrix = Matrix4fAccess.create(this.glyphToWorld);
-        }
-        return renderMatrix;
+        return this.renderGlyphToWorldMatrix;
     }
 
-    public void writeTo(PacketByteBuf buf) {
-        Vector3f direction = this.direction;
-        buf.writeFloat(direction.getX());
-        buf.writeFloat(direction.getY());
-        buf.writeFloat(direction.getZ());
+    public Vector3f getDirection() {
+        return this.direction;
     }
 
-    public static GlyphPlane readFrom(PacketByteBuf buf) {
-        Vector3f direction = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
-        return GlyphPlane.createTowards(direction);
+    public float getDistance() {
+        return this.distance;
     }
 }

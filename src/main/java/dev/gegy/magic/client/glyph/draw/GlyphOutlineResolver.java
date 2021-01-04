@@ -29,11 +29,11 @@ class GlyphOutlineResolver {
         }
 
         Vector3f forward = this.getForwardVectorFor(points);
-        GlyphPlane plane = GlyphPlane.createTowards(forward);
+        GlyphPlane plane = GlyphPlane.create(forward, GlyphPlane.DRAW_DISTANCE);
 
         Vec2f[] projectedPoints = projectPoints(points, plane);
         if (this.tryResolveFromProjected(projectedPoints)) {
-            plane = plane.centered(this.centerX, this.centerY);
+            plane.setCentered(this.centerX, this.centerY);
             return new GlyphOutline(plane, this.radius);
         } else {
             return null;

@@ -9,6 +9,7 @@ import dev.gegy.magic.spell.Spell;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
@@ -22,7 +23,10 @@ public final class CreateGlyphS2CPacket {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
             int networkId = buf.readVarInt();
             int sourceId = buf.readVarInt();
-            GlyphPlane plane = GlyphPlane.readFrom(buf);
+            float directionX = buf.readFloat();
+            float directionY = buf.readFloat();
+            float directionZ = buf.readFloat();
+            GlyphPlane plane = GlyphPlane.create(directionX, directionY, directionZ, GlyphPlane.DRAW_DISTANCE);
             float radius = buf.readFloat();
             int shape = buf.readShort();
             Spell matchedSpell = Spell.REGISTRY.get(buf.readVarInt());
@@ -45,7 +49,12 @@ public final class CreateGlyphS2CPacket {
 
         buf.writeVarInt(glyph.getNetworkId());
         buf.writeVarInt(glyph.getSource().getEntityId());
-        glyph.getPlane().writeTo(buf);
+
+        Vector3f direction = glyph.getPlane().getDirection();
+        buf.writeFloat(direction.getX());
+        buf.writeFloat(direction.getY());
+        buf.writeFloat(direction.getZ());
+
         buf.writeFloat(glyph.getRadius());
         buf.writeShort(glyph.getShape());
 
