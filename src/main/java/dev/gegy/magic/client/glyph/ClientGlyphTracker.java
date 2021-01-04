@@ -1,7 +1,8 @@
 package dev.gegy.magic.client.glyph;
 
-import dev.gegy.magic.client.glyph.draw.GlyphDrawTracker;
-import dev.gegy.magic.glyph.GlyphPlane;
+import dev.gegy.magic.client.glyph.plane.PreparedGlyphTransform;
+import dev.gegy.magic.client.glyph.spellcasting.SpellcastingController;
+import dev.gegy.magic.client.glyph.plane.GlyphPlane;
 import dev.gegy.magic.spell.Spell;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -11,12 +12,12 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.*;
 
 public final class ClientGlyphTracker {
     public static final ClientGlyphTracker INSTANCE = new ClientGlyphTracker();
 
-    private final GlyphDrawTracker drawTracker = new GlyphDrawTracker();
+    private final SpellcastingController spellcasting = new SpellcastingController();
 
     static {
         ClientTickEvents.END_CLIENT_TICK.register(INSTANCE::tick);
@@ -31,11 +32,12 @@ public final class ClientGlyphTracker {
         ClientPlayerEntity player = client.player;
         if (player == null) {
             this.glyphsById.clear();
-            this.drawTracker.clear();
+            this.spellcasting.clear();
             return;
         }
 
-        this.drawTracker.tick(player);
+        this.spellcasting.tick(player);
+
         this.glyphsById.values().removeIf(ClientGlyph::tick);
     }
 
@@ -62,20 +64,50 @@ public final class ClientGlyphTracker {
 
     @Nullable
     public ClientGlyph getDrawingGlyph() {
-        return this.drawTracker.getDrawingGlyph();
+        return this.spellcasting.getDrawingGlyph();
     }
 
     public Collection<ClientGlyph> getGlyphs() {
         return this.glyphsById.values();
     }
 
-    public void finishDrawingGlyph(int networkId, Spell spell) {
-        ClientGlyph glyph = this.drawTracker.getDrawingGlyph();
-        this.drawTracker.clear();
-
+    public void updateGlyph(int networkId, int shape, @Nullable Spell matchedSpell) {
+        ClientGlyph glyph = this.getGlyphById(networkId);
         if (glyph != null) {
-            glyph.applySpell(spell);
+            glyph.shape = shape;
+            if (matchedSpell != null) {
+                glyph.applySpell(matchedSpell);
+            }
+        }
+    }
+
+    public void finishDrawingGlyph(int networkId, Spell spell) {
+        ClientGlyph glyph = this.spellcasting.finishDrawingGlyph(spell);
+        if (glyph != null) {
             this.glyphsById.put(networkId, glyph);
         }
+    }
+
+    // TODO: maybe worth indexing by source- but the client will never have many glyphs tracked
+    public void prepareSpellFor(Entity source) {
+        List<ClientGlyph> glyphs = this.collectGlyphsForSource(source);
+        glyphs.sort(Comparator.comparingDouble(value -> value.radius));
+
+        float glyphSpacing = 0.1F;
+        for (int i = 0; i < glyphs.size(); i++) {
+            ClientGlyph glyph = glyphs.get(i);
+            float distance = GlyphPlane.DRAW_DISTANCE + glyphSpacing * i;
+            glyph.transform = new PreparedGlyphTransform(source, glyph.transform, distance);
+        }
+    }
+
+    private List<ClientGlyph> collectGlyphsForSource(Entity source) {
+        List<ClientGlyph> glyphs = new ArrayList<>();
+        for (ClientGlyph glyph : this.glyphsById.values()) {
+            if (glyph.source == source) {
+                glyphs.add(glyph);
+            }
+        }
+        return glyphs;
     }
 }

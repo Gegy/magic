@@ -1,6 +1,6 @@
 package dev.gegy.magic.client.glyph;
 
-import dev.gegy.magic.glyph.GlyphPlane;
+import dev.gegy.magic.client.glyph.plane.GlyphTransform;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.spell.Spell;
 import net.minecraft.entity.Entity;
@@ -10,7 +10,7 @@ public final class ClientGlyph {
     public static final float FORM_TICKS = 2;
 
     public final Entity source;
-    public final GlyphPlane plane;
+    public GlyphTransform transform;
 
     public float radius;
 
@@ -23,9 +23,9 @@ public final class ClientGlyph {
 
     public final long createTime;
 
-    public ClientGlyph(Entity source, GlyphPlane plane, float radius, long createTime) {
+    public ClientGlyph(Entity source, GlyphTransform transform, float radius, long createTime) {
         this.source = source;
-        this.plane = plane;
+        this.transform = transform;
         this.radius = radius;
         this.createTime = createTime;
     }

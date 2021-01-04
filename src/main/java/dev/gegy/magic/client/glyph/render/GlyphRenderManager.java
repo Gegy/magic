@@ -104,7 +104,7 @@ public final class GlyphRenderManager {
         float translationZ = (float) (sourcePos.z - cameraPos.z);
         Matrix4fAccess.translate(renderData.glyphToWorld, translationX, translationY, translationZ);
 
-        renderData.glyphToWorld.multiply(glyph.plane.getRenderGlyphToWorldMatrix());
+        renderData.glyphToWorld.multiply(glyph.transform.getTransformationMatrix(tickDelta));
 
         renderData.radius = glyph.radius;
         renderData.formProgress = glyph.getFormProgress(player.world.getTime(), tickDelta);

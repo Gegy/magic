@@ -1,7 +1,6 @@
 package dev.gegy.magic.network.c2s;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.glyph.GlyphPlane;
 import dev.gegy.magic.glyph.ServerGlyphTracker;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -16,22 +15,17 @@ public final class BeginGlyphC2SPacket {
     static void registerReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
             // TODO: any sort of validation
-            float directionX = buf.readFloat();
-            float directionY = buf.readFloat();
-            float directionZ = buf.readFloat();
+            Vector3f direction = new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
             float radius = buf.readFloat();
-
-            GlyphPlane plane = GlyphPlane.create(directionX, directionY, directionZ, GlyphPlane.DRAW_DISTANCE);
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.startDrawing(player, plane, radius);
+                ServerGlyphTracker.INSTANCE.startDrawing(player, direction, radius);
             });
         });
     }
 
-    public static void sendToServer(GlyphPlane plane, float radius) {
+    public static void sendToServer(Vector3f direction, float radius) {
         PacketByteBuf buf = PacketByteBufs.create();
 
-        Vector3f direction = plane.getDirection();
         buf.writeFloat(direction.getX());
         buf.writeFloat(direction.getY());
         buf.writeFloat(direction.getZ());

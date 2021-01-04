@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.SimpleRegistry;
 
+// TODO: terminology- is a spell a combination of glyphs? or does each glyph represent a spell on its own?
 public final class Spell {
     public static final SimpleRegistry<Spell> REGISTRY = FabricRegistryBuilder.createSimple(Spell.class, Magic.identifier("spell"))
             .attribute(RegistryAttribute.SYNCED)

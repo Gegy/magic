@@ -2,23 +2,23 @@ package dev.gegy.magic.glyph;
 
 import dev.gegy.magic.spell.Spell;
 import dev.gegy.magic.spell.SpellGlyphStorage;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.client.util.math.Vector3f;
 import org.jetbrains.annotations.Nullable;
 
 public final class ServerGlyph {
     private final int networkId;
-    private final ServerPlayerEntity source;
-    private final GlyphPlane plane;
+    private final ServerGlyphSource source;
+    private final Vector3f direction;
     private final float radius;
 
     private int shape;
 
     private Spell matchedSpell;
 
-    ServerGlyph(int networkId, ServerPlayerEntity source, GlyphPlane plane, float radius) {
+    ServerGlyph(int networkId, ServerGlyphSource source, Vector3f direction, float radius) {
         this.networkId = networkId;
         this.source = source;
-        this.plane = plane;
+        this.direction = direction;
         this.radius = radius;
     }
 
@@ -26,12 +26,12 @@ public final class ServerGlyph {
         return this.networkId;
     }
 
-    public ServerPlayerEntity getSource() {
+    public ServerGlyphSource getSource() {
         return this.source;
     }
 
-    public GlyphPlane getPlane() {
-        return this.plane;
+    public Vector3f getDirection() {
+        return this.direction;
     }
 
     public float getRadius() {
@@ -42,8 +42,7 @@ public final class ServerGlyph {
         this.shape = shape;
     }
 
-    public Spell tryMatchSpell() {
-        SpellGlyphStorage spellStorage = SpellGlyphStorage.get(this.source.server);
+    public Spell tryMatchSpell(SpellGlyphStorage spellStorage) {
         Spell spell = spellStorage.matchSpell(this.shape);
         this.matchedSpell = spell;
         return spell;

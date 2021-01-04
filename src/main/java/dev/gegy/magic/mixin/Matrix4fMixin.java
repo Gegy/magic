@@ -58,4 +58,20 @@ public class Matrix4fMixin implements Matrix4fAccess {
         this.a23 += this.a20 * x + this.a21 * y + this.a22 * z;
         this.a33 += this.a30 * x + this.a31 * y + this.a32 * z;
     }
+
+    @Override
+    public void scale(float x, float y, float z) {
+        this.a00 *= x;
+        this.a01 *= y;
+        this.a02 *= z;
+        this.a10 *= x;
+        this.a11 *= y;
+        this.a12 *= z;
+        this.a20 *= x;
+        this.a21 *= y;
+        this.a22 *= z;
+        this.a30 *= x;
+        this.a31 *= y;
+        this.a32 *= z;
+    }
 }

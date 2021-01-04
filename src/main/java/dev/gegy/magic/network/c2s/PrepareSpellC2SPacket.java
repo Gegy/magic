@@ -7,13 +7,13 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.util.Identifier;
 
-public final class CancelGlyphC2SPacket {
-    private static final Identifier CHANNEL = Magic.identifier("cancel_glyph");
+public final class PrepareSpellC2SPacket {
+    private static final Identifier CHANNEL = Magic.identifier("prepare_spell");
 
     static void registerReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.cancelDrawingGlyph(player);
+                ServerGlyphTracker.INSTANCE.prepareSpell(player);
             });
         });
     }

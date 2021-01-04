@@ -43,6 +43,10 @@ public interface Matrix4fAccess {
         ((Matrix4fAccess) (Object) matrix).translate(x, y, z);
     }
 
+    static void scale(Matrix4f matrix, float x, float y, float z) {
+        ((Matrix4fAccess) (Object) matrix).scale(x, y, z);
+    }
+
     void set(
             float m00, float m01, float m02, float m03,
             float m10, float m11, float m12, float m13,
@@ -53,4 +57,6 @@ public interface Matrix4fAccess {
     void copyInto(Matrix4f into);
 
     void translate(float x, float y, float z);
+
+    void scale(float x, float y, float z);
 }

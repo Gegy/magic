@@ -1,35 +1,26 @@
 package dev.gegy.magic.glyph;
 
-import com.google.common.collect.ImmutableList;
-import dev.gegy.magic.network.s2c.CreateGlyphS2CPacket;
-import dev.gegy.magic.network.s2c.FinishGlyphS2CPacket;
-import dev.gegy.magic.network.s2c.RemoveGlyphS2CPacket;
-import dev.gegy.magic.network.s2c.UpdateGlyphS2CPacket;
-import dev.gegy.magic.spell.Spell;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
-import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 public final class ServerGlyphTracker {
     public static final ServerGlyphTracker INSTANCE = new ServerGlyphTracker();
 
     private final Int2ObjectMap<ServerGlyph> glyphsById = new Int2ObjectOpenHashMap<>();
-    private final Object2ObjectMap<UUID, List<ServerGlyph>> glyphsBySource = new Object2ObjectOpenHashMap<>();
 
-    private final Object2ObjectMap<UUID, ServerGlyph> drawingBySource = new Object2ObjectOpenHashMap<>();
+    // TODO: remove on player log out
+    private final Object2ObjectMap<UUID, ServerGlyphSource> glyphSources = new Object2ObjectOpenHashMap<>();
 
     private int nextNetworkId;
 
@@ -43,21 +34,29 @@ public final class ServerGlyphTracker {
     private ServerGlyphTracker() {
     }
 
-    public ServerGlyph startDrawing(ServerPlayerEntity source, GlyphPlane plane, float radius) {
-        ServerGlyph glyph = this.addGlyph(source, plane, radius);
-        this.drawingBySource.put(source.getUuid(), glyph);
+    @Nullable
+    public ServerGlyph startDrawing(ServerPlayerEntity player, Vector3f direction, float radius) {
+        ServerGlyphSource source = this.getOrCreateSource(player);
+        if (source.canDraw()) {
+            ServerGlyph glyph = this.addGlyph(source, direction, radius);
+            source.startDrawing(glyph);
+            return glyph;
+        }
 
-        return glyph;
+        return null;
     }
 
-    public ServerGlyph addGlyph(ServerPlayerEntity source, GlyphPlane plane, float radius) {
+    public ServerGlyph addGlyph(ServerPlayerEntity player, Vector3f direction, float radius) {
+        ServerGlyphSource source = this.getOrCreateSource(player);
+        return this.addGlyph(source, direction, radius);
+    }
+
+    private ServerGlyph addGlyph(ServerGlyphSource source, Vector3f direction, float radius) {
         int networkId = this.nextNetworkId++;
+        ServerGlyph glyph = new ServerGlyph(networkId, source, direction, radius);
 
-        ServerGlyph glyph = new ServerGlyph(networkId, source, plane, radius);
         this.glyphsById.put(networkId, glyph);
-        this.glyphsBySource.computeIfAbsent(source.getUuid(), u -> new ArrayList<>()).add(glyph);
-
-        this.sendGlyphCreateToTracking(glyph);
+        source.addGlyph(glyph);
 
         return glyph;
     }
@@ -69,89 +68,67 @@ public final class ServerGlyphTracker {
             return null;
         }
 
-        UUID sourceUuid = glyph.getSource().getUuid();
-        List<ServerGlyph> glyphsBySource = this.glyphsBySource.get(sourceUuid);
-        if (glyphsBySource != null && glyphsBySource.remove(glyph)) {
-            if (glyphsBySource.isEmpty()) {
-                this.glyphsBySource.remove(sourceUuid);
-            }
+        ServerGlyphSource source = glyph.getSource();
+        if (source.removeGlyph(glyph) && source.isEmpty()) {
+            this.glyphSources.remove(source.getId());
         }
-
-        this.sendGlyphRemoveToTracking(glyph);
 
         return glyph;
     }
 
-    public void updateDrawing(ServerPlayerEntity source, int shape) {
-        ServerGlyph glyph = this.drawingBySource.get(source.getUuid());
-        if (glyph != null) {
-            glyph.setShape(shape);
+    public void updateDrawing(ServerPlayerEntity player, int shape) {
+        ServerGlyphSource source = this.getSource(player);
+        if (source != null) {
+            source.updateDrawing(shape);
+        }
+    }
 
-            Spell spell = glyph.tryMatchSpell();
-            if (spell != null) {
-                PacketByteBuf packet = FinishGlyphS2CPacket.create(glyph, spell);
-                FinishGlyphS2CPacket.sendTo(source, packet);
+    public void cancelDrawingGlyph(ServerPlayerEntity player) {
+        ServerGlyphSource source = this.getSource(player);
+        if (source != null) {
+            ServerGlyph glyph = source.stopDrawing();
+            if (glyph != null) {
+                this.removeGlyph(glyph.getNetworkId());
             }
-
-            this.sendGlyphUpdateToTracking(glyph);
         }
     }
 
-    public void cancelDrawingGlyph(ServerPlayerEntity source) {
-        ServerGlyph glyph = this.drawingBySource.remove(source.getUuid());
-        if (glyph != null) {
-            this.removeGlyph(glyph.getNetworkId());
+    public void prepareSpell(ServerPlayerEntity player) {
+        ServerGlyphSource source = this.getSource(player);
+        if (source != null) {
+            source.prepareSpell();
         }
     }
 
-    private void sendGlyphUpdateToTracking(ServerGlyph glyph) {
-        PacketByteBuf packet = UpdateGlyphS2CPacket.create(glyph);
-        for (ServerPlayerEntity trackingPlayer : PlayerLookup.tracking(glyph.getSource())) {
-            UpdateGlyphS2CPacket.sendTo(trackingPlayer, packet);
-        }
+    private ServerGlyphSource getOrCreateSource(ServerPlayerEntity player) {
+        return this.glyphSources.computeIfAbsent(player.getUuid(), u -> new ServerGlyphSource(player));
     }
 
-    private void sendGlyphCreateToTracking(ServerGlyph glyph) {
-        PacketByteBuf packet = CreateGlyphS2CPacket.create(glyph);
-        for (ServerPlayerEntity trackingPlayer : PlayerLookup.tracking(glyph.getSource())) {
-            CreateGlyphS2CPacket.sendTo(trackingPlayer, packet);
+    @Nullable
+    private ServerGlyphSource getSource(Entity entity) {
+        if (entity instanceof ServerPlayerEntity) {
+            return this.glyphSources.get(entity.getUuid());
         }
-    }
-
-    private void sendGlyphRemoveToTracking(ServerGlyph glyph) {
-        PacketByteBuf packet = RemoveGlyphS2CPacket.create(glyph.getNetworkId());
-        for (ServerPlayerEntity trackingPlayer : PlayerLookup.tracking(glyph.getSource())) {
-            RemoveGlyphS2CPacket.sendTo(trackingPlayer, packet);
-        }
+        return null;
     }
 
     private void onServerStop(MinecraftServer server) {
         this.glyphsById.clear();
-        this.glyphsBySource.clear();
-        this.drawingBySource.clear();
+        this.glyphSources.clear();
         this.nextNetworkId = 0;
     }
 
     private void onPlayerStartTracking(Entity trackedEntity, ServerPlayerEntity player) {
-        List<ServerGlyph> glyphs = this.getGlyphsForSource(trackedEntity);
-        for (ServerGlyph glyph : glyphs) {
-            PacketByteBuf packet = CreateGlyphS2CPacket.create(glyph);
-            CreateGlyphS2CPacket.sendTo(player, packet);
+        ServerGlyphSource source = this.getSource(trackedEntity);
+        if (source != null) {
+            source.onStartTracking(player);
         }
     }
 
     private void onPlayerStopTracking(Entity trackedEntity, ServerPlayerEntity player) {
-        List<ServerGlyph> glyphs = this.getGlyphsForSource(trackedEntity);
-        for (ServerGlyph glyph : glyphs) {
-            PacketByteBuf packet = RemoveGlyphS2CPacket.create(glyph.getNetworkId());
-            RemoveGlyphS2CPacket.sendTo(player, packet);
+        ServerGlyphSource source = this.getSource(trackedEntity);
+        if (source != null) {
+            source.onStopTracking(player);
         }
-    }
-
-    private List<ServerGlyph> getGlyphsForSource(Entity source) {
-        if (source instanceof ServerPlayerEntity) {
-            return this.glyphsBySource.getOrDefault(source.getUuid(), ImmutableList.of());
-        }
-        return ImmutableList.of();
     }
 }

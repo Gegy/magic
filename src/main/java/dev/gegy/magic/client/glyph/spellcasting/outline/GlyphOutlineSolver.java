@@ -1,12 +1,12 @@
-package dev.gegy.magic.client.glyph.draw;
+package dev.gegy.magic.client.glyph.spellcasting.outline;
 
-import dev.gegy.magic.glyph.GlyphPlane;
+import dev.gegy.magic.client.glyph.plane.GlyphPlane;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import org.jetbrains.annotations.Nullable;
 
-class GlyphOutlineResolver {
+public class GlyphOutlineSolver {
     // radius can deviate by at most 50% of the mean radius
     private static final float RADIUS_DEVIATION_THRESHOLD = 0.5F;
 
@@ -23,7 +23,7 @@ class GlyphOutlineResolver {
     float radius;
 
     @Nullable
-    GlyphOutline tryResolve(Vector3f[] points) {
+    public GlyphOutline trySolve(Vector3f[] points) {
         if (points.length < 3) {
             return null;
         }
@@ -32,15 +32,15 @@ class GlyphOutlineResolver {
         GlyphPlane plane = GlyphPlane.create(forward, GlyphPlane.DRAW_DISTANCE);
 
         Vec2f[] projectedPoints = projectPoints(points, plane);
-        if (this.tryResolveFromProjected(projectedPoints)) {
-            plane.setCentered(this.centerX, this.centerY);
+        if (this.trySolveFromPoints(projectedPoints)) {
+            plane = plane.centered(this.centerX, this.centerY);
             return new GlyphOutline(plane, this.radius);
         } else {
             return null;
         }
     }
 
-    private boolean tryResolveFromProjected(Vec2f[] points) {
+    private boolean trySolveFromPoints(Vec2f[] points) {
         // compute encompassing bounds of these points
         float minX = Float.MAX_VALUE;
         float minY = Float.MAX_VALUE;

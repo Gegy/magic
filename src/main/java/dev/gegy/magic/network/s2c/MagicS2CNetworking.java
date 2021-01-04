@@ -6,5 +6,6 @@ public final class MagicS2CNetworking {
         RemoveGlyphS2CPacket.registerReceiver();
         UpdateGlyphS2CPacket.registerReceiver();
         FinishGlyphS2CPacket.registerReceiver();
+        PrepareSpellS2CPacket.registerReceiver();
     }
 }
