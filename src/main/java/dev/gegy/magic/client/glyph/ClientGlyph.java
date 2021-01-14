@@ -39,6 +39,8 @@ public final class ClientGlyph {
             stroke.tick();
         }
 
+        this.transform.tick();
+
         return this.source.removed;
     }
 

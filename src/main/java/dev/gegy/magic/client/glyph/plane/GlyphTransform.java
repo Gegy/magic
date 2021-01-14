@@ -4,6 +4,9 @@ import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Matrix4f;
 
 public interface GlyphTransform {
+    default void tick() {
+    }
+
     Vector3f getDirection(float tickDelta);
 
     float getDistance(float tickDelta);

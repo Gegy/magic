@@ -16,6 +16,9 @@ public final class PreparedGlyphTransform implements GlyphTransform {
     private final float initialDistance;
     private final Vector3f initialDirection;
 
+    private final Vector3f prevTargetDirection;
+    private final Vector3f targetDirection;
+
     private final float targetDistance;
 
     private final Vector3f left = new Vector3f();
@@ -29,12 +32,28 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         this.initialDistance = initial.getDistance(1.0F);
         this.initialDirection = initial.getDirection(1.0F);
 
+        this.targetDirection = new Vector3f(source.getRotationVec(1.0F));
+        this.prevTargetDirection = this.targetDirection.copy();
+
         this.targetDistance = targetDistance;
     }
 
     private float getFormProgress(float tickDelta) {
         long time = this.source.world.getTime();
         return Math.min((float) (time - this.startTime) + tickDelta, FORM_TICKS) / FORM_TICKS;
+    }
+
+    @Override
+    public void tick() {
+        Vector3f direction = this.targetDirection;
+        this.prevTargetDirection.set(direction.getX(), direction.getY(), direction.getZ());
+
+        Vec3d targetDirection = this.source.getRotationVec(1.0F);
+        direction.set(
+                direction.getX() + (float) (targetDirection.x - direction.getX()) * 0.5F,
+                direction.getY() + (float) (targetDirection.y - direction.getY()) * 0.5F,
+                direction.getZ() + (float) (targetDirection.z - direction.getZ()) * 0.5F
+        );
     }
 
     @Override
@@ -48,13 +67,22 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         float formProgress = this.getFormProgress(tickDelta);
 
         Vector3f initialDirection = this.initialDirection;
-        Vec3d targetDirection = this.source.getRotationVec(tickDelta);
 
-        return new Vector3f(
-                MathHelper.lerp(formProgress, initialDirection.getX(), (float) targetDirection.x),
-                MathHelper.lerp(formProgress, initialDirection.getY(), (float) targetDirection.y),
-                MathHelper.lerp(formProgress, initialDirection.getZ(), (float) targetDirection.z)
-        );
+        Vector3f prevTargetDirection = this.prevTargetDirection;
+        Vector3f targetDirection = this.targetDirection;
+        float targetDirectionX = MathHelper.lerp(tickDelta, prevTargetDirection.getX(), targetDirection.getX());
+        float targetDirectionY = MathHelper.lerp(tickDelta, prevTargetDirection.getY(), targetDirection.getY());
+        float targetDirectionZ = MathHelper.lerp(tickDelta, prevTargetDirection.getZ(), targetDirection.getZ());
+
+        if (formProgress == 1.0F) {
+            return new Vector3f(targetDirectionX, targetDirectionY, targetDirectionZ);
+        } else {
+            return new Vector3f(
+                    MathHelper.lerp(formProgress, initialDirection.getX(), targetDirectionX),
+                    MathHelper.lerp(formProgress, initialDirection.getY(), targetDirectionY),
+                    MathHelper.lerp(formProgress, initialDirection.getZ(), targetDirectionZ)
+            );
+        }
     }
 
     @Override
