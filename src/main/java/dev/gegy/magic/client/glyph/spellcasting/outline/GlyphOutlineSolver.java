@@ -124,7 +124,7 @@ public class GlyphOutlineSolver {
             Vector3f point = points[i];
 
             projected.set(point.getX(), point.getY(), point.getZ());
-            plane.projectOntoPlane(projected);
+            plane.projectOntoPlane(projected, 1.0F);
 
             projectedPoints[i] = new Vec2f(projected.getX(), projected.getY());
         }

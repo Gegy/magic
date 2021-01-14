@@ -53,11 +53,17 @@ public final class GlyphPlane implements GlyphTransform {
         return GlyphPlane.create(direction, this.distance);
     }
 
-    public void projectOntoPlane(Vector3f vector) {
+    @Override
+    public void projectOntoPlane(Vector3f vector, float tickDelta) {
         vector.transform(this.worldToGlyph);
 
         // once we're in plane space, move it onto the plane by scaling such that z=distance
         vector.scale(this.distance / vector.getZ());
+    }
+
+    @Override
+    public void projectFromPlane(Vector3f vector, float tickDelta) {
+        vector.transform(this.glyphToWorld);
     }
 
     @Override

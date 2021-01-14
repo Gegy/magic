@@ -12,4 +12,8 @@ public interface GlyphTransform {
     float getDistance(float tickDelta);
 
     Matrix4f getTransformationMatrix(float tickDelta);
+
+    void projectOntoPlane(Vector3f vector, float tickDelta);
+
+    void projectFromPlane(Vector3f vector, float tickDelta);
 }

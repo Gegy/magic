@@ -56,7 +56,7 @@ public abstract class DrawingGlyph implements SpellcastingState {
 
         Vector3f sample = this.sample;
         sample.set((float) look.x, (float) look.y, (float) look.z);
-        this.plane.projectOntoPlane(sample);
+        this.plane.projectOntoPlane(sample, 1.0F);
 
         return this.tickDraw(
                 Math.abs(sample.getX() / glyph.radius),

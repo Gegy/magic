@@ -2,6 +2,7 @@ package dev.gegy.magic.client.glyph.plane;
 
 import dev.gegy.magic.math.Matrix4fAccess;
 import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.client.util.math.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
@@ -112,5 +113,29 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         Matrix4fAccess.scale(matrix, 1.0F, 1.0F, distance);
 
         return matrix;
+    }
+
+    @Override
+    public void projectOntoPlane(Vector3f vector, float tickDelta) {
+        Matrix4f matrix = this.getTransformationMatrix(tickDelta);
+        matrix.invert();
+
+        Vector4f transformed = new Vector4f(vector);
+        transformed.transform(matrix);
+
+        vector.set(transformed.getX(), transformed.getY(), transformed.getZ());
+
+        // once we're in plane space, move it onto the plane by scaling such that z=distance
+        vector.scale(this.getDistance(tickDelta) / vector.getZ());
+    }
+
+    @Override
+    public void projectFromPlane(Vector3f vector, float tickDelta) {
+        Matrix4f matrix = this.getTransformationMatrix(tickDelta);
+
+        Vector4f transformed = new Vector4f(vector);
+        transformed.transform(matrix);
+
+        vector.set(transformed.getX(), transformed.getY(), transformed.getZ());
     }
 }
