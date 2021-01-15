@@ -17,9 +17,11 @@ public final class GlyphStroke {
         this.fromY = this.toY = this.prevToY = fromY;
     }
 
-    public void tick() {
+    public void tick(float x, float y) {
         this.prevToX = this.toX;
         this.prevToY = this.toY;
+        this.toX = x;
+        this.toY = y;
     }
 
     public void update(float toX, float toY) {

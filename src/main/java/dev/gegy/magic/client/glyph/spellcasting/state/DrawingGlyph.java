@@ -6,12 +6,12 @@ import dev.gegy.magic.client.glyph.plane.GlyphPlane;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.network.c2s.CancelGlyphC2SPacket;
-import dev.gegy.magic.network.c2s.DrawGlyphC2SPacket;
+import dev.gegy.magic.network.c2s.DrawGlyphShapeC2SPacket;
+import dev.gegy.magic.network.c2s.DrawGlyphStrokeC2SPacket;
 import dev.gegy.magic.spell.Spell;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
@@ -27,10 +27,6 @@ public abstract class DrawingGlyph implements SpellcastingState {
     protected final ClientGlyph glyph;
     protected final GlyphPlane plane;
 
-    private final Vector3f sample = new Vector3f();
-
-    private Vec3d lastLook;
-
     DrawingGlyph(ClientGlyph glyph, GlyphPlane plane) {
         this.glyph = glyph;
         this.plane = plane;
@@ -45,22 +41,11 @@ public abstract class DrawingGlyph implements SpellcastingState {
 
         this.glyph.tick();
 
-        Vec3d look = player.getRotationVec(1.0F);
-        if (look.equals(this.lastLook)) {
-            return this;
-        }
-
-        this.lastLook = look;
-
-        ClientGlyph glyph = this.glyph;
-
-        Vector3f sample = this.sample;
-        sample.set((float) look.x, (float) look.y, (float) look.z);
-        this.plane.projectOntoPlane(sample, 1.0F);
-
+        Vector3f lookingAt = this.glyph.getLookingAt();
+        float radius = this.glyph.radius;
         return this.tickDraw(
-                Math.abs(sample.getX() / glyph.radius),
-                sample.getY() / glyph.radius
+                Math.abs(lookingAt.getX() / radius),
+                lookingAt.getY() / radius
         );
     }
 
@@ -82,10 +67,21 @@ public abstract class DrawingGlyph implements SpellcastingState {
 
     protected boolean putEdge(GlyphEdge edge) {
         if (this.glyph.putEdge(edge)) {
-            DrawGlyphC2SPacket.sendToServer(this.glyph.shape);
+            DrawGlyphShapeC2SPacket.sendToServer(this.glyph.shape);
             return true;
         }
         return false;
+    }
+
+    protected GlyphStroke startStroke(GlyphNode node) {
+        GlyphStroke stroke = this.glyph.startStroke(node);
+        DrawGlyphStrokeC2SPacket.sendStartToServer(node);
+        return stroke;
+    }
+
+    protected void stopStroke() {
+        this.glyph.stopStroke();
+        DrawGlyphStrokeC2SPacket.sendStopToServer();
     }
 
     protected boolean isOutsideCircle(float x, float y) {
@@ -132,13 +128,13 @@ public abstract class DrawingGlyph implements SpellcastingState {
             this.fromNode = fromNode;
             this.connectedNodes = GlyphEdge.getConnectedNodesTo(fromNode);
 
-            this.stroke = glyph.startStroke(fromNode.getPoint());
+            this.stroke = this.startStroke(fromNode);
         }
 
         @Override
         protected SpellcastingState tickDraw(float x, float y) {
             if (this.isOutsideCircle(x, y)) {
-                this.glyph.stopStroke();
+                this.stopStroke();
                 return new OutsideCircle(this.glyph, this.plane);
             }
 
@@ -153,7 +149,7 @@ public abstract class DrawingGlyph implements SpellcastingState {
 
             GlyphNode toNode = this.selectNodeAt(this.connectedNodes, x, y);
             if (toNode != null) {
-                this.glyph.stopStroke();
+                this.stopStroke();
                 return this.selectNode(toNode);
             } else {
                 return this;

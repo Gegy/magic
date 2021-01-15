@@ -1,6 +1,7 @@
 package dev.gegy.magic.glyph.shape;
 
 import net.minecraft.util.math.Vec2f;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,5 +56,13 @@ public enum GlyphNode {
 
     public Vec2f[] getMirroredPoints() {
         return this.mirroredPoints;
+    }
+
+    @Nullable
+    public static GlyphNode byId(short nodeId) {
+        if (nodeId >= 0 && nodeId < GlyphNode.NODES.length) {
+            return GlyphNode.NODES[nodeId];
+        }
+        return null;
     }
 }

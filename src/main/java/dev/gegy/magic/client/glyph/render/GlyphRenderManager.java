@@ -70,7 +70,7 @@ public final class GlyphRenderManager {
 
         ClientGlyphTracker glyphTracker = ClientGlyphTracker.INSTANCE;
         Collection<ClientGlyph> glyphs = glyphTracker.getGlyphs();
-        ClientGlyph drawingGlyph = glyphTracker.getDrawingGlyph();
+        ClientGlyph drawingGlyph = glyphTracker.getOwnDrawingGlyph();
         if (glyphs.isEmpty() && drawingGlyph == null) {
             return;
         }

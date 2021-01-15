@@ -19,7 +19,7 @@ public final class FinishGlyphS2CPacket {
             int networkId = buf.readVarInt();
             Spell spell = Spell.REGISTRY.get(buf.readVarInt());
             if (spell != null) {
-                client.submit(() -> ClientGlyphTracker.INSTANCE.finishDrawingGlyph(networkId, spell));
+                client.submit(() -> ClientGlyphTracker.INSTANCE.finishDrawingOwnGlyph(networkId, spell));
             }
         });
     }

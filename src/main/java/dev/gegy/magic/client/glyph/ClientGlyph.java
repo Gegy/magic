@@ -2,9 +2,13 @@ package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.client.glyph.plane.GlyphTransform;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
+import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
+import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Nullable;
 
 public final class ClientGlyph {
     public static final float FORM_TICKS = 2;
@@ -23,6 +27,9 @@ public final class ClientGlyph {
 
     public final long createTime;
 
+    private final Vector3f lookingAt = new Vector3f();
+    private Vec3d lastLook;
+
     public ClientGlyph(Entity source, GlyphTransform transform, float radius, long createTime) {
         this.source = source;
         this.transform = transform;
@@ -34,14 +41,32 @@ public final class ClientGlyph {
         this.primaryColor.tick(0.15F);
         this.secondaryColor.tick(0.15F);
 
+        Vector3f lookingAt = this.computeLookingAt();
+
         GlyphStroke stroke = this.stroke;
         if (stroke != null) {
-            stroke.tick();
+            float radius = this.radius;
+            stroke.tick(Math.abs(lookingAt.getX() / radius), lookingAt.getY() / radius);
         }
 
         this.transform.tick();
 
         return this.source.removed;
+    }
+
+    private Vector3f computeLookingAt() {
+        Vec3d look = this.source.getRotationVec(1.0F);
+        if (look.equals(this.lastLook)) {
+            return this.lookingAt;
+        }
+
+        this.lastLook = look;
+
+        Vector3f lookingAt = this.lookingAt;
+        lookingAt.set((float) look.x, (float) look.y, (float) look.z);
+        this.transform.projectOntoPlane(lookingAt, 1.0F);
+
+        return lookingAt;
     }
 
     public boolean putEdge(GlyphEdge edge) {
@@ -59,8 +84,9 @@ public final class ClientGlyph {
         return Math.min(age / FORM_TICKS, 1.0F);
     }
 
-    public GlyphStroke startStroke(Vec2f from) {
-        GlyphStroke stroke = new GlyphStroke(from.x, from.y);
+    public GlyphStroke startStroke(GlyphNode node) {
+        Vec2f point = node.getPoint();
+        GlyphStroke stroke = new GlyphStroke(point.x, point.y);
         this.stroke = stroke;
         return stroke;
     }
@@ -72,6 +98,15 @@ public final class ClientGlyph {
     public void applySpell(Spell spell) {
         this.primaryColor.set(spell.red, spell.green, spell.blue);
         this.secondaryColor.set(GlyphColor.primaryToSecondary(spell.red, spell.green, spell.blue));
+        this.stroke = null;
+    }
+
+    public void applyStroke(@Nullable GlyphNode node) {
+        if (node != null) {
+            this.startStroke(node);
+        } else {
+            this.stopStroke();
+        }
     }
 
     public GlyphColor getPrimaryColor() {
@@ -80,5 +115,9 @@ public final class ClientGlyph {
 
     public GlyphColor getSecondaryColor() {
         return this.secondaryColor;
+    }
+
+    public Vector3f getLookingAt() {
+        return this.lookingAt;
     }
 }

@@ -34,6 +34,7 @@ public final class SpellcastingAnimator {
     private static void animateDrawing(LivingEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, ClientGlyph glyph) {
         Vec3d rotation = entity.getRotationVec(1.0F);
 
+        // TODO: we're already calculating this every tick- we can reuse that data
         Vector3f point = POINT;
         point.set((float) rotation.getX(), (float) rotation.getY(), (float) rotation.getZ());
         glyph.transform.projectOntoPlane(point, tickDelta);

@@ -1,5 +1,6 @@
 package dev.gegy.magic.glyph;
 
+import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
 import dev.gegy.magic.spell.SpellGlyphStorage;
 import net.minecraft.client.util.math.Vector3f;
@@ -14,6 +15,8 @@ public final class ServerGlyph {
     private int shape;
 
     private Spell matchedSpell;
+
+    private GlyphNode stroke;
 
     ServerGlyph(int networkId, ServerGlyphSource source, Vector3f direction, float radius) {
         this.networkId = networkId;
@@ -42,9 +45,14 @@ public final class ServerGlyph {
         this.shape = shape;
     }
 
+    public void setStroke(@Nullable GlyphNode stroke) {
+        this.stroke = stroke;
+    }
+
     public Spell tryMatchSpell(SpellGlyphStorage spellStorage) {
         Spell spell = spellStorage.matchSpell(this.shape);
         this.matchedSpell = spell;
+        this.stroke = null;
         return spell;
     }
 
@@ -55,5 +63,10 @@ public final class ServerGlyph {
     @Nullable
     public Spell getMatchedSpell() {
         return this.matchedSpell;
+    }
+
+    @Nullable
+    public GlyphNode getStroke() {
+        return this.stroke;
     }
 }

@@ -1,11 +1,13 @@
 package dev.gegy.magic.glyph;
 
+import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.network.s2c.*;
 import dev.gegy.magic.spell.Spell;
 import dev.gegy.magic.spell.SpellGlyphStorage;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -51,7 +53,7 @@ public final class ServerGlyphSource {
         this.notifyGlyphCreate(glyph);
     }
 
-    void updateDrawing(int shape) {
+    void updateDrawingShape(int shape) {
         if (!this.canDraw()) {
             return;
         }
@@ -68,6 +70,18 @@ public final class ServerGlyphSource {
                 FinishGlyphS2CPacket.sendTo(this.player, packet);
             }
 
+            this.notifyGlyphUpdate(glyph);
+        }
+    }
+
+    void updateDrawingStroke(@Nullable GlyphNode node) {
+        if (!this.canDraw()) {
+            return;
+        }
+
+        ServerGlyph glyph = this.drawing;
+        if (glyph != null) {
+            glyph.setStroke(node);
             this.notifyGlyphUpdate(glyph);
         }
     }

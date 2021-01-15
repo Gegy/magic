@@ -1,5 +1,6 @@
 package dev.gegy.magic.glyph;
 
+import dev.gegy.magic.glyph.shape.GlyphNode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
@@ -76,10 +77,17 @@ public final class ServerGlyphTracker {
         return glyph;
     }
 
-    public void updateDrawing(ServerPlayerEntity player, int shape) {
+    public void updateDrawingShape(ServerPlayerEntity player, int shape) {
         ServerGlyphSource source = this.getSource(player);
         if (source != null) {
-            source.updateDrawing(shape);
+            source.updateDrawingShape(shape);
+        }
+    }
+
+    public void updateDrawingStroke(ServerPlayerEntity player, @Nullable GlyphNode node) {
+        ServerGlyphSource source = this.getSource(player);
+        if (source != null) {
+            source.updateDrawingStroke(node);
         }
     }
 
