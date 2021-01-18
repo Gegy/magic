@@ -4,7 +4,9 @@ import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public final class GlyphOutlineTracker {
     private static final float MIN_SEGMENT_LENGTH = 0.01F;
@@ -56,17 +58,16 @@ public final class GlyphOutlineTracker {
 
             boolean isSegment = start != null && end != null && start != end;
             if (isSegment && this.canJoinLoopAt(sample, start)) {
-                segmentDirection.set(end.getX(), end.getY(), end.getZ());
-                segmentDirection.subtract(start);
-                segmentDirection.normalize();
+                setSegmentDirection(segmentDirection, start, end);
 
                 // lazily compute the stroke direction
                 if (strokeDirection == null) {
-                    strokeDirection = this.getStrokeDirection(lastSample, sample);
+                    strokeDirection = this.strokeDirection;
+                    setSegmentDirection(this.strokeDirection, lastSample, sample);
                 }
 
                 // ensure the stroke is going in somewhat similar direction to the compared segment
-                if (strokeDirection.dot(segmentDirection) > 0.0) {
+                if (strokeDirection.dot(segmentDirection) >= 0.0) {
                     // we have a potential loop close! try solve an outline from here to the most recent sample
                     GlyphOutline outline = this.trySolveOutlineFrom(i);
                     if (outline != null) {
@@ -97,12 +98,27 @@ public final class GlyphOutlineTracker {
         return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < LOOP_CLOSE_DISTANCE_2;
     }
 
-    private Vector3f getStrokeDirection(Vector3f from, Vector3f to) {
-        Vector3f strokeDirection = this.strokeDirection;
-        strokeDirection.set(to.getX(), to.getY(), to.getZ());
-        strokeDirection.subtract(from);
-        strokeDirection.normalize();
-        return strokeDirection;
+    @Nullable
+    private GlyphOutline trySolveOutlineFrom(int fromIdx) {
+        Vector3f[] samples = this.samples;
+        List<Vector3f> points = new ArrayList<>(samples.length - fromIdx);
+
+        Vector3f lastPoint = null;
+        for (int i = fromIdx; i < samples.length; i++) {
+            Vector3f point = samples[i];
+            if (point != lastPoint) {
+                points.add(point);
+                lastPoint = point;
+            }
+        }
+
+        return this.solver.trySolve(points);
+    }
+
+    private static void setSegmentDirection(Vector3f result, Vector3f from, Vector3f to) {
+        result.set(to.getX(), to.getY(), to.getZ());
+        result.subtract(from);
+        result.normalize();
     }
 
     private static boolean isValidSegment(Vector3f from, Vector3f to) {
@@ -110,13 +126,5 @@ public final class GlyphOutlineTracker {
         float dy = to.getY() - from.getY();
         float dz = to.getZ() - from.getZ();
         return dx * dx + dy * dy + dz * dz >= MIN_SEGMENT_LENGTH_2;
-    }
-
-    @Nullable
-    private GlyphOutline trySolveOutlineFrom(int fromIdx) {
-        Vector3f[] points = new Vector3f[this.samples.length - fromIdx];
-        System.arraycopy(this.samples, fromIdx, points, 0, points.length);
-
-        return this.solver.trySolve(points);
     }
 }
