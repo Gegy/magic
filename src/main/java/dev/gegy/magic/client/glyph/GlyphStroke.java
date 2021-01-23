@@ -24,11 +24,6 @@ public final class GlyphStroke {
         this.toY = y;
     }
 
-    public void update(float toX, float toY) {
-        this.toX = toX;
-        this.toY = toY;
-    }
-
     public void writeToBuffer(FloatBuffer buffer, float tickDelta) {
         float toX = MathHelper.lerp(tickDelta, this.prevToX, this.toX);
         float toY = MathHelper.lerp(tickDelta, this.prevToY, this.toY);

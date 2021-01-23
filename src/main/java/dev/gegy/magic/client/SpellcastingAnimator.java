@@ -8,7 +8,6 @@ import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Arm;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 
@@ -32,12 +31,8 @@ public final class SpellcastingAnimator {
     }
 
     private static void animateDrawing(LivingEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, ClientGlyph glyph) {
-        Vec3d rotation = entity.getRotationVec(1.0F);
-
-        // TODO: we're already calculating this every tick- we can reuse that data
         Vector3f point = POINT;
-        point.set((float) rotation.getX(), (float) rotation.getY(), (float) rotation.getZ());
-        glyph.transform.projectOntoPlane(point, tickDelta);
+        glyph.getLookingAt(point, tickDelta);
 
         float leftX = Math.abs(point.getX());
         float rightX = -leftX;

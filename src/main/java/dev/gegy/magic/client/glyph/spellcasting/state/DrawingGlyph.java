@@ -121,14 +121,12 @@ public abstract class DrawingGlyph implements SpellcastingState {
         private final GlyphNode fromNode;
         private final GlyphNode[] connectedNodes;
 
-        private final GlyphStroke stroke;
-
         DrawingLine(ClientGlyph glyph, GlyphPlane plane, GlyphNode fromNode) {
             super(glyph, plane);
             this.fromNode = fromNode;
             this.connectedNodes = GlyphEdge.getConnectedNodesTo(fromNode);
 
-            this.stroke = this.startStroke(fromNode);
+            this.startStroke(fromNode);
         }
 
         @Override
@@ -137,15 +135,6 @@ public abstract class DrawingGlyph implements SpellcastingState {
                 this.stopStroke();
                 return new OutsideCircle(this.glyph, this.plane);
             }
-
-            float radius2 = x * x + y * y;
-            if (radius2 >= 1.0F) {
-                float radius = (float) Math.sqrt(radius2);
-                x /= radius;
-                y /= radius;
-            }
-
-            this.stroke.update(x, y);
 
             GlyphNode toNode = this.selectNodeAt(this.connectedNodes, x, y);
             if (toNode != null) {
