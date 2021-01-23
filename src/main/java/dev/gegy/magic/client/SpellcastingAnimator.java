@@ -52,6 +52,7 @@ public final class SpellcastingAnimator {
 
     private static void animatePrepared(LivingEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, List<ClientGlyph> preparedGlyphs) {
         ModelPart mainArm = entity.getMainArm() == Arm.LEFT ? leftArm : rightArm;
+        ModelPart otherArm = entity.getMainArm() == Arm.LEFT ? rightArm : leftArm;
 
         ClientGlyph glyph = preparedGlyphs.get(0);
 
@@ -68,6 +69,10 @@ public final class SpellcastingAnimator {
         );
 
         pointPartTowards(mainArm, target);
+
+        if (preparedGlyphs.size() > 1) {
+            pointPartTowards(otherArm, target);
+        }
     }
 
     private static void pointPartTowardsOnPlane(LivingEntity entity, ModelPart part, GlyphTransform transform, Vector3f target, float tickDelta) {

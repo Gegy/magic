@@ -132,6 +132,12 @@ public final class ServerGlyphSource {
         }
     }
 
+    void onRemove() {
+        for (ServerGlyph glyph : this.glyphs) {
+            this.notifyGlyphRemove(glyph);
+        }
+    }
+
     void notifyGlyphCreate(ServerGlyph glyph) {
         PacketByteBuf packet = CreateGlyphS2CPacket.create(glyph);
         for (ServerPlayerEntity trackingPlayer : this.getTrackingPlayers()) {

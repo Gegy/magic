@@ -1,5 +1,7 @@
 package dev.gegy.magic.glyph;
 
+import dev.gegy.magic.event.LateTrackingEvent;
+import dev.gegy.magic.event.PlayerLeaveEvent;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -20,7 +22,6 @@ public final class ServerGlyphTracker {
 
     private final Int2ObjectMap<ServerGlyph> glyphsById = new Int2ObjectOpenHashMap<>();
 
-    // TODO: remove on player log out
     private final Object2ObjectMap<UUID, ServerGlyphSource> glyphSources = new Object2ObjectOpenHashMap<>();
 
     private int nextNetworkId;
@@ -28,8 +29,10 @@ public final class ServerGlyphTracker {
     static {
         ServerLifecycleEvents.SERVER_STOPPING.register(INSTANCE::onServerStop);
 
-        EntityTrackingEvents.START_TRACKING.register(INSTANCE::onPlayerStartTracking);
+        LateTrackingEvent.START.register(INSTANCE::onPlayerStartTracking);
         EntityTrackingEvents.STOP_TRACKING.register(INSTANCE::onPlayerStopTracking);
+
+        PlayerLeaveEvent.EVENT.register(INSTANCE::onPlayerLeave);
     }
 
     private ServerGlyphTracker() {
@@ -137,6 +140,13 @@ public final class ServerGlyphTracker {
         ServerGlyphSource source = this.getSource(trackedEntity);
         if (source != null) {
             source.onStopTracking(player);
+        }
+    }
+
+    private void onPlayerLeave(ServerPlayerEntity player) {
+        ServerGlyphSource source = this.glyphSources.remove(player.getUuid());
+        if (source != null) {
+            source.onRemove();
         }
     }
 }
