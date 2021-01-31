@@ -11,9 +11,7 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-	mavenLocal()
 	maven { url = "https://jitpack.io/" }
-	maven { url = "https://maven.gegy.dev/" }
 }
 
 dependencies {

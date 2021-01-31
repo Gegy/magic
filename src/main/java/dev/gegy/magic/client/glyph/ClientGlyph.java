@@ -6,7 +6,6 @@ import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
 import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +28,6 @@ public final class ClientGlyph {
     public final long createTime;
 
     private final Vector3f lookingAt = new Vector3f();
-    private final Vector3f prevLookingAt = new Vector3f();
 
     private Vec3d lastLook;
 
@@ -45,8 +43,6 @@ public final class ClientGlyph {
         this.secondaryColor.tick(0.15F);
 
         Vector3f lookingAt = this.lookingAt;
-        this.prevLookingAt.set(lookingAt.getX(), lookingAt.getY(), lookingAt.getZ());
-
         this.computeLookingAt(lookingAt);
 
         GlyphStroke stroke = this.stroke;
@@ -95,14 +91,6 @@ public final class ClientGlyph {
     public float getFormProgress(long time, float tickDelta) {
         float age = (float) (time - this.createTime) + tickDelta;
         return Math.min(age / FORM_TICKS, 1.0F);
-    }
-
-    public void getLookingAt(Vector3f result, float tickDelta) {
-        result.set(
-                MathHelper.lerp(tickDelta, this.prevLookingAt.getX(), this.lookingAt.getX()),
-                MathHelper.lerp(tickDelta, this.prevLookingAt.getY(), this.lookingAt.getY()),
-                MathHelper.lerp(tickDelta, this.prevLookingAt.getZ(), this.lookingAt.getZ())
-        );
     }
 
     public GlyphStroke startStroke(GlyphNode node) {

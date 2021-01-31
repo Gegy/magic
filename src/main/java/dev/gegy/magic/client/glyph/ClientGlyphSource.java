@@ -1,12 +1,16 @@
 package dev.gegy.magic.client.glyph;
 
+import dev.gegy.magic.client.animator.SpellcastingAnimator;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 public final class ClientGlyphSource {
     private final Entity entity;
+
+    private final SpellcastingAnimator animator = new SpellcastingAnimator();
 
     private ClientGlyph drawingGlyph;
     private List<ClientGlyph> preparedGlyphs;
@@ -15,9 +19,17 @@ public final class ClientGlyphSource {
         this.entity = entity;
     }
 
+    void tick() {
+        if (this.entity instanceof LivingEntity) {
+            this.animator.tick((LivingEntity) this.entity);
+        }
+    }
+
     void setDrawingGlyph(ClientGlyph glyph) {
         this.drawingGlyph = glyph;
-        this.preparedGlyphs = null;
+        if (glyph != null) {
+            this.preparedGlyphs = null;
+        }
     }
 
     void setPreparedGlyphs(List<ClientGlyph> glyphs) {
@@ -48,5 +60,9 @@ public final class ClientGlyphSource {
 
     public boolean isEmpty() {
         return this.drawingGlyph == null && this.preparedGlyphs == null;
+    }
+
+    public SpellcastingAnimator getAnimator() {
+        return this.animator;
     }
 }

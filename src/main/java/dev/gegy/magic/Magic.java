@@ -1,6 +1,5 @@
 package dev.gegy.magic;
 
-import dev.gegy.magic.client.particle.MagicParticles;
 import dev.gegy.magic.network.c2s.MagicC2SNetworking;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
@@ -13,8 +12,6 @@ public final class Magic implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        MagicParticles.onInitialize();
-
         MagicC2SNetworking.registerReceivers();
     }
 

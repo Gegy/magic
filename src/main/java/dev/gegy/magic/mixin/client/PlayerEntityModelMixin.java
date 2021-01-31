@@ -1,6 +1,8 @@
 package dev.gegy.magic.mixin.client;
 
-import dev.gegy.magic.client.SpellcastingAnimator;
+import dev.gegy.magic.client.animator.SpellcastingAnimator;
+import dev.gegy.magic.client.glyph.ClientGlyphSource;
+import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
@@ -32,6 +34,10 @@ public abstract class PlayerEntityModelMixin<T extends LivingEntity> extends Bip
             return;
         }
 
-        SpellcastingAnimator.animate(entity, this.leftArm, this.rightArm, client.getTickDelta());
+        ClientGlyphSource source = ClientGlyphTracker.INSTANCE.getSource(entity);
+        if (source != null) {
+            SpellcastingAnimator animator = source.getAnimator();
+            animator.applyToModel(entity, this.leftArm, this.rightArm, client.getTickDelta());
+        }
     }
 }

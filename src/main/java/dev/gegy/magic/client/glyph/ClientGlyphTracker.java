@@ -45,7 +45,14 @@ public final class ClientGlyphTracker {
 
         this.spellcasting.tick(player);
 
+        ClientGlyphSource ownSource = this.getOrCreateSource(player);
+        ownSource.setDrawingGlyph(this.spellcasting.getDrawingGlyph());
+
         this.glyphsById.values().removeIf(ClientGlyph::tick);
+
+        for (ClientGlyphSource source : this.glyphSources.values()) {
+            source.tick();
+        }
     }
 
     public ClientGlyph addGlyph(int networkId, Entity source, GlyphPlane plane, float radius, int shape) {
@@ -116,7 +123,7 @@ public final class ClientGlyphTracker {
     }
 
     @Nullable
-    private ClientGlyphSource getSource(Entity entity) {
+    public ClientGlyphSource getSource(Entity entity) {
         return this.glyphSources.get(entity.getEntityId());
     }
 
