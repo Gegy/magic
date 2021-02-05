@@ -6,7 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
 
 public final class SpellcastingAnimator {
-    private static final int POSE_TRANSITION_TICKS = 8;
+    private static final int POSE_TRANSITION_TICKS = 5;
 
     private final SpellcastingPose prepared = new SpellcastingPose.Prepared();
     private final SpellcastingPose drawing = new SpellcastingPose.Drawing();

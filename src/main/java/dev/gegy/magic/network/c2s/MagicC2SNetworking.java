@@ -7,5 +7,6 @@ public final class MagicC2SNetworking {
         DrawGlyphStrokeC2SPacket.registerReceiver();
         CancelGlyphC2SPacket.registerReceiver();
         PrepareSpellC2SPacket.registerReceiver();
+        CancelSpellC2SPacket.registerReceiver();
     }
 }

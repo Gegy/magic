@@ -19,7 +19,7 @@ public final class ContinueSpellcasting implements SpellcastingState {
         // TODO: crude detection
         if (player.handSwinging) {
             PrepareSpellC2SPacket.sendToServer();
-            return new PreparingSpell();
+            return new PreparedSpell();
         }
 
         if (player.age % SAMPLE_INTERVAL == 0) {

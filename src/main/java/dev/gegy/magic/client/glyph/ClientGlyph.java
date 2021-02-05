@@ -13,6 +13,8 @@ import org.jetbrains.annotations.Nullable;
 public final class ClientGlyph {
     public static final float FORM_TICKS = 2;
 
+    private int networkId = -1;
+
     public final Entity source;
     public GlyphTransform transform;
 
@@ -36,6 +38,23 @@ public final class ClientGlyph {
         this.transform = transform;
         this.radius = radius;
         this.createTime = createTime;
+    }
+
+    public ClientGlyph(int networkId, Entity source, GlyphTransform transform, float radius, long createTime) {
+        this(source, transform, radius, createTime);
+        this.networkId = networkId;
+    }
+
+    public void setNetworkId(int networkId) {
+        this.networkId = networkId;
+    }
+
+    public int getNetworkId() {
+        return this.networkId;
+    }
+
+    public boolean hasNetworkId() {
+        return this.networkId != -1;
     }
 
     public boolean tick() {

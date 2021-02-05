@@ -3,8 +3,16 @@
   "minVersion": "0.8",
   "package": "dev.gegy.magic.mixin",
   "compatibilityLevel": "JAVA_8",
-  "mixins": ["EntityTrackerEntryMixin", "Matrix3fMixin", "Matrix4fMixin", "PlayerManagerMixin"],
-  "client": ["client.PlayerEntityModelMixin"],
+  "mixins": [
+    "EntityTrackerEntryMixin",
+    "Matrix3fMixin",
+    "Matrix4fMixin",
+    "PlayerManagerMixin"
+  ],
+  "client": [
+    "client.PlayerEntityMixin",
+    "client.PlayerEntityModelMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

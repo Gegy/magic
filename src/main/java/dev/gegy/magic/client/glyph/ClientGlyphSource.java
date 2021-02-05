@@ -1,40 +1,40 @@
 package dev.gegy.magic.client.glyph;
 
-import dev.gegy.magic.client.animator.SpellcastingAnimator;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public final class ClientGlyphSource {
-    private final Entity entity;
-
-    private final SpellcastingAnimator animator = new SpellcastingAnimator();
-
+    private final List<ClientGlyph> glyphs = new ArrayList<>();
     private ClientGlyph drawingGlyph;
-    private List<ClientGlyph> preparedGlyphs;
 
-    public ClientGlyphSource(Entity entity) {
-        this.entity = entity;
-    }
-
-    void tick() {
-        if (this.entity instanceof LivingEntity) {
-            this.animator.tick((LivingEntity) this.entity);
-        }
-    }
+    private boolean prepared;
 
     void setDrawingGlyph(ClientGlyph glyph) {
         this.drawingGlyph = glyph;
         if (glyph != null) {
-            this.preparedGlyphs = null;
+            this.prepared = false;
         }
     }
 
-    void setPreparedGlyphs(List<ClientGlyph> glyphs) {
-        this.drawingGlyph = null;
-        this.preparedGlyphs = glyphs;
+    List<ClientGlyph> prepareGlyphs() {
+        if (!this.prepared && !this.glyphs.isEmpty()) {
+            this.prepared = true;
+            this.glyphs.sort(Comparator.comparingDouble(glyph -> glyph.radius));
+        }
+        return this.glyphs;
+    }
+
+    List<ClientGlyph> clearGlyphs() {
+        List<ClientGlyph> glyphs = new ArrayList<>(this.glyphs);
+        this.glyphs.clear();
+        return glyphs;
+    }
+
+    void addGlyph(ClientGlyph glyph) {
+        this.glyphs.add(glyph);
     }
 
     void removeGlyph(ClientGlyph glyph) {
@@ -42,10 +42,11 @@ public final class ClientGlyphSource {
             this.drawingGlyph = null;
         }
 
-        List<ClientGlyph> preparedGlyphs = this.preparedGlyphs;
-        if (preparedGlyphs != null) {
-            preparedGlyphs.remove(glyph);
-        }
+        this.glyphs.remove(glyph);
+    }
+
+    public List<ClientGlyph> getGlyphs() {
+        return this.glyphs;
     }
 
     @Nullable
@@ -53,16 +54,11 @@ public final class ClientGlyphSource {
         return this.drawingGlyph;
     }
 
-    @Nullable
-    public List<ClientGlyph> getPreparedGlyphs() {
-        return this.preparedGlyphs;
+    public boolean isPrepared() {
+        return this.prepared;
     }
 
     public boolean isEmpty() {
-        return this.drawingGlyph == null && this.preparedGlyphs == null;
-    }
-
-    public SpellcastingAnimator getAnimator() {
-        return this.animator;
+        return this.drawingGlyph == null && this.glyphs.isEmpty();
     }
 }

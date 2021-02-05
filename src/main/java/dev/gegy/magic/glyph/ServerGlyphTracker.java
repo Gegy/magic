@@ -111,6 +111,13 @@ public final class ServerGlyphTracker {
         }
     }
 
+    public void cancelSpell(ServerPlayerEntity player) {
+        ServerGlyphSource source = this.getSource(player);
+        if (source != null) {
+            source.cancelSpell();
+        }
+    }
+
     private ServerGlyphSource getOrCreateSource(ServerPlayerEntity player) {
         return this.glyphSources.computeIfAbsent(player.getUuid(), u -> new ServerGlyphSource(player));
     }

@@ -15,9 +15,7 @@ import net.minecraft.entity.Entity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 
 public final class ClientGlyphTracker {
@@ -39,29 +37,37 @@ public final class ClientGlyphTracker {
         ClientPlayerEntity player = client.player;
         if (player == null) {
             this.glyphsById.clear();
+            this.glyphSources.clear();
             this.spellcasting.clear();
             return;
         }
 
         this.spellcasting.tick(player);
 
-        ClientGlyphSource ownSource = this.getOrCreateSource(player);
-        ownSource.setDrawingGlyph(this.spellcasting.getDrawingGlyph());
-
         this.glyphsById.values().removeIf(ClientGlyph::tick);
 
-        for (ClientGlyphSource source : this.glyphSources.values()) {
-            source.tick();
+        ClientGlyph drawingGlyph = this.spellcasting.getDrawingGlyph();
+        if (drawingGlyph != null) {
+            ClientGlyphSource source = this.getOrCreateSource(player);
+            source.setDrawingGlyph(drawingGlyph);
+        } else {
+            ClientGlyphSource source = this.getSource(player);
+            if (source != null) {
+                source.setDrawingGlyph(null);
+            }
         }
     }
 
-    public ClientGlyph addGlyph(int networkId, Entity source, GlyphPlane plane, float radius, int shape) {
-        long time = source.world.getTime();
+    public ClientGlyph addGlyph(int networkId, Entity entity, GlyphPlane plane, float radius, int shape) {
+        long time = entity.world.getTime();
 
-        ClientGlyph glyph = new ClientGlyph(source, plane, radius, time);
+        ClientGlyphSource source = this.getOrCreateSource(entity);
+
+        ClientGlyph glyph = new ClientGlyph(networkId, entity, plane, radius, time);
         glyph.shape = shape;
 
         this.glyphsById.put(networkId, glyph);
+        source.addGlyph(glyph);
 
         return glyph;
     }
@@ -75,18 +81,21 @@ public final class ClientGlyphTracker {
     public ClientGlyph removeGlyph(int networkId) {
         ClientGlyph glyph = this.glyphsById.remove(networkId);
         if (glyph != null) {
-            ClientGlyphSource source = this.glyphSources.get(glyph.source.getEntityId());
-            if (source != null) {
-                source.removeGlyph(glyph);
-                if (source.isEmpty()) {
-                    this.glyphSources.remove(glyph.source.getEntityId());
-                }
-            }
-
+            this.removeGlyphFromSource(glyph);
             return glyph;
         }
 
         return null;
+    }
+
+    private void removeGlyphFromSource(ClientGlyph glyph) {
+        ClientGlyphSource source = this.getSource(glyph.source);
+        if (source != null) {
+            source.removeGlyph(glyph);
+            if (source.isEmpty()) {
+                this.glyphSources.remove(glyph.source.getEntityId());
+            }
+        }
     }
 
     @Nullable
@@ -101,35 +110,27 @@ public final class ClientGlyphTracker {
     @NotNull
     public List<ClientGlyph> getPreparedGlyphsFor(Entity entity) {
         ClientGlyphSource source = this.getSource(entity);
-        if (source != null) {
-            List<ClientGlyph> preparedGlyphs = source.getPreparedGlyphs();
-            if (preparedGlyphs != null) {
-                return preparedGlyphs;
-            }
+        if (source != null && source.isPrepared()) {
+            return source.getGlyphs();
+        } else {
+            return ImmutableList.of();
         }
-
-        return ImmutableList.of();
     }
 
     @Nullable
     public ClientGlyph getDrawingGlyphFor(Entity entity) {
-        ClientGlyph ownDrawingGlyph = this.spellcasting.getDrawingGlyph();
-        if (ownDrawingGlyph != null && ownDrawingGlyph.source == entity) {
-            return ownDrawingGlyph;
-        }
-
         ClientGlyphSource source = this.getSource(entity);
         return source != null ? source.getDrawingGlyph() : null;
     }
 
     @Nullable
-    public ClientGlyphSource getSource(Entity entity) {
+    private ClientGlyphSource getSource(Entity entity) {
         return this.glyphSources.get(entity.getEntityId());
     }
 
     @NotNull
     private ClientGlyphSource getOrCreateSource(Entity entity) {
-        return this.glyphSources.computeIfAbsent(entity.getEntityId(), i -> new ClientGlyphSource(entity));
+        return this.glyphSources.computeIfAbsent(entity.getEntityId(), i -> new ClientGlyphSource());
     }
 
     public void updateGlyph(int networkId, int shape, @Nullable GlyphNode stroke, @Nullable Spell matchedSpell) {
@@ -150,14 +151,21 @@ public final class ClientGlyphTracker {
     public void finishDrawingOwnGlyph(int networkId, Spell spell) {
         ClientGlyph glyph = this.spellcasting.finishDrawingGlyph(spell);
         if (glyph != null) {
+            glyph.setNetworkId(networkId);
             this.glyphsById.put(networkId, glyph);
+
+            ClientGlyphSource source = this.getOrCreateSource(glyph.source);
+            source.addGlyph(glyph);
         }
     }
 
-    // TODO: maybe worth indexing by source- but the client will never have many glyphs tracked
     public void prepareSpellFor(Entity entity) {
-        List<ClientGlyph> glyphs = this.collectGlyphsForSource(entity);
-        glyphs.sort(Comparator.comparingDouble(value -> value.radius));
+        ClientGlyphSource source = this.getSource(entity);
+        if (source == null) {
+            return;
+        }
+
+        List<ClientGlyph> glyphs = source.prepareGlyphs();
 
         float glyphSpacing = 0.1F;
         for (int i = 0; i < glyphs.size(); i++) {
@@ -165,18 +173,19 @@ public final class ClientGlyphTracker {
             float distance = GlyphPlane.DRAW_DISTANCE + glyphSpacing * i;
             glyph.transform = new PreparedGlyphTransform(entity, glyph.transform, distance);
         }
-
-        ClientGlyphSource source = this.getOrCreateSource(entity);
-        source.setPreparedGlyphs(glyphs);
     }
 
-    private List<ClientGlyph> collectGlyphsForSource(Entity source) {
-        List<ClientGlyph> glyphs = new ArrayList<>();
-        for (ClientGlyph glyph : this.glyphsById.values()) {
-            if (glyph.source == source) {
-                glyphs.add(glyph);
+    public void clearGlyphsFor(Entity entity) {
+        ClientGlyphSource source = this.getSource(entity);
+        if (source == null) {
+            return;
+        }
+
+        List<ClientGlyph> glyphs = source.clearGlyphs();
+        for (ClientGlyph glyph : glyphs) {
+            if (glyph.hasNetworkId()) {
+                this.glyphsById.remove(glyph.getNetworkId(), glyph);
             }
         }
-        return glyphs;
     }
 }
