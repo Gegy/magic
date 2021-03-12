@@ -23,6 +23,7 @@ public final class ClientGlyphSource {
         if (!this.prepared && !this.glyphs.isEmpty()) {
             this.prepared = true;
             this.glyphs.sort(Comparator.comparingDouble(glyph -> glyph.radius));
+            this.drawingGlyph = null;
         }
         return this.glyphs;
     }
@@ -30,6 +31,7 @@ public final class ClientGlyphSource {
     List<ClientGlyph> clearGlyphs() {
         List<ClientGlyph> glyphs = new ArrayList<>(this.glyphs);
         this.glyphs.clear();
+        this.drawingGlyph = null;
         return glyphs;
     }
 

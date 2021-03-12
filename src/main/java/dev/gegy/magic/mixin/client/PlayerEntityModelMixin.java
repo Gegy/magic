@@ -33,8 +33,8 @@ public abstract class PlayerEntityModelMixin<T extends LivingEntity> extends Bip
             return;
         }
 
-        if (cameraEntity instanceof SpellcastingAnimatableEntity) {
-            SpellcastingAnimator animator = ((SpellcastingAnimatableEntity) cameraEntity).getSpellcastingAnimator();
+        if (entity instanceof SpellcastingAnimatableEntity) {
+            SpellcastingAnimator animator = ((SpellcastingAnimatableEntity) entity).getSpellcastingAnimator();
             animator.applyToModel(entity, this.leftArm, this.rightArm, client.getTickDelta());
         }
     }

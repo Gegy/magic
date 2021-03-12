@@ -17,7 +17,7 @@ public class EntityTrackerEntryMixin {
     @Final
     private Entity entity;
 
-    @Inject(method = "startTracking", at = @At("HEAD"))
+    @Inject(method = "startTracking", at = @At("TAIL"))
     private void onStartTracking(ServerPlayerEntity player, CallbackInfo ci) {
         LateTrackingEvent.START.invoker().onStartTracking(this.entity, player);
     }
