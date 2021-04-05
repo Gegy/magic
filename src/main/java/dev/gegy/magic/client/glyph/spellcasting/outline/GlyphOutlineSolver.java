@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.glyph.spellcasting.outline;
 
 import dev.gegy.magic.client.glyph.plane.GlyphPlane;
-import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import org.jetbrains.annotations.Nullable;
@@ -28,12 +28,12 @@ public class GlyphOutlineSolver {
     float radius;
 
     @Nullable
-    public GlyphOutline trySolve(List<Vector3f> points) {
+    public GlyphOutline trySolve(List<Vec3f> points) {
         if (points.size() < 3) {
             return null;
         }
 
-        Vector3f forward = this.getForwardVectorFor(points);
+        Vec3f forward = this.getForwardVectorFor(points);
         GlyphPlane plane = GlyphPlane.create(forward, GlyphPlane.DRAW_DISTANCE);
 
         Vec2f[] projectedPoints = projectPoints(points, plane);
@@ -168,13 +168,13 @@ public class GlyphOutlineSolver {
         return new Vec2f(directionX, directionY);
     }
 
-    private static Vec2f[] projectPoints(List<Vector3f> points, GlyphPlane plane) {
+    private static Vec2f[] projectPoints(List<Vec3f> points, GlyphPlane plane) {
         Vec2f[] projectedPoints = new Vec2f[points.size()];
 
-        Vector3f projected = new Vector3f();
+        Vec3f projected = new Vec3f();
 
         for (int i = 0; i < projectedPoints.length; i++) {
-            Vector3f point = points.get(i);
+            Vec3f point = points.get(i);
 
             projected.set(point.getX(), point.getY(), point.getZ());
             plane.projectOntoPlane(projected, 1.0F);
@@ -185,15 +185,15 @@ public class GlyphOutlineSolver {
         return projectedPoints;
     }
 
-    private Vector3f getForwardVectorFor(List<Vector3f> points) {
-        Vector3f forward = new Vector3f();
+    private Vec3f getForwardVectorFor(List<Vec3f> points) {
+        Vec3f forward = new Vec3f();
 
         float x = 0.0F;
         float y = 0.0F;
         float z = 0.0F;
 
         float weightPerPoint = 1.0F / points.size();
-        for (Vector3f point : points) {
+        for (Vec3f point : points) {
             x += point.getX() * weightPerPoint;
             y += point.getY() * weightPerPoint;
             z += point.getZ() * weightPerPoint;

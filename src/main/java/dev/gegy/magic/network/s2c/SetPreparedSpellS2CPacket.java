@@ -27,7 +27,7 @@ public final class SetPreparedSpellS2CPacket {
 
     public static PacketByteBuf create(ServerPlayerEntity player) {
         PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeVarInt(player.getEntityId());
+        buf.writeVarInt(player.getId());
         return buf;
     }
 

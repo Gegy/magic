@@ -1,8 +1,8 @@
 package dev.gegy.magic.client.glyph.plane;
 
 import dev.gegy.magic.math.Matrix4fAccess;
-import net.minecraft.client.util.math.Vector3f;
-import net.minecraft.client.util.math.Vector4f;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
@@ -15,15 +15,15 @@ public final class PreparedGlyphTransform implements GlyphTransform {
     private final long startTime;
 
     private final float initialDistance;
-    private final Vector3f initialDirection;
+    private final Vec3f initialDirection;
 
-    private final Vector3f prevTargetDirection;
-    private final Vector3f targetDirection;
+    private final Vec3f prevTargetDirection;
+    private final Vec3f targetDirection;
 
     private final float targetDistance;
 
-    private final Vector3f left = new Vector3f();
-    private final Vector3f up = new Vector3f();
+    private final Vec3f left = new Vec3f();
+    private final Vec3f up = new Vec3f();
     private final Matrix4f matrix = new Matrix4f();
 
     public PreparedGlyphTransform(Entity source, GlyphTransform initial, float targetDistance) {
@@ -33,7 +33,7 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         this.initialDistance = initial.getDistance(1.0F);
         this.initialDirection = initial.getDirection(1.0F);
 
-        this.targetDirection = new Vector3f(source.getRotationVec(1.0F));
+        this.targetDirection = new Vec3f(source.getRotationVec(1.0F));
         this.prevTargetDirection = this.targetDirection.copy();
 
         this.targetDistance = targetDistance;
@@ -46,7 +46,7 @@ public final class PreparedGlyphTransform implements GlyphTransform {
 
     @Override
     public void tick() {
-        Vector3f direction = this.targetDirection;
+        Vec3f direction = this.targetDirection;
         this.prevTargetDirection.set(direction.getX(), direction.getY(), direction.getZ());
 
         Vec3d targetDirection = this.source.getRotationVec(1.0F);
@@ -64,21 +64,21 @@ public final class PreparedGlyphTransform implements GlyphTransform {
     }
 
     @Override
-    public Vector3f getDirection(float tickDelta) {
+    public Vec3f getDirection(float tickDelta) {
         float formProgress = this.getFormProgress(tickDelta);
 
-        Vector3f initialDirection = this.initialDirection;
+        Vec3f initialDirection = this.initialDirection;
 
-        Vector3f prevTargetDirection = this.prevTargetDirection;
-        Vector3f targetDirection = this.targetDirection;
+        Vec3f prevTargetDirection = this.prevTargetDirection;
+        Vec3f targetDirection = this.targetDirection;
         float targetDirectionX = MathHelper.lerp(tickDelta, prevTargetDirection.getX(), targetDirection.getX());
         float targetDirectionY = MathHelper.lerp(tickDelta, prevTargetDirection.getY(), targetDirection.getY());
         float targetDirectionZ = MathHelper.lerp(tickDelta, prevTargetDirection.getZ(), targetDirection.getZ());
 
         if (formProgress == 1.0F) {
-            return new Vector3f(targetDirectionX, targetDirectionY, targetDirectionZ);
+            return new Vec3f(targetDirectionX, targetDirectionY, targetDirectionZ);
         } else {
-            return new Vector3f(
+            return new Vec3f(
                     MathHelper.lerp(formProgress, initialDirection.getX(), targetDirectionX),
                     MathHelper.lerp(formProgress, initialDirection.getY(), targetDirectionY),
                     MathHelper.lerp(formProgress, initialDirection.getZ(), targetDirectionZ)
@@ -89,16 +89,16 @@ public final class PreparedGlyphTransform implements GlyphTransform {
     @Override
     public Matrix4f getTransformationMatrix(float tickDelta) {
         float distance = this.getDistance(tickDelta);
-        Vector3f direction = this.getDirection(tickDelta);
+        Vec3f direction = this.getDirection(tickDelta);
 
         Matrix4f matrix = this.matrix;
 
-        Vector3f left = this.left;
+        Vec3f left = this.left;
         left.set(0.0F, 1.0F, 0.0F);
         left.cross(direction);
         left.normalize();
 
-        Vector3f up = this.up;
+        Vec3f up = this.up;
         up.set(direction.getX(), direction.getY(), direction.getZ());
         up.cross(left);
         up.normalize();
@@ -116,7 +116,7 @@ public final class PreparedGlyphTransform implements GlyphTransform {
     }
 
     @Override
-    public void projectOntoPlane(Vector3f vector, float tickDelta) {
+    public void projectOntoPlane(Vec3f vector, float tickDelta) {
         Matrix4f matrix = this.getTransformationMatrix(tickDelta);
         matrix.invert();
 
@@ -130,7 +130,7 @@ public final class PreparedGlyphTransform implements GlyphTransform {
     }
 
     @Override
-    public void projectFromPlane(Vector3f vector, float tickDelta) {
+    public void projectFromPlane(Vec3f vector, float tickDelta) {
         Matrix4f matrix = this.getTransformationMatrix(tickDelta);
 
         Vector4f transformed = new Vector4f(vector);

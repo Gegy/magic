@@ -1,6 +1,6 @@
-#version 130
+#version 150
 
-attribute vec2 Position;
+in vec2 Position;
 
 uniform float radius;
 uniform float render_scale;
@@ -8,7 +8,7 @@ uniform float render_scale;
 uniform mat4 glyph_to_world;
 uniform mat4 world_to_screen;
 
-varying vec2 uv;
+out vec2 uv;
 
 void main() {
     uv = (Position + 1.0) * 0.5;

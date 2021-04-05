@@ -3,9 +3,9 @@ package dev.gegy.magic.client.animator;
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Arm;
+import net.minecraft.util.math.Vec3f;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public interface SpellcastingPose {
         private final ArmPose leftArm = new ArmPose();
         private final ArmPose rightArm = new ArmPose();
 
-        private final Vector3f target = new Vector3f();
+        private final Vec3f target = new Vec3f();
 
         @Override
         public void beginAnimating() {
@@ -35,12 +35,12 @@ public interface SpellcastingPose {
                 return false;
             }
 
-            Vector3f point = glyph.getLookingAt();
+            Vec3f point = glyph.getLookingAt();
 
             float leftX = Math.abs(point.getX());
             float rightX = -leftX;
 
-            Vector3f target = this.target;
+            Vec3f target = this.target;
             target.set(leftX, point.getY(), point.getZ());
             this.leftArm.pointToPointOnPlane(entity, glyph.transform, target);
 
@@ -59,7 +59,7 @@ public interface SpellcastingPose {
 
     final class Prepared implements SpellcastingPose {
         private final ArmPose mainArm = new ArmPose();
-        private final Vector3f target = new Vector3f();
+        private final Vec3f target = new Vec3f();
 
         @Override
         public void beginAnimating() {
@@ -75,12 +75,12 @@ public interface SpellcastingPose {
 
             ClientGlyph glyph = preparedGlyphs.get(0);
 
-            Vector3f direction = glyph.transform.getDirection(1.0F);
+            Vec3f direction = glyph.transform.getDirection(1.0F);
             SpellcastingAnimator.rotateVectorRelativeToBody(direction, entity);
 
             float distance = glyph.transform.getDistance(1.0F);
 
-            Vector3f target = this.target;
+            Vec3f target = this.target;
             target.set(
                     direction.getX() * distance,
                     entity.getStandingEyeHeight() + direction.getY() * distance,

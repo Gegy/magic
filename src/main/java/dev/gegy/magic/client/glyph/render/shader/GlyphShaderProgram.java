@@ -1,29 +1,29 @@
 package dev.gegy.magic.client.glyph.render.shader;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.gl.GlProgram;
 import net.minecraft.client.gl.GlProgramManager;
 import net.minecraft.client.gl.GlShader;
+import net.minecraft.client.gl.GlUniform;
+import net.minecraft.client.gl.Program;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.Identifier;
 
 import java.io.IOException;
 
-final class GlyphShaderProgram implements GlProgram, AutoCloseable {
+final class GlyphShaderProgram implements GlShader, AutoCloseable {
     final int programRef;
-    final GlShader vertexShader;
-    final GlShader fragmentShader;
+    final Program vertexShader;
+    final Program fragmentShader;
 
-    private GlyphShaderProgram(int programRef, GlShader vertexShader, GlShader fragmentShader) {
+    private GlyphShaderProgram(int programRef, Program vertexShader, Program fragmentShader) {
         this.programRef = programRef;
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
     }
 
     static GlyphShaderProgram compile(ResourceManager resources, Identifier location) throws IOException {
-        GlShader vertexShader = compileShader(resources, GlShader.Type.VERTEX, location);
-        GlShader fragmentShader = compileShader(resources, GlShader.Type.FRAGMENT, location);
+        Program vertexShader = compileShader(resources, Program.Type.VERTEX, location);
+        Program fragmentShader = compileShader(resources, Program.Type.FRAGMENT, location);
 
         GlyphShaderProgram program = new GlyphShaderProgram(GlProgramManager.createProgram(), vertexShader, fragmentShader);
         GlProgramManager.linkProgram(program);
@@ -31,15 +31,21 @@ final class GlyphShaderProgram implements GlProgram, AutoCloseable {
         return program;
     }
 
-    private static GlShader compileShader(ResourceManager resources, GlShader.Type type, Identifier location) throws IOException {
+    private static Program compileShader(ResourceManager resources, Program.Type type, Identifier location) throws IOException {
         Identifier path = new Identifier(location.getNamespace(), "shaders/" + location.getPath() + type.getFileExtension());
         try (Resource resource = resources.getResource(path)) {
-            return GlShader.createFromResource(type, location.toString(), resource.getInputStream(), resource.getResourcePackName());
+            return Program.createFromResource(type, location.toString(), resource.getInputStream(), resource.getResourcePackName(), NoImportProcessor.INSTANCE);
         }
     }
 
     int getUniformLocation(String name) {
-        return GlStateManager.getUniformLocation(this.programRef, name);
+        return GlUniform.getUniformLocation(this.programRef, name);
+    }
+
+    @Override
+    public void attachReferencedShaders() {
+        this.fragmentShader.attachTo(this);
+        this.vertexShader.attachTo(this);
     }
 
     @Override
@@ -48,12 +54,12 @@ final class GlyphShaderProgram implements GlProgram, AutoCloseable {
     }
 
     @Override
-    public GlShader getVertexShader() {
+    public Program getVertexShader() {
         return this.vertexShader;
     }
 
     @Override
-    public GlShader getFragmentShader() {
+    public Program getFragmentShader() {
         return this.fragmentShader;
     }
 

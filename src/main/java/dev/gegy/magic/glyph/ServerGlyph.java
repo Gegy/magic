@@ -3,13 +3,13 @@ package dev.gegy.magic.glyph;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
 import dev.gegy.magic.spell.SpellGlyphStorage;
-import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
 public final class ServerGlyph {
     private final int networkId;
     private final ServerGlyphSource source;
-    private final Vector3f direction;
+    private final Vec3f direction;
     private final float radius;
 
     private int shape;
@@ -18,7 +18,7 @@ public final class ServerGlyph {
 
     private GlyphNode stroke;
 
-    ServerGlyph(int networkId, ServerGlyphSource source, Vector3f direction, float radius) {
+    ServerGlyph(int networkId, ServerGlyphSource source, Vec3f direction, float radius) {
         this.networkId = networkId;
         this.source = source;
         this.direction = direction;
@@ -33,7 +33,7 @@ public final class ServerGlyph {
         return this.source;
     }
 
-    public Vector3f getDirection() {
+    public Vec3f getDirection() {
         return this.direction;
     }
 

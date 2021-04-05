@@ -9,7 +9,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
-import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -39,7 +39,7 @@ public final class ServerGlyphTracker {
     }
 
     @Nullable
-    public ServerGlyph startDrawing(ServerPlayerEntity player, Vector3f direction, float radius) {
+    public ServerGlyph startDrawing(ServerPlayerEntity player, Vec3f direction, float radius) {
         ServerGlyphSource source = this.getOrCreateSource(player);
         if (source.canDraw()) {
             ServerGlyph glyph = this.addGlyph(source, direction, radius);
@@ -50,12 +50,12 @@ public final class ServerGlyphTracker {
         return null;
     }
 
-    public ServerGlyph addGlyph(ServerPlayerEntity player, Vector3f direction, float radius) {
+    public ServerGlyph addGlyph(ServerPlayerEntity player, Vec3f direction, float radius) {
         ServerGlyphSource source = this.getOrCreateSource(player);
         return this.addGlyph(source, direction, radius);
     }
 
-    private ServerGlyph addGlyph(ServerGlyphSource source, Vector3f direction, float radius) {
+    private ServerGlyph addGlyph(ServerGlyphSource source, Vec3f direction, float radius) {
         int networkId = this.nextNetworkId++;
         ServerGlyph glyph = new ServerGlyph(networkId, source, direction, radius);
 

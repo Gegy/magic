@@ -42,24 +42,6 @@ public class Matrix4fMixin implements Matrix4fAccess {
     }
 
     @Override
-    public void copyInto(Matrix4f into) {
-        Matrix4fAccess.set(into,
-                this.a00, this.a01, this.a02, this.a03,
-                this.a10, this.a11, this.a12, this.a13,
-                this.a20, this.a21, this.a22, this.a23,
-                this.a30, this.a31, this.a32, this.a33
-        );
-    }
-
-    @Override
-    public void translate(float x, float y, float z) {
-        this.a03 += this.a00 * x + this.a01 * y + this.a02 * z;
-        this.a13 += this.a10 * x + this.a11 * y + this.a12 * z;
-        this.a23 += this.a20 * x + this.a21 * y + this.a22 * z;
-        this.a33 += this.a30 * x + this.a31 * y + this.a32 * z;
-    }
-
-    @Override
     public void scale(float x, float y, float z) {
         this.a00 *= x;
         this.a01 *= y;

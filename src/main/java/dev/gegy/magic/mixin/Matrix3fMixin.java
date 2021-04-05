@@ -7,8 +7,6 @@ import net.minecraft.util.math.Matrix4f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import java.nio.FloatBuffer;
-
 @Mixin(Matrix3f.class)
 public final class Matrix3fMixin implements Matrix3fAccess {
     @Shadow
@@ -33,13 +31,6 @@ public final class Matrix3fMixin implements Matrix3fAccess {
         this.a20 = m20;
         this.a21 = m21;
         this.a22 = m22;
-    }
-
-    @Override
-    public void writeToBuffer(FloatBuffer buffer) {
-        buffer.put(this.a00).put(this.a10).put(this.a20);
-        buffer.put(this.a01).put(this.a11).put(this.a21);
-        buffer.put(this.a02).put(this.a12).put(this.a22);
     }
 
     @Override

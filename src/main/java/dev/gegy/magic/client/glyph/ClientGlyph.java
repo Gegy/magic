@@ -4,10 +4,10 @@ import dev.gegy.magic.client.glyph.plane.GlyphTransform;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
 public final class ClientGlyph {
@@ -29,7 +29,7 @@ public final class ClientGlyph {
 
     public final long createTime;
 
-    private final Vector3f lookingAt = new Vector3f();
+    private final Vec3f lookingAt = new Vec3f();
 
     private Vec3d lastLook;
 
@@ -61,7 +61,7 @@ public final class ClientGlyph {
         this.primaryColor.tick(0.15F);
         this.secondaryColor.tick(0.15F);
 
-        Vector3f lookingAt = this.lookingAt;
+        Vec3f lookingAt = this.lookingAt;
         this.computeLookingAt(lookingAt);
 
         GlyphStroke stroke = this.stroke;
@@ -82,10 +82,10 @@ public final class ClientGlyph {
 
         this.transform.tick();
 
-        return this.source.removed;
+        return this.source.isRemoved();
     }
 
-    private void computeLookingAt(Vector3f lookingAt) {
+    private void computeLookingAt(Vec3f lookingAt) {
         Vec3d look = this.source.getRotationVec(1.0F);
         if (look.equals(this.lastLook)) {
             return;
@@ -145,7 +145,7 @@ public final class ClientGlyph {
         return this.secondaryColor;
     }
 
-    public Vector3f getLookingAt() {
+    public Vec3f getLookingAt() {
         return this.lookingAt;
     }
 }

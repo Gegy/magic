@@ -93,7 +93,7 @@ public final class ClientGlyphTracker {
         if (source != null) {
             source.removeGlyph(glyph);
             if (source.isEmpty()) {
-                this.glyphSources.remove(glyph.source.getEntityId());
+                this.glyphSources.remove(glyph.source.getId());
             }
         }
     }
@@ -125,12 +125,12 @@ public final class ClientGlyphTracker {
 
     @Nullable
     private ClientGlyphSource getSource(Entity entity) {
-        return this.glyphSources.get(entity.getEntityId());
+        return this.glyphSources.get(entity.getId());
     }
 
     @NotNull
     private ClientGlyphSource getOrCreateSource(Entity entity) {
-        return this.glyphSources.computeIfAbsent(entity.getEntityId(), i -> new ClientGlyphSource());
+        return this.glyphSources.computeIfAbsent(entity.getId(), i -> new ClientGlyphSource());
     }
 
     public void updateGlyph(int networkId, int shape, @Nullable GlyphNode stroke, @Nullable Spell matchedSpell) {

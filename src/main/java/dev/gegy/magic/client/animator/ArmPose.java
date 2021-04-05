@@ -2,23 +2,23 @@ package dev.gegy.magic.client.animator;
 
 import dev.gegy.magic.client.glyph.plane.GlyphTransform;
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3f;
 
 public final class ArmPose {
     private static final double HALF_PI = Math.PI / 2.0;
 
-    final Vector3f target = new Vector3f();
-    final Vector3f prevTarget = new Vector3f();
+    final Vec3f target = new Vec3f();
+    final Vec3f prevTarget = new Vec3f();
 
     public void resetPrevTarget() {
-        Vector3f target = this.target;
+        Vec3f target = this.target;
         this.prevTarget.set(target.getX(), target.getY(), target.getZ());
     }
 
-    public void pointTo(Vector3f newTarget) {
-        Vector3f target = this.target;
+    public void pointTo(Vec3f newTarget) {
+        Vec3f target = this.target;
         this.resetPrevTarget();
 
         target.set(
@@ -28,7 +28,7 @@ public final class ArmPose {
         );
     }
 
-    public void pointToPointOnPlane(LivingEntity entity, GlyphTransform transform, Vector3f target) {
+    public void pointToPointOnPlane(LivingEntity entity, GlyphTransform transform, Vec3f target) {
         transform.projectFromPlane(target, 1.0F);
         SpellcastingAnimator.rotateVectorRelativeToBody(target, entity);
         target.add(0.0F, entity.getStandingEyeHeight(), 0.0F);
@@ -37,8 +37,8 @@ public final class ArmPose {
     }
 
     public void apply(ModelPart part, float tickDelta, float weight) {
-        Vector3f prevTarget = this.prevTarget;
-        Vector3f target = this.target;
+        Vec3f prevTarget = this.prevTarget;
+        Vec3f target = this.target;
 
         float targetX = MathHelper.lerp(tickDelta, prevTarget.getX(), target.getX());
         float targetY = MathHelper.lerp(tickDelta, prevTarget.getY(), target.getY());

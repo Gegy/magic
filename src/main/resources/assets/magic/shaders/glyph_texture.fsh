@@ -1,4 +1,4 @@
-#version 130
+#version 150
 
 uniform float texel_size;
 uniform float render_size;
@@ -10,7 +10,9 @@ uniform int flags;
 
 uniform vec4 stroke;
 
-varying vec2 texel;
+in vec2 texel;
+
+out vec4 fragColor;
 
 // sqrt(0.75)
 const float SIDE_CENTER_X = 0.866025;
@@ -140,7 +142,7 @@ void main() {
     mirrored_texel.x = abs(mirrored_texel.x);
 
     if (should_highlight_node(mirrored_texel)) {
-        gl_FragColor = vec4(vec3(1.0), form_progress);
+        fragColor = vec4(vec3(1.0), form_progress);
         return;
     }
 
@@ -155,5 +157,5 @@ void main() {
         discard;
     }
 
-    gl_FragColor = vec4(result, form_progress);
+    fragColor = vec4(result, form_progress);
 }

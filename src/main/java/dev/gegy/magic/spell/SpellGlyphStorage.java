@@ -6,10 +6,11 @@ import dev.gegy.magic.glyph.shape.GlyphShapeGenerator;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,11 +25,11 @@ public final class SpellGlyphStorage extends PersistentState {
     private boolean generated;
 
     private SpellGlyphStorage() {
-        super(KEY);
     }
 
     public static SpellGlyphStorage get(MinecraftServer server) {
-        return server.getOverworld().getPersistentStateManager().getOrCreate(SpellGlyphStorage::new, KEY);
+        PersistentStateManager persistent = server.getOverworld().getPersistentStateManager();
+        return persistent.getOrCreate(SpellGlyphStorage::loadNbt, SpellGlyphStorage::new, KEY);
     }
 
     @Nullable
@@ -75,9 +76,9 @@ public final class SpellGlyphStorage extends PersistentState {
     }
 
     @Override
-    public CompoundTag toTag(CompoundTag tag) {
+    public NbtCompound writeNbt(NbtCompound tag) {
         if (this.generated) {
-            CompoundTag spellShapes = new CompoundTag();
+            NbtCompound spellShapes = new NbtCompound();
 
             for (Int2ObjectMap.Entry<Spell> entry : this.shapeToSpell.int2ObjectEntrySet()) {
                 Identifier spellId = Spell.REGISTRY.getId(entry.getValue());
@@ -94,18 +95,21 @@ public final class SpellGlyphStorage extends PersistentState {
         return tag;
     }
 
-    @Override
-    public void fromTag(CompoundTag tag) {
-        CompoundTag spellShapes = tag.getCompound("spell_shapes");
+    private static SpellGlyphStorage loadNbt(NbtCompound tag) {
+        SpellGlyphStorage storage = new SpellGlyphStorage();
+
+        NbtCompound spellShapes = tag.getCompound("spell_shapes");
 
         for (String spellId : spellShapes.getKeys()) {
             Spell spell = Spell.REGISTRY.get(new Identifier(spellId));
             int shape = spellShapes.getInt(spellId);
             if (spell != null) {
-                this.shapeToSpell.put(shape, spell);
+                storage.shapeToSpell.put(shape, spell);
             } else {
                 Magic.LOGGER.warn("Invalid spell id: {}", spellId);
             }
         }
+
+        return storage;
     }
 }

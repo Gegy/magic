@@ -10,7 +10,7 @@ import dev.gegy.magic.network.c2s.DrawGlyphShapeC2SPacket;
 import dev.gegy.magic.network.c2s.DrawGlyphStrokeC2SPacket;
 import dev.gegy.magic.spell.Spell;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.util.math.Vector3f;
+import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec2f;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +41,7 @@ public abstract class DrawingGlyph implements SpellcastingState {
 
         this.glyph.tick();
 
-        Vector3f lookingAt = this.glyph.getLookingAt();
+        Vec3f lookingAt = this.glyph.getLookingAt();
         float radius = this.glyph.radius;
         return this.tickDraw(
                 Math.abs(lookingAt.getX() / radius),

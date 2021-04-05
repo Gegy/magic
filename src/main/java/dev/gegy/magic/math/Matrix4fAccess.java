@@ -31,16 +31,8 @@ public interface Matrix4fAccess {
         ((Matrix4fAccess) (Object) matrix).set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
     }
 
-    static void set(Matrix4f matrix, Matrix4f from) {
-        ((Matrix4fAccess) (Object) from).copyInto(matrix);
-    }
-
     static void set(Matrix4f matrix, Matrix3f from) {
         ((Matrix3fAccess) (Object) from).copyInto(matrix);
-    }
-
-    static void translate(Matrix4f matrix, float x, float y, float z) {
-        ((Matrix4fAccess) (Object) matrix).translate(x, y, z);
     }
 
     static void scale(Matrix4f matrix, float x, float y, float z) {
@@ -53,10 +45,6 @@ public interface Matrix4fAccess {
             float m20, float m21, float m22, float m23,
             float m30, float m31, float m32, float m33
     );
-
-    void copyInto(Matrix4f into);
-
-    void translate(float x, float y, float z);
 
     void scale(float x, float y, float z);
 }

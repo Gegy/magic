@@ -3,6 +3,7 @@ package dev.gegy.magic.mixin.client;
 import dev.gegy.magic.client.animator.SpellcastingAnimatableEntity;
 import dev.gegy.magic.client.animator.SpellcastingAnimator;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.entity.Entity;
@@ -14,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntityModel.class)
 public abstract class PlayerEntityModelMixin<T extends LivingEntity> extends BipedEntityModel<T> {
-    private PlayerEntityModelMixin(float scale) {
-        super(scale);
+    private PlayerEntityModelMixin(ModelPart root) {
+        super(root);
     }
 
     @Inject(

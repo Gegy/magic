@@ -4,7 +4,6 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import dev.gegy.magic.client.glyph.GlyphColor;
-import dev.gegy.magic.math.Matrix4fAccess;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
@@ -45,7 +44,7 @@ public final class GlyphRenderManager {
             }
 
             @Override
-            public void apply(ResourceManager resources) {
+            public void reload(ResourceManager resources) {
                 instance.load(resources);
             }
         });
@@ -97,12 +96,12 @@ public final class GlyphRenderManager {
 
         GlyphRenderData renderData = this.renderData;
 
-        Matrix4fAccess.set(renderData.glyphToWorld, modelMatrix);
+        renderData.glyphToWorld.method_35434(modelMatrix);
 
         float translationX = (float) (sourcePos.x - cameraPos.x);
         float translationY = (float) (sourcePos.y - cameraPos.y);
         float translationZ = (float) (sourcePos.z - cameraPos.z);
-        Matrix4fAccess.translate(renderData.glyphToWorld, translationX, translationY, translationZ);
+        renderData.glyphToWorld.multiplyByTranslation(translationX, translationY, translationZ);
 
         renderData.glyphToWorld.multiply(glyph.transform.getTransformationMatrix(tickDelta));
 

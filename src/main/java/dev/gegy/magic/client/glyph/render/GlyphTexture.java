@@ -1,9 +1,10 @@
 package dev.gegy.magic.client.glyph.render;
 
-import com.mojang.blaze3d.platform.FramebufferInfo;
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.texture.TextureUtil;
+import com.mojang.blaze3d.platform.TextureUtil;
+import com.mojang.blaze3d.systems.RenderSystem;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL30;
 
 public final class GlyphTexture implements AutoCloseable {
     private static final int SIZE = 64;
@@ -21,45 +22,45 @@ public final class GlyphTexture implements AutoCloseable {
     }
 
     static GlyphTexture create() {
-        int framebufferRef = GlStateManager.genFramebuffers();
-        int textureRef = TextureUtil.generateId();
+        int framebufferRef = GlStateManager.glGenFramebuffers();
+        int textureRef = TextureUtil.generateTextureId();
 
-        GlStateManager.bindTexture(textureRef);
-        GlStateManager.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
-        GlStateManager.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
-        GlStateManager.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_CLAMP);
-        GlStateManager.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_CLAMP);
+        GlStateManager._bindTexture(textureRef);
+        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL30.GL_CLAMP_TO_EDGE);
+        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL30.GL_CLAMP_TO_EDGE);
 
-        GlStateManager.texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, SIZE, SIZE, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, null);
-        GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, framebufferRef);
-        GlStateManager.framebufferTexture2D(FramebufferInfo.FRAME_BUFFER, FramebufferInfo.COLOR_ATTACHMENT, GL11.GL_TEXTURE_2D, textureRef, 0);
+        GlStateManager._texImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA8, SIZE, SIZE, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE, null);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebufferRef);
+        GlStateManager._glFramebufferTexture2D(GL30.GL_FRAMEBUFFER, GL30.GL_COLOR_ATTACHMENT0, GL11.GL_TEXTURE_2D, textureRef, 0);
 
-        GlStateManager.bindTexture(0);
+        GlStateManager._bindTexture(0);
 
         return new GlyphTexture(framebufferRef, textureRef);
     }
 
     public void bindWrite() {
-        GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, this.framebufferRef);
-        GlStateManager.viewport(0, 0, SIZE, SIZE);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.framebufferRef);
+        RenderSystem.viewport(0, 0, SIZE, SIZE);
     }
 
     public void unbindWrite() {
-        GlStateManager.bindFramebuffer(FramebufferInfo.FRAME_BUFFER, 0);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
     }
 
     public void bindRead() {
-        GlStateManager.bindTexture(this.textureRef);
+        GlStateManager._bindTexture(this.textureRef);
     }
 
     public void unbindRead() {
-        GlStateManager.bindTexture(0);
+        GlStateManager._bindTexture(0);
     }
 
     @Override
     public void close() {
-        TextureUtil.deleteId(this.textureRef);
-        GlStateManager.deleteFramebuffers(this.framebufferRef);
+        TextureUtil.releaseTextureId(this.textureRef);
+        GlStateManager._glDeleteFramebuffers(this.framebufferRef);
     }
 
     public int getSize() {

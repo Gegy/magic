@@ -1,14 +1,12 @@
 package dev.gegy.magic.client.glyph.render;
 
-import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.client.glyph.render.shader.GlyphTextureShader;
 import dev.gegy.magic.client.glyph.render.shader.GlyphWorldShader;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.VertexFormat;
 import net.minecraft.client.render.VertexFormatElement;
 import net.minecraft.resource.ResourceManager;
@@ -19,7 +17,7 @@ import java.io.IOException;
 
 public final class GlyphRenderer implements AutoCloseable {
     private static final VertexFormatElement POSITION_ELEMENT = new VertexFormatElement(0, VertexFormatElement.Format.FLOAT, VertexFormatElement.Type.POSITION, 2);
-    private static final VertexFormat VERTEX_FORMAT = new VertexFormat(ImmutableList.of(POSITION_ELEMENT));
+    private static final VertexFormat VERTEX_FORMAT = new VertexFormat(ImmutableMap.of("Position", POSITION_ELEMENT));
 
     private final GlyphWorldShader worldShader;
     private final GlyphTextureShader textureShader;
@@ -39,19 +37,16 @@ public final class GlyphRenderer implements AutoCloseable {
     public static GlyphRenderer create(ResourceManager resources) throws IOException {
         GlyphWorldShader worldShader = GlyphWorldShader.create(resources);
         GlyphTextureShader textureShader = GlyphTextureShader.create(resources);
-
         VertexBuffer worldGeometry = uploadGeometry();
-
         GlyphTexture texture = GlyphTexture.create();
-
         return new GlyphRenderer(worldShader, textureShader, worldGeometry, texture);
     }
 
     private static VertexBuffer uploadGeometry() {
-        VertexBuffer geometry = new VertexBuffer(VERTEX_FORMAT);
+        VertexBuffer geometry = new VertexBuffer();
 
-        BufferBuilder builder = Tessellator.getInstance().getBuffer();
-        builder.begin(GL11.GL_QUADS, VERTEX_FORMAT);
+        BufferBuilder builder = new BufferBuilder(64);
+        builder.begin(VertexFormat.DrawMode.QUADS, VERTEX_FORMAT);
         putVertex(builder, -1.0F, -1.0F);
         putVertex(builder, -1.0F, 1.0F);
         putVertex(builder, 1.0F, 1.0F);
@@ -97,7 +92,7 @@ public final class GlyphRenderer implements AutoCloseable {
             RenderSystem.disableCull();
 
             GlyphRenderer.this.geometry.bind();
-            VERTEX_FORMAT.startDrawing(0);
+            VERTEX_FORMAT.startDrawing();
         }
 
         public void render(GlyphRenderData renderData, float tickDelta) {
@@ -112,14 +107,14 @@ public final class GlyphRenderer implements AutoCloseable {
             GlyphTextureShader textureShader = GlyphRenderer.this.textureShader;
 
             texture.bindWrite();
-
-            GlStateManager.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            GlStateManager.clear(GL11.GL_COLOR_BUFFER_BIT, false);
-
             textureShader.bind(texture, renderData, tickDelta);
-            RenderSystem.drawArrays(GL11.GL_QUADS, 0, 4);
-            textureShader.unbind();
 
+            RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
+
+            GlyphRenderer.this.geometry.method_35665();
+
+            textureShader.unbind();
             texture.unbindWrite();
         }
 
@@ -128,11 +123,11 @@ public final class GlyphRenderer implements AutoCloseable {
             GlyphWorldShader shader = GlyphRenderer.this.worldShader;
 
             texture.bindRead();
-
             shader.bind(texture, this.worldToScreen, renderData);
-            RenderSystem.drawArrays(GL11.GL_QUADS, 0, 4);
-            shader.unbind();
 
+            GlyphRenderer.this.geometry.method_35665();
+
+            shader.unbind();
             texture.unbindRead();
         }
 

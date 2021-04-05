@@ -1,9 +1,9 @@
 package dev.gegy.magic.client.animator;
 
 import net.minecraft.client.model.ModelPart;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3f;
 
 public final class SpellcastingAnimator {
     private static final int POSE_TRANSITION_TICKS = 5;
@@ -90,11 +90,11 @@ public final class SpellcastingAnimator {
         }
     }
 
-    public static void rotateVectorRelativeToBody(Vector3f vector, LivingEntity entity) {
+    public static void rotateVectorRelativeToBody(Vec3f vector, LivingEntity entity) {
         rotateVectorY(vector, (float) -Math.toRadians(entity.bodyYaw));
     }
 
-    private static void rotateVectorY(Vector3f vector, float rotationY) {
+    private static void rotateVectorY(Vec3f vector, float rotationY) {
         float x = vector.getX();
         float y = vector.getY();
         float z = vector.getZ();
