@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.spellcasting.outline;
+package dev.gegy.magic.client.spellcasting.outline;
 
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3d;

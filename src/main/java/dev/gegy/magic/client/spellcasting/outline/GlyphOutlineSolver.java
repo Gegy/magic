@@ -1,6 +1,6 @@
-package dev.gegy.magic.client.glyph.spellcasting.outline;
+package dev.gegy.magic.client.spellcasting.outline;
 
-import dev.gegy.magic.client.glyph.plane.GlyphPlane;
+import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
@@ -140,7 +140,7 @@ public class GlyphOutlineSolver {
 
             Vec2f segmentDirection = getSegmentDirection(start, end);
             if (lastSegmentDirection != null) {
-                if (dot(segmentDirection, lastSegmentDirection) < 0.0) {
+                if (segmentDirection.method_35583(lastSegmentDirection) < 0.0F) {
                     if (++deviations > maxDeviations) {
                         return false;
                     }
@@ -151,10 +151,6 @@ public class GlyphOutlineSolver {
         }
 
         return true;
-    }
-
-    private static float dot(Vec2f left, Vec2f right) {
-        return left.x * right.x + left.y * right.y;
     }
 
     private static Vec2f getSegmentDirection(Vec2f from, Vec2f to) {

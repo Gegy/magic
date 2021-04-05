@@ -3,7 +3,7 @@ package dev.gegy.magic.network.s2c;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
-import dev.gegy.magic.client.glyph.plane.GlyphPlane;
+import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import dev.gegy.magic.glyph.ServerGlyph;
 import dev.gegy.magic.spell.Spell;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;

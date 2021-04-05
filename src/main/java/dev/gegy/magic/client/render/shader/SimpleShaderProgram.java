@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.render.shader;
+package dev.gegy.magic.client.render.shader;
 
 import net.minecraft.client.gl.GlProgramManager;
 import net.minecraft.client.gl.GlShader;
@@ -10,22 +10,22 @@ import net.minecraft.util.Identifier;
 
 import java.io.IOException;
 
-final class GlyphShaderProgram implements GlShader, AutoCloseable {
+public final class SimpleShaderProgram implements GlShader, AutoCloseable {
     final int programRef;
     final Program vertexShader;
     final Program fragmentShader;
 
-    private GlyphShaderProgram(int programRef, Program vertexShader, Program fragmentShader) {
+    private SimpleShaderProgram(int programRef, Program vertexShader, Program fragmentShader) {
         this.programRef = programRef;
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
     }
 
-    static GlyphShaderProgram compile(ResourceManager resources, Identifier location) throws IOException {
+    public static SimpleShaderProgram compile(ResourceManager resources, Identifier location) throws IOException {
         Program vertexShader = compileShader(resources, Program.Type.VERTEX, location);
         Program fragmentShader = compileShader(resources, Program.Type.FRAGMENT, location);
 
-        GlyphShaderProgram program = new GlyphShaderProgram(GlProgramManager.createProgram(), vertexShader, fragmentShader);
+        SimpleShaderProgram program = new SimpleShaderProgram(GlProgramManager.createProgram(), vertexShader, fragmentShader);
         GlProgramManager.linkProgram(program);
 
         return program;
@@ -38,7 +38,7 @@ final class GlyphShaderProgram implements GlShader, AutoCloseable {
         }
     }
 
-    int getUniformLocation(String name) {
+    public int getUniformLocation(String name) {
         return GlUniform.getUniformLocation(this.programRef, name);
     }
 

@@ -1,6 +1,6 @@
 package dev.gegy.magic.client.animator;
 
-import dev.gegy.magic.client.glyph.plane.GlyphTransform;
+import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;

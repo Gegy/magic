@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.render.shader;
+package dev.gegy.magic.client.render.shader;
 
 import net.minecraft.client.gl.GLImportProcessor;
 import org.jetbrains.annotations.Nullable;

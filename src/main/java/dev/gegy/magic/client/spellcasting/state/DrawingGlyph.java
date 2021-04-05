@@ -1,8 +1,8 @@
-package dev.gegy.magic.client.glyph.spellcasting.state;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.GlyphStroke;
-import dev.gegy.magic.client.glyph.plane.GlyphPlane;
+import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.network.c2s.CancelGlyphC2SPacket;

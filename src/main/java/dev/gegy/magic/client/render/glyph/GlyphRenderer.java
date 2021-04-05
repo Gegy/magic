@@ -1,9 +1,7 @@
-package dev.gegy.magic.client.glyph.render;
+package dev.gegy.magic.client.render.glyph;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
-import dev.gegy.magic.client.glyph.render.shader.GlyphTextureShader;
-import dev.gegy.magic.client.glyph.render.shader.GlyphWorldShader;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.render.BufferBuilder;
@@ -37,9 +35,9 @@ public final class GlyphRenderer implements AutoCloseable {
     public static GlyphRenderer create(ResourceManager resources) throws IOException {
         GlyphWorldShader worldShader = GlyphWorldShader.create(resources);
         GlyphTextureShader textureShader = GlyphTextureShader.create(resources);
-        VertexBuffer worldGeometry = uploadGeometry();
+        VertexBuffer geometry = uploadGeometry();
         GlyphTexture texture = GlyphTexture.create();
-        return new GlyphRenderer(worldShader, textureShader, worldGeometry, texture);
+        return new GlyphRenderer(worldShader, textureShader, geometry, texture);
     }
 
     private static VertexBuffer uploadGeometry() {
@@ -75,10 +73,8 @@ public final class GlyphRenderer implements AutoCloseable {
     public void close() {
         this.worldShader.close();
         this.textureShader.close();
-
-        this.texture.close();
-
         this.geometry.close();
+        this.texture.close();
     }
 
     public final class Batcher implements AutoCloseable {

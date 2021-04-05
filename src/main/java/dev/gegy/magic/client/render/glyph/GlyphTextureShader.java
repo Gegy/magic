@@ -1,10 +1,9 @@
-package dev.gegy.magic.client.glyph.render.shader;
+package dev.gegy.magic.client.render.glyph;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.GlyphStroke;
-import dev.gegy.magic.client.glyph.render.GlyphRenderData;
-import dev.gegy.magic.client.glyph.render.GlyphTexture;
+import dev.gegy.magic.client.render.shader.SimpleShaderProgram;
 import net.minecraft.client.gl.GlProgramManager;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.opengl.GL20;
@@ -17,7 +16,7 @@ public final class GlyphTextureShader implements AutoCloseable {
     private static final int STROKE_ACTIVE_BIT = 1 << 15;
     private static final int HIGHLIGHT_NODES_BIT = 1 << 16;
 
-    private final GlyphShaderProgram program;
+    private final SimpleShaderProgram program;
 
     private final int uniformTexelSize;
     private final int uniformRenderSize;
@@ -32,7 +31,7 @@ public final class GlyphTextureShader implements AutoCloseable {
     private final FloatBuffer strokeData = MemoryUtil.memAllocFloat(4);
 
     private GlyphTextureShader(
-            GlyphShaderProgram program,
+            SimpleShaderProgram program,
             int uniformTexelSize, int uniformRenderSize,
             int uniformFormProgress,
             int uniformPrimaryColor, int uniformSecondaryColor,
@@ -49,7 +48,7 @@ public final class GlyphTextureShader implements AutoCloseable {
     }
 
     public static GlyphTextureShader create(ResourceManager resources) throws IOException {
-        GlyphShaderProgram program = GlyphShaderProgram.compile(resources, Magic.identifier("glyph_texture"));
+        SimpleShaderProgram program = SimpleShaderProgram.compile(resources, Magic.identifier("glyph/texture"));
 
         int uniformTexelSize = program.getUniformLocation("texel_size");
         int uniformRenderSize = program.getUniformLocation("render_size");

@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.spellcasting.state;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyphTracker;
 import dev.gegy.magic.network.c2s.CancelSpellC2SPacket;

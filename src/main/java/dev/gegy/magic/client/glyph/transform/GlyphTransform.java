@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.plane;
+package dev.gegy.magic.client.glyph.transform;
 
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3f;

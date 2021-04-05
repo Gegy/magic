@@ -1,7 +1,7 @@
-package dev.gegy.magic.client.glyph.spellcasting.outline;
+package dev.gegy.magic.client.spellcasting.outline;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.plane.GlyphPlane;
+import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import net.minecraft.client.network.ClientPlayerEntity;
 
 public final class GlyphOutline {

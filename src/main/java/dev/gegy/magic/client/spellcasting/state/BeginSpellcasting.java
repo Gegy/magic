@@ -1,8 +1,8 @@
-package dev.gegy.magic.client.glyph.spellcasting.state;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.spellcasting.outline.GlyphOutline;
-import dev.gegy.magic.client.glyph.spellcasting.outline.GlyphOutlineTracker;
+import dev.gegy.magic.client.spellcasting.outline.GlyphOutline;
+import dev.gegy.magic.client.spellcasting.outline.GlyphOutlineTracker;
 import dev.gegy.magic.network.c2s.BeginGlyphC2SPacket;
 import net.minecraft.client.network.ClientPlayerEntity;
 

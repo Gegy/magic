@@ -1,8 +1,8 @@
-package dev.gegy.magic.client.glyph.spellcasting;
+package dev.gegy.magic.client.spellcasting;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.spellcasting.state.BeginSpellcasting;
-import dev.gegy.magic.client.glyph.spellcasting.state.SpellcastingState;
+import dev.gegy.magic.client.spellcasting.state.BeginSpellcasting;
+import dev.gegy.magic.client.spellcasting.state.SpellcastingState;
 import dev.gegy.magic.spell.Spell;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.apache.commons.lang3.mutable.MutableObject;

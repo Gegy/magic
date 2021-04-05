@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.render;
+package dev.gegy.magic.client.render.glyph;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;

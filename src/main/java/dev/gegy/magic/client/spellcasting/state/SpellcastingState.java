@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.spellcasting.state;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.spell.Spell;

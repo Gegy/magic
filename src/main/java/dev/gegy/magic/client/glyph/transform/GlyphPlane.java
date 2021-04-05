@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.plane;
+package dev.gegy.magic.client.glyph.transform;
 
 import dev.gegy.magic.math.Matrix3fAccess;
 import dev.gegy.magic.math.Matrix4fAccess;

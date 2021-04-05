@@ -1,6 +1,6 @@
 package dev.gegy.magic.client.glyph;
 
-import dev.gegy.magic.client.glyph.plane.GlyphTransform;
+import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
@@ -18,7 +18,7 @@ public final class ClientGlyph {
     public final Entity source;
     public GlyphTransform transform;
 
-    public float radius;
+    public final float radius;
 
     private final GlyphColor primaryColor = new GlyphColor(GlyphColor.DEFAULT_PRIMARY);
     private final GlyphColor secondaryColor = new GlyphColor(GlyphColor.DEFAULT_SECONDARY);

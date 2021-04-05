@@ -1,9 +1,8 @@
-package dev.gegy.magic.client.glyph.render.shader;
+package dev.gegy.magic.client.render.glyph;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.client.glyph.render.GlyphRenderData;
-import dev.gegy.magic.client.glyph.render.GlyphTexture;
+import dev.gegy.magic.client.render.shader.SimpleShaderProgram;
 import net.minecraft.client.gl.GlProgramManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.math.Matrix4f;
@@ -14,7 +13,7 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 
 public final class GlyphWorldShader implements AutoCloseable {
-    private final GlyphShaderProgram program;
+    private final SimpleShaderProgram program;
 
     private final int uniformGlyphToWorld;
     private final int uniformWorldToScreen;
@@ -26,7 +25,7 @@ public final class GlyphWorldShader implements AutoCloseable {
     private final FloatBuffer worldToScreenData = MemoryUtil.memAllocFloat(4 * 4);
 
     private GlyphWorldShader(
-            GlyphShaderProgram program,
+            SimpleShaderProgram program,
             int uniformGlyphToWorld, int uniformWorldToScreen,
             int uniformRenderScale,
             int uniformRadius,
@@ -41,7 +40,7 @@ public final class GlyphWorldShader implements AutoCloseable {
     }
 
     public static GlyphWorldShader create(ResourceManager resources) throws IOException {
-        GlyphShaderProgram program = GlyphShaderProgram.compile(resources, Magic.identifier("glyph_world"));
+        SimpleShaderProgram program = SimpleShaderProgram.compile(resources, Magic.identifier("glyph/world"));
 
         int uniformGlyphToWorld = program.getUniformLocation("glyph_to_world");
         int uniformWorldToScreen = program.getUniformLocation("world_to_screen");

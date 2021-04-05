@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.glyph.render;
+package dev.gegy.magic.client.render.glyph;
 
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.ClientGlyph;

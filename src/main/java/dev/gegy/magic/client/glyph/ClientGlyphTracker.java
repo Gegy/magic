@@ -1,9 +1,9 @@
 package dev.gegy.magic.client.glyph;
 
 import com.google.common.collect.ImmutableList;
-import dev.gegy.magic.client.glyph.plane.GlyphPlane;
-import dev.gegy.magic.client.glyph.plane.PreparedGlyphTransform;
-import dev.gegy.magic.client.glyph.spellcasting.SpellcastingController;
+import dev.gegy.magic.client.glyph.transform.GlyphPlane;
+import dev.gegy.magic.client.glyph.transform.PreparedGlyphTransform;
+import dev.gegy.magic.client.spellcasting.SpellcastingController;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spell.Spell;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;

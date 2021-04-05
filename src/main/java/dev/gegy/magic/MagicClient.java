@@ -1,6 +1,6 @@
 package dev.gegy.magic;
 
-import dev.gegy.magic.client.glyph.render.GlyphRenderManager;
+import dev.gegy.magic.client.render.glyph.GlyphRenderManager;
 import dev.gegy.magic.network.s2c.MagicS2CNetworking;
 import net.fabricmc.api.ClientModInitializer;
 
