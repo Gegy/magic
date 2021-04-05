@@ -159,7 +159,7 @@ public final class ClientGlyphTracker {
         }
     }
 
-    public void prepareSpellFor(Entity entity) {
+    public void prepareSpellFor(Entity entity, boolean animate) {
         ClientGlyphSource source = this.getSource(entity);
         if (source == null) {
             return;
@@ -167,11 +167,11 @@ public final class ClientGlyphTracker {
 
         List<ClientGlyph> glyphs = source.prepareGlyphs();
 
-        float glyphSpacing = 0.1F;
+        float glyphSpacing = 0.2F;
         for (int i = 0; i < glyphs.size(); i++) {
             ClientGlyph glyph = glyphs.get(i);
             float distance = GlyphPlane.DRAW_DISTANCE + glyphSpacing * i;
-            glyph.transform = new PreparedGlyphTransform(entity, glyph.transform, distance);
+            glyph.transform = animate ? new PreparedGlyphTransform(entity, glyph.transform, distance) : new PreparedGlyphTransform(entity, distance);
         }
     }
 

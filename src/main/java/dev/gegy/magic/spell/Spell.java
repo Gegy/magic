@@ -12,16 +12,29 @@ public final class Spell {
             .attribute(RegistryAttribute.SYNCED)
             .buildAndRegister();
 
-    public static final Spell CYAN = Registry.register(REGISTRY, Magic.identifier("cyan"), new Spell(0.1F, 0.9F, 1.0F));
-    public static final Spell RED = Registry.register(REGISTRY, Magic.identifier("red"), new Spell(1.0F, 0.3F, 0.1F));
+    public static final Spell CYAN = Registry.register(REGISTRY, Magic.identifier("cyan"), Spell.ofColor(0x19E6FF));
+    public static final Spell RED = Registry.register(REGISTRY, Magic.identifier("red"), Spell.ofColor(0xFF4C19));
+    public static final Spell PURPLE = Registry.register(REGISTRY, Magic.identifier("purple"), Spell.ofColor(0xD419FF));
+    public static final Spell GREEN = Registry.register(REGISTRY, Magic.identifier("green"), Spell.ofColor(0x3FFF19));
 
     public final float red;
     public final float green;
     public final float blue;
 
-    public Spell(float red, float green, float blue) {
+    private Spell(float red, float green, float blue) {
         this.red = red;
         this.green = green;
         this.blue = blue;
+    }
+
+    public static Spell ofColor(float red, float green, float blue) {
+        return new Spell(red, green, blue);
+    }
+
+    public static Spell ofColor(int packed) {
+        int red = (packed >> 16) & 0xFF;
+        int green = (packed >> 8) & 0xFF;
+        int blue = packed & 0xFF;
+        return new Spell(red / 255.0F, green / 255.0F, blue / 255.0F);
     }
 }

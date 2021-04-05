@@ -131,8 +131,7 @@ public final class ServerGlyphSource {
         }
 
         if (this.preparedSpell) {
-            // TODO: don't animate when tracking
-            PacketByteBuf packet = SetPreparedSpellS2CPacket.create(this.player);
+            PacketByteBuf packet = SetPreparedSpellS2CPacket.create(this.player, false);
             SetPreparedSpellS2CPacket.sendTo(player, packet);
         }
     }
@@ -172,7 +171,7 @@ public final class ServerGlyphSource {
     }
 
     void notifyPrepareSpell() {
-        PacketByteBuf packet = SetPreparedSpellS2CPacket.create(this.player);
+        PacketByteBuf packet = SetPreparedSpellS2CPacket.create(this.player, true);
         SetPreparedSpellS2CPacket.sendTo(this.player, packet);
         for (ServerPlayerEntity trackingPlayer : this.getTrackingPlayers()) {
             SetPreparedSpellS2CPacket.sendTo(trackingPlayer, packet);

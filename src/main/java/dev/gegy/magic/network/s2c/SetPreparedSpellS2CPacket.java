@@ -16,18 +16,20 @@ public final class SetPreparedSpellS2CPacket {
     static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
             int sourceId = buf.readVarInt();
+            boolean animate = buf.readBoolean();
             client.submit(() -> {
                 Entity sourceEntity = handler.getWorld().getEntityById(sourceId);
                 if (sourceEntity != null) {
-                    ClientGlyphTracker.INSTANCE.prepareSpellFor(sourceEntity);
+                    ClientGlyphTracker.INSTANCE.prepareSpellFor(sourceEntity, animate);
                 }
             });
         });
     }
 
-    public static PacketByteBuf create(ServerPlayerEntity player) {
+    public static PacketByteBuf create(ServerPlayerEntity player, boolean animate) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(player.getId());
+        buf.writeBoolean(animate);
         return buf;
     }
 

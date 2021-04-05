@@ -1,6 +1,7 @@
 package dev.gegy.magic.spell;
 
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.glyph.shape.GlyphDebugRenderer;
 import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.glyph.shape.GlyphShapeGenerator;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -14,12 +15,17 @@ import net.minecraft.world.PersistentStateManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Set;
 
 public final class SpellGlyphStorage extends PersistentState {
     private static final String KEY = Magic.ID + ":spells";
+    private static final boolean EXPORT_SHAPES = false;
 
     private final Int2ObjectMap<Spell> shapeToSpell = new Int2ObjectOpenHashMap<>();
     private boolean generated;
@@ -47,6 +53,7 @@ public final class SpellGlyphStorage extends PersistentState {
 
         Set<Spell> spellsToGenerate = this.getSpellsToGenerate();
         if (spellsToGenerate.isEmpty()) {
+            this.exportShapes();
             return;
         }
 
@@ -62,6 +69,8 @@ public final class SpellGlyphStorage extends PersistentState {
         }
 
         this.setDirty(true);
+
+        this.exportShapes();
     }
 
     @NotNull
@@ -73,6 +82,29 @@ public final class SpellGlyphStorage extends PersistentState {
         spellsToAssign.removeAll(this.shapeToSpell.values());
 
         return spellsToAssign;
+    }
+
+    private void exportShapes() {
+        if (!EXPORT_SHAPES) {
+            return;
+        }
+
+        for (Int2ObjectMap.Entry<Spell> entry : this.shapeToSpell.int2ObjectEntrySet()) {
+            Spell spell = entry.getValue();
+            Identifier spellId = Spell.REGISTRY.getId(spell);
+            if (spellId == null) {
+                continue;
+            }
+
+            GlyphShape shape = new GlyphShape(entry.getIntKey());
+            BufferedImage image = GlyphDebugRenderer.render(shape);
+
+            try {
+                ImageIO.write(image, "png", new File(spellId.getPath() + ".png"));
+            } catch (IOException e) {
+                Magic.LOGGER.warn("Failed to export glyph shape", e);
+            }
+        }
     }
 
     @Override

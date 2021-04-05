@@ -39,6 +39,18 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         this.targetDistance = targetDistance;
     }
 
+    public PreparedGlyphTransform(Entity source, float targetDistance) {
+        this.source = source;
+        this.startTime = 0;
+        this.initialDistance = 1.0F;
+        this.initialDirection = Vec3f.field_29501;
+
+        this.targetDirection = new Vec3f(source.getRotationVec(1.0F));
+        this.prevTargetDirection = this.targetDirection.copy();
+
+        this.targetDistance = targetDistance;
+    }
+
     private float getFormProgress(float tickDelta) {
         long time = this.source.world.getTime();
         return Math.min((float) (time - this.startTime) + tickDelta, FORM_TICKS) / FORM_TICKS;

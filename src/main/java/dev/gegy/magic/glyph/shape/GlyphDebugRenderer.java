@@ -68,6 +68,9 @@ public final class GlyphDebugRenderer {
             Vec2f[] toPoints = edge.to.getMirroredPoints();
             for (Vec2f from : fromPoints) {
                 for (Vec2f to : toPoints) {
+                    if (Math.signum(from.x) != Math.signum(to.x)) {
+                        continue;
+                    }
                     graphics.drawLine(
                             transformCoordinate(from.x), transformCoordinate(-from.y),
                             transformCoordinate(to.x), transformCoordinate(-to.y)
