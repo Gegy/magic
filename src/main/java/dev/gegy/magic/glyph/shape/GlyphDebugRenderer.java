@@ -64,18 +64,19 @@ public final class GlyphDebugRenderer {
 
         graphics.setColor(Color.BLUE);
         for (GlyphEdge edge : glyph.edges) {
-            Vec2f[] fromPoints = edge.from.getMirroredPoints();
-            Vec2f[] toPoints = edge.to.getMirroredPoints();
-            for (Vec2f from : fromPoints) {
-                for (Vec2f to : toPoints) {
-                    if (Math.signum(from.x) != Math.signum(to.x)) {
-                        continue;
-                    }
-                    graphics.drawLine(
-                            transformCoordinate(from.x), transformCoordinate(-from.y),
-                            transformCoordinate(to.x), transformCoordinate(-to.y)
-                    );
-                }
+            Vec2f from = edge.from.getPoint();
+            Vec2f to = edge.to.getPoint();
+
+            graphics.drawLine(
+                    transformCoordinate(from.x), transformCoordinate(-from.y),
+                    transformCoordinate(to.x), transformCoordinate(-to.y)
+            );
+
+            if (from.x != 0.0 || to.x != 0.0) {
+                graphics.drawLine(
+                        transformCoordinate(-from.x), transformCoordinate(-from.y),
+                        transformCoordinate(-to.x), transformCoordinate(-to.y)
+                );
             }
         }
 
