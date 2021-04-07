@@ -23,7 +23,6 @@ public final class GlyphPlane implements GlyphTransform {
         this.distance = distance;
 
         this.renderGlyphToWorldMatrix = Matrix4fAccess.create(glyphToWorld);
-        this.renderGlyphToWorldMatrix.multiply(Matrix4f.scale(1.0F, 1.0F, distance));
     }
 
     public static GlyphPlane create(Vec3f direction, float distance) {

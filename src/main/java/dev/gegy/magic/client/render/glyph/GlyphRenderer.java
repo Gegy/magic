@@ -1,125 +1,75 @@
 package dev.gegy.magic.client.render.glyph;
 
-import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.gegy.magic.client.render.MagicGeometry;
+import dev.gegy.magic.client.render.shader.EffectTexture;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormatElement;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.math.Matrix4f;
-import org.lwjgl.opengl.GL11;
 
 import java.io.IOException;
 
 public final class GlyphRenderer implements AutoCloseable {
-    private static final VertexFormatElement POSITION_ELEMENT = new VertexFormatElement(0, VertexFormatElement.Format.FLOAT, VertexFormatElement.Type.POSITION, 2);
-    private static final VertexFormat VERTEX_FORMAT = new VertexFormat(ImmutableMap.of("Position", POSITION_ELEMENT));
-
-    private final GlyphWorldShader worldShader;
-    private final GlyphTextureShader textureShader;
+    private final GlyphWorldEffect worldEffect;
     private final VertexBuffer geometry;
 
-    private final GlyphTexture texture;
+    private final EffectTexture<GlyphRenderData> texture;
 
     private final Batcher batcher = new Batcher();
 
-    private GlyphRenderer(GlyphWorldShader worldShader, GlyphTextureShader textureShader, VertexBuffer geometry, GlyphTexture texture) {
-        this.worldShader = worldShader;
-        this.textureShader = textureShader;
+    private GlyphRenderer(GlyphWorldEffect worldEffect, VertexBuffer geometry, EffectTexture<GlyphRenderData> texture) {
+        this.worldEffect = worldEffect;
         this.geometry = geometry;
         this.texture = texture;
     }
 
     public static GlyphRenderer create(ResourceManager resources) throws IOException {
-        GlyphWorldShader worldShader = GlyphWorldShader.create(resources);
-        GlyphTextureShader textureShader = GlyphTextureShader.create(resources);
-        VertexBuffer geometry = uploadGeometry();
-        GlyphTexture texture = GlyphTexture.create();
-        return new GlyphRenderer(worldShader, textureShader, geometry, texture);
+        GlyphWorldEffect worldEffect = GlyphWorldEffect.create(resources);
+        GlyphTextureEffect textureEffect = GlyphTextureEffect.create(resources);
+        VertexBuffer geometry = MagicGeometry.uploadQuadPos2f(-1.0F, 1.0F);
+        EffectTexture<GlyphRenderData> texture = EffectTexture.create(textureEffect, GlyphTexture.SIZE);
+
+        return new GlyphRenderer(worldEffect, geometry, texture);
     }
 
-    private static VertexBuffer uploadGeometry() {
-        VertexBuffer geometry = new VertexBuffer();
-
-        BufferBuilder builder = new BufferBuilder(64);
-        builder.begin(VertexFormat.DrawMode.QUADS, VERTEX_FORMAT);
-        putVertex(builder, -1.0F, -1.0F);
-        putVertex(builder, -1.0F, 1.0F);
-        putVertex(builder, 1.0F, 1.0F);
-        putVertex(builder, 1.0F, -1.0F);
-        builder.end();
-
-        geometry.upload(builder);
-
-        return geometry;
-    }
-
-    private static void putVertex(BufferBuilder builder, float x, float y) {
-        builder.putFloat(0, x);
-        builder.putFloat(4, y);
-        builder.nextElement();
-        builder.next();
-    }
-
-    public Batcher start(Framebuffer framebuffer, Matrix4f worldToScreen) {
+    public Batcher start(Framebuffer target) {
         Batcher batcher = this.batcher;
-        batcher.start(framebuffer, worldToScreen);
+        batcher.start(target);
         return batcher;
     }
 
     @Override
     public void close() {
-        this.worldShader.close();
-        this.textureShader.close();
+        this.worldEffect.close();
         this.geometry.close();
         this.texture.close();
     }
 
     public final class Batcher implements AutoCloseable {
-        private Framebuffer framebuffer;
-        private Matrix4f worldToScreen;
+        private Framebuffer target;
 
-        void start(Framebuffer framebuffer, Matrix4f worldToScreen) {
-            this.framebuffer = framebuffer;
-            this.worldToScreen = worldToScreen;
+        void start(Framebuffer target) {
+            this.target = target;
 
             RenderSystem.disableCull();
 
             GlyphRenderer.this.geometry.bind();
-            VERTEX_FORMAT.startDrawing();
+            MagicGeometry.POSITION_2F.startDrawing();
         }
 
-        public void render(GlyphRenderData renderData, float tickDelta) {
-            this.renderToTexture(renderData, tickDelta);
+        public void render(GlyphRenderData renderData) {
+            GlyphRenderer.this.texture.renderWith(renderData, GlyphRenderer.this.geometry);
 
-            this.framebuffer.beginWrite(true);
+            this.target.beginWrite(true);
             this.renderToWorld(renderData);
         }
 
-        private void renderToTexture(GlyphRenderData renderData, float tickDelta) {
-            GlyphTexture texture = GlyphRenderer.this.texture;
-            GlyphTextureShader textureShader = GlyphRenderer.this.textureShader;
-
-            texture.bindWrite();
-            textureShader.bind(texture, renderData, tickDelta);
-
-            RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-            RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
-
-            GlyphRenderer.this.geometry.method_35665();
-
-            textureShader.unbind();
-            texture.unbindWrite();
-        }
-
         private void renderToWorld(GlyphRenderData renderData) {
-            GlyphTexture texture = GlyphRenderer.this.texture;
-            GlyphWorldShader shader = GlyphRenderer.this.worldShader;
+            EffectTexture<GlyphRenderData> texture = GlyphRenderer.this.texture;
+            GlyphWorldEffect shader = GlyphRenderer.this.worldEffect;
 
             texture.bindRead();
-            shader.bind(texture, this.worldToScreen, renderData);
+            shader.bind(renderData);
 
             GlyphRenderer.this.geometry.method_35665();
 
@@ -129,13 +79,12 @@ public final class GlyphRenderer implements AutoCloseable {
 
         @Override
         public void close() {
+            MagicGeometry.POSITION_2F.endDrawing();
             VertexBuffer.unbind();
-            VERTEX_FORMAT.endDrawing();
 
             RenderSystem.enableCull();
 
-            this.framebuffer = null;
-            this.worldToScreen = null;
+            this.target = null;
         }
     }
 }

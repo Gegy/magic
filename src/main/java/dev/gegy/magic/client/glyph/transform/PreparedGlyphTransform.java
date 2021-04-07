@@ -100,7 +100,6 @@ public final class PreparedGlyphTransform implements GlyphTransform {
 
     @Override
     public Matrix4f getTransformationMatrix(float tickDelta) {
-        float distance = this.getDistance(tickDelta);
         Vec3f direction = this.getDirection(tickDelta);
 
         Matrix4f matrix = this.matrix;
@@ -122,8 +121,6 @@ public final class PreparedGlyphTransform implements GlyphTransform {
                 0.0F, 0.0F, 0.0F, 1.0F
         );
 
-        Matrix4fAccess.scale(matrix, 1.0F, 1.0F, distance);
-
         return matrix;
     }
 
@@ -135,10 +132,11 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         Vector4f transformed = new Vector4f(vector);
         transformed.transform(matrix);
 
-        vector.set(transformed.getX(), transformed.getY(), transformed.getZ());
+        float distance = this.getDistance(tickDelta);
+        vector.set(transformed.getX(), transformed.getY(), transformed.getZ() / distance);
 
         // once we're in plane space, move it onto the plane by scaling such that z=distance
-        vector.scale(this.getDistance(tickDelta) / vector.getZ());
+        vector.scale(distance / vector.getZ());
     }
 
     @Override
@@ -148,6 +146,7 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         Vector4f transformed = new Vector4f(vector);
         transformed.transform(matrix);
 
-        vector.set(transformed.getX(), transformed.getY(), transformed.getZ());
+        float distance = this.getDistance(tickDelta);
+        vector.set(transformed.getX(), transformed.getY(), transformed.getZ() * distance);
     }
 }

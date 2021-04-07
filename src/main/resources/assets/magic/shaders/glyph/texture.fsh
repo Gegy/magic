@@ -1,14 +1,14 @@
 #version 150
 
-uniform float texel_size;
-uniform float render_size;
+uniform float TexelSize;
+uniform float RenderSize;
 
-uniform float form_progress;
-uniform vec3 primary_color;
-uniform vec3 secondary_color;
-uniform int flags;
+uniform float FormProgress;
+uniform vec3 PrimaryColor;
+uniform vec3 SecondaryColor;
+uniform int Flags;
 
-uniform vec4 stroke;
+uniform vec4 Stroke;
 
 in vec2 texel;
 
@@ -62,7 +62,7 @@ const int STROKE_BIT = 1 << 15;
 const int HIGHLIGHT_NODES_BIT = 1 << 16;
 
 vec2 glyph_to_texel(vec2 glyph) {
-    return glyph * 0.5 * render_size;
+    return glyph * 0.5 * RenderSize;
 }
 
 // TODO: optimize! a lot of branching here
@@ -105,25 +105,25 @@ float circle_outline(vec2 p, float r) {
 
 // TODO: optimize
 int get_lines_at(vec2 texel) {
-    float circle_radius = render_size / 2.0;
+    float circle_radius = RenderSize / 2.0;
     float line = circle_outline(texel, circle_radius);
 
     for (int edge_idx = 0; edge_idx < EDGE_COUNT; edge_idx++) {
         Edge edge = EDGES[edge_idx];
-        if ((flags & edge.bit) != 0) {
+        if ((Flags & edge.bit) != 0) {
             line = min(line, line_segment(texel, glyph_to_texel(edge.from), glyph_to_texel(edge.to)));
         }
     }
 
-    if ((flags & STROKE_BIT) != 0) {
-        line = min(line, line_segment(texel, glyph_to_texel(stroke.xy), glyph_to_texel(stroke.zw)));
+    if ((Flags & STROKE_BIT) != 0) {
+        line = min(line, line_segment(texel, glyph_to_texel(Stroke.xy), glyph_to_texel(Stroke.zw)));
     }
 
     return int(round(line));
 }
 
 bool should_highlight_node(vec2 texel) {
-    if ((flags & HIGHLIGHT_NODES_BIT) == 0) {
+    if ((Flags & HIGHLIGHT_NODES_BIT) == 0) {
         return false;
     }
 
@@ -142,7 +142,7 @@ void main() {
     mirrored_texel.x = abs(mirrored_texel.x);
 
     if (should_highlight_node(mirrored_texel)) {
-        fragColor = vec4(vec3(1.0), form_progress);
+        fragColor = vec4(vec3(1.0), FormProgress);
         return;
     }
 
@@ -150,12 +150,12 @@ void main() {
 
     vec3 result = vec3(0.0);
     if (lines == 0) {
-        result = secondary_color;
+        result = SecondaryColor;
     } else if (lines == 1) {
-        result = primary_color;
+        result = PrimaryColor;
     } else {
         discard;
     }
 
-    fragColor = vec4(result, form_progress);
+    fragColor = vec4(result, FormProgress);
 }

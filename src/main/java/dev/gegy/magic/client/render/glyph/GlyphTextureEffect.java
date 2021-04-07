@@ -3,8 +3,9 @@ package dev.gegy.magic.client.render.glyph;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.GlyphStroke;
-import dev.gegy.magic.client.render.shader.SimpleShaderProgram;
-import net.minecraft.client.gl.GlProgramManager;
+import dev.gegy.magic.client.render.MagicGeometry;
+import dev.gegy.magic.client.render.shader.RenderEffect;
+import dev.gegy.magic.client.render.shader.EffectShader;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
@@ -12,11 +13,11 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 
-public final class GlyphTextureShader implements AutoCloseable {
+final class GlyphTextureEffect implements RenderEffect<GlyphRenderData> {
     private static final int STROKE_ACTIVE_BIT = 1 << 15;
     private static final int HIGHLIGHT_NODES_BIT = 1 << 16;
 
-    private final SimpleShaderProgram program;
+    private final EffectShader shader;
 
     private final int uniformTexelSize;
     private final int uniformRenderSize;
@@ -30,14 +31,14 @@ public final class GlyphTextureShader implements AutoCloseable {
     private final FloatBuffer secondaryColorData = MemoryUtil.memAllocFloat(3);
     private final FloatBuffer strokeData = MemoryUtil.memAllocFloat(4);
 
-    private GlyphTextureShader(
-            SimpleShaderProgram program,
+    private GlyphTextureEffect(
+            EffectShader shader,
             int uniformTexelSize, int uniformRenderSize,
             int uniformFormProgress,
             int uniformPrimaryColor, int uniformSecondaryColor,
             int uniformFlags, int uniformStroke
     ) {
-        this.program = program;
+        this.shader = shader;
         this.uniformTexelSize = uniformTexelSize;
         this.uniformRenderSize = uniformRenderSize;
         this.uniformFormProgress = uniformFormProgress;
@@ -47,19 +48,19 @@ public final class GlyphTextureShader implements AutoCloseable {
         this.uniformStroke = uniformStroke;
     }
 
-    public static GlyphTextureShader create(ResourceManager resources) throws IOException {
-        SimpleShaderProgram program = SimpleShaderProgram.compile(resources, Magic.identifier("glyph/texture"));
+    public static GlyphTextureEffect create(ResourceManager resources) throws IOException {
+        EffectShader shader = EffectShader.compile(resources, Magic.identifier("glyph/texture"), MagicGeometry.POSITION_2F);
 
-        int uniformTexelSize = program.getUniformLocation("texel_size");
-        int uniformRenderSize = program.getUniformLocation("render_size");
-        int uniformFormProgress = program.getUniformLocation("form_progress");
-        int uniformPrimaryColor = program.getUniformLocation("primary_color");
-        int uniformSecondaryColor = program.getUniformLocation("secondary_color");
-        int uniformFlags = program.getUniformLocation("flags");
-        int uniformStroke = program.getUniformLocation("stroke");
+        int uniformTexelSize = shader.getUniformLocation("TexelSize");
+        int uniformRenderSize = shader.getUniformLocation("RenderSize");
+        int uniformFormProgress = shader.getUniformLocation("FormProgress");
+        int uniformPrimaryColor = shader.getUniformLocation("PrimaryColor");
+        int uniformSecondaryColor = shader.getUniformLocation("SecondaryColor");
+        int uniformFlags = shader.getUniformLocation("Flags");
+        int uniformStroke = shader.getUniformLocation("Stroke");
 
-        return new GlyphTextureShader(
-                program,
+        return new GlyphTextureEffect(
+                shader,
                 uniformTexelSize, uniformRenderSize,
                 uniformFormProgress,
                 uniformPrimaryColor, uniformSecondaryColor,
@@ -67,11 +68,12 @@ public final class GlyphTextureShader implements AutoCloseable {
         );
     }
 
-    public void bind(GlyphTexture texture, GlyphRenderData renderData, float tickDelta) {
-        GlProgramManager.useProgram(this.program.getProgramRef());
+    @Override
+    public void bind(GlyphRenderData renderData) {
+        this.shader.bind();
 
-        GL20.glUniform1f(this.uniformTexelSize, texture.getTexelSize());
-        GL20.glUniform1f(this.uniformRenderSize, texture.getRenderSize());
+        GL20.glUniform1f(this.uniformTexelSize, GlyphTexture.TEXEL_SIZE);
+        GL20.glUniform1f(this.uniformRenderSize, GlyphTexture.RENDER_SIZE);
 
         GL20.glUniform1f(this.uniformFormProgress, renderData.formProgress);
 
@@ -100,19 +102,20 @@ public final class GlyphTextureShader implements AutoCloseable {
 
         FloatBuffer strokeData = this.strokeData;
         if (stroke != null) {
-            stroke.writeToBuffer(strokeData, tickDelta);
+            stroke.writeToBuffer(strokeData, renderData.tickDelta);
             strokeData.clear();
             RenderSystem.glUniform4(this.uniformStroke, strokeData);
         }
     }
 
+    @Override
     public void unbind() {
-        GlProgramManager.useProgram(0);
+        this.shader.unbind();
     }
 
     @Override
     public void close() {
-        this.program.close();
+        this.shader.close();
 
         MemoryUtil.memFree(this.primaryColorData);
         MemoryUtil.memFree(this.secondaryColorData);

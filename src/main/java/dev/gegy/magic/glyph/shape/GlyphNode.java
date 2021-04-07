@@ -33,17 +33,9 @@ public enum GlyphNode {
     private final boolean circumference;
     private final Vec2f point;
 
-    private final Vec2f[] mirroredPoints;
-
     GlyphNode(boolean circumference, float x, float y) {
         this.circumference = circumference;
         this.point = new Vec2f(x, y);
-
-        if (x != 0.0F) {
-            this.mirroredPoints = new Vec2f[] { this.point, new Vec2f(-x, y) };
-        } else {
-            this.mirroredPoints = new Vec2f[] { this.point };
-        }
     }
 
     public boolean isAtCircumference() {
@@ -52,10 +44,6 @@ public enum GlyphNode {
 
     public Vec2f getPoint() {
         return this.point;
-    }
-
-    public Vec2f[] getMirroredPoints() {
-        return this.mirroredPoints;
     }
 
     @Nullable
