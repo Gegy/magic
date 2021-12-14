@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.render.shader;
+package dev.gegy.magic.client.effect.shader;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;

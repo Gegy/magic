@@ -1,7 +1,7 @@
 package dev.gegy.magic;
 
+import dev.gegy.magic.client.effect.EffectRenderManager;
 import dev.gegy.magic.client.particle.MagicParticles;
-import dev.gegy.magic.client.render.EffectRenderManager;
 import dev.gegy.magic.network.s2c.MagicS2CNetworking;
 import net.fabricmc.api.ClientModInitializer;
 

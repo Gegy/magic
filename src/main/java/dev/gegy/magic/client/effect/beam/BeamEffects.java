@@ -1,11 +1,11 @@
-package dev.gegy.magic.client.render.beam;
+package dev.gegy.magic.client.effect.beam;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.gegy.magic.client.effect.shader.EffectShader;
+import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.particle.MagicParticles;
 import dev.gegy.magic.client.render.GeometryBuilder;
-import dev.gegy.magic.client.render.shader.EffectShader;
-import dev.gegy.magic.client.render.shader.EffectTexture;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.client.particle.ParticleManager;
@@ -118,7 +118,7 @@ public final class BeamEffects implements AutoCloseable {
         Vec3f origin = glyph.transform.projectFromPlane(
                 MathHelper.sin(theta) * radius,
                 MathHelper.cos(theta) * radius,
-                distance
+                distance + glyph.radius
         );
 
         double velocityX = direction.getX() * 0.2 + this.random.nextGaussian() * 0.01;
@@ -128,7 +128,7 @@ public final class BeamEffects implements AutoCloseable {
         // TODO: despawn based on distance from beam
 
         particleManager.addParticle(
-                MagicParticles.MAGIC_SPARK,
+                MagicParticles.SPARK,
                 sourcePos.x + origin.getX(),
                 sourcePos.y + origin.getY(),
                 sourcePos.z + origin.getZ(),
@@ -140,23 +140,22 @@ public final class BeamEffects implements AutoCloseable {
         Vec3f origin = new Vec3f(0.0F, 0.0F, distance + 16.0F * glyph.radius); // TODO: length
         glyph.transform.projectFromPlane(origin);
 
-        for (int i = 0; i < 8; i++) {
-            float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
+        float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
 
-            Vec3f ejectVelocity = glyph.transform.projectFromPlane(
-                    MathHelper.sin(theta) * 0.5F,
-                    MathHelper.cos(theta) * 0.5F,
-                    0.0F
-            );
+        Vec3f ejectVelocity = glyph.transform.projectFromPlane(
+                MathHelper.sin(theta) * 0.5F,
+                MathHelper.cos(theta) * 0.5F,
+                0.0F
+        );
+        ejectVelocity.scale(0.2F);
 
-            particleManager.addParticle(
-                    MagicParticles.MAGIC_SPARK,
-                    sourcePos.x + origin.getX(),
-                    sourcePos.y + origin.getY(),
-                    sourcePos.z + origin.getZ(),
-                    ejectVelocity.getX(), ejectVelocity.getY(), ejectVelocity.getZ()
-            );
-        }
+        particleManager.addParticle(
+                MagicParticles.SPARK,
+                sourcePos.x + origin.getX(),
+                sourcePos.y + origin.getY(),
+                sourcePos.z + origin.getZ(),
+                ejectVelocity.getX(), ejectVelocity.getY(), ejectVelocity.getZ()
+        );
     }
 
     @Override

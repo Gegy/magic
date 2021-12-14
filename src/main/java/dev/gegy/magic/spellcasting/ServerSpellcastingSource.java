@@ -134,7 +134,7 @@ public final class ServerSpellcastingSource {
 
     void onStopTracking(ServerPlayerEntity player) {
         for (ServerGlyph glyph : this.glyphs) {
-            PacketByteBuf packet = RemoveGlyphS2CPacket.create(glyph.getNetworkId());
+            PacketByteBuf packet = RemoveGlyphS2CPacket.create(glyph.networkId());
             RemoveGlyphS2CPacket.sendTo(player, packet);
         }
     }
@@ -154,7 +154,7 @@ public final class ServerSpellcastingSource {
     }
 
     void notifyGlyphRemove(ServerGlyph glyph) {
-        PacketByteBuf packet = RemoveGlyphS2CPacket.create(glyph.getNetworkId());
+        PacketByteBuf packet = RemoveGlyphS2CPacket.create(glyph.networkId());
         for (ServerPlayerEntity trackingPlayer : this.getTrackingPlayers()) {
             RemoveGlyphS2CPacket.sendTo(trackingPlayer, packet);
         }

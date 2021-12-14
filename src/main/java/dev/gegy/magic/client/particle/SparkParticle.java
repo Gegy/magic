@@ -14,11 +14,11 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 
-public final class MagicSparkParticle extends SpriteBillboardParticle {
+public final class SparkParticle extends SpriteBillboardParticle {
     private final float scale;
     private final Vec3f vector = new Vec3f();
 
-    MagicSparkParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
+    SparkParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
         this.velocityX = velocityX;
         this.velocityY = velocityY;
@@ -33,7 +33,7 @@ public final class MagicSparkParticle extends SpriteBillboardParticle {
         this.colorAlpha = 0.9F;
 
         this.gravityStrength = 0.0F;
-        this.field_28786 = 1.0F;
+        this.velocityMultiplier = 1.0F;
 
         this.collidesWithWorld = false;
     }
@@ -113,7 +113,7 @@ public final class MagicSparkParticle extends SpriteBillboardParticle {
 
         @Override
         public Particle createParticle(DefaultParticleType type, ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
-            MagicSparkParticle particle = new MagicSparkParticle(world, x, y, z, velocityX, velocityY, velocityZ);
+            SparkParticle particle = new SparkParticle(world, x, y, z, velocityX, velocityY, velocityZ);
             particle.setSprite(this.sprites);
             return particle;
         }

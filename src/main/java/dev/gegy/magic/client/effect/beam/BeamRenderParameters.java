@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.render.beam;
+package dev.gegy.magic.client.effect.beam;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -69,7 +69,7 @@ public final class BeamRenderParameters {
     }
 
     private Matrix4f computeViewProject(ClientGlyph glyph, WorldRenderContext context) {
-        Matrix4f modelMatrix = context.matrixStack().peek().getModel();
+        Matrix4f modelMatrix = context.matrixStack().peek().getPositionMatrix();
         Vec3d cameraPos = context.camera().getPos();
 
         Vec3d sourcePos = glyph.source.getCameraPosVec(context.tickDelta());

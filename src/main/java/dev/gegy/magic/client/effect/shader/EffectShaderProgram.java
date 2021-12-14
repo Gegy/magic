@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.render.shader;
+package dev.gegy.magic.client.effect.shader;
 
 import dev.gegy.magic.Magic;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;

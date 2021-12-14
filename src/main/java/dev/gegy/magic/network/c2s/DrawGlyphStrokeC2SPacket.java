@@ -1,8 +1,8 @@
 package dev.gegy.magic.network.c2s;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.spellcasting.ServerSpellcastingTracker;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.spellcasting.ServerSpellcastingTracker;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

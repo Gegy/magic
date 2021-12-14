@@ -7,13 +7,13 @@ import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.util.registry.Registry;
 
 public final class MagicParticles {
-    public static final DefaultParticleType MAGIC_SPARK = FabricParticleTypes.simple();
+    public static final DefaultParticleType SPARK = FabricParticleTypes.simple();
 
     public static void onInitialize() {
-        Registry.register(Registry.PARTICLE_TYPE, Magic.identifier("magic_spark"), MAGIC_SPARK);
+        Registry.register(Registry.PARTICLE_TYPE, Magic.identifier("spark"), SPARK);
     }
 
     public static void onInitializeClient() {
-        ParticleFactoryRegistry.getInstance().register(MAGIC_SPARK, MagicSparkParticle.Factory::new);
+        ParticleFactoryRegistry.getInstance().register(SPARK, SparkParticle.Factory::new);
     }
 }

@@ -1,9 +1,9 @@
 package dev.gegy.magic.glyph;
 
+import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.spellcasting.ServerSpellcastingSource;
 import dev.gegy.magic.spellcasting.Spell;
 import dev.gegy.magic.spellcasting.SpellGlyphStorage;
-import dev.gegy.magic.glyph.shape.GlyphNode;
 import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,19 +26,19 @@ public final class ServerGlyph {
         this.radius = radius;
     }
 
-    public int getNetworkId() {
+    public int networkId() {
         return this.networkId;
     }
 
-    public ServerSpellcastingSource getSource() {
+    public ServerSpellcastingSource source() {
         return this.source;
     }
 
-    public Vec3f getDirection() {
+    public Vec3f direction() {
         return this.direction;
     }
 
-    public float getRadius() {
+    public float radius() {
         return this.radius;
     }
 

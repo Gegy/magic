@@ -4,15 +4,7 @@ import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import net.minecraft.client.network.ClientPlayerEntity;
 
-public final class GlyphOutline {
-    public final GlyphPlane plane;
-    public final float radius;
-
-    GlyphOutline(GlyphPlane plane, float radius) {
-        this.plane = plane;
-        this.radius = radius;
-    }
-
+public record GlyphOutline(GlyphPlane plane, float radius) {
     public ClientGlyph createGlyph(ClientPlayerEntity source) {
         return new ClientGlyph(source, this.plane, this.radius, source.world.getTime());
     }

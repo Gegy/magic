@@ -1,11 +1,11 @@
-package dev.gegy.magic.client.render;
+package dev.gegy.magic.client.effect;
 
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.client.effect.beam.BeamEffects;
+import dev.gegy.magic.client.effect.beam.BeamRenderParameters;
+import dev.gegy.magic.client.effect.glyph.GlyphEffects;
+import dev.gegy.magic.client.effect.glyph.GlyphRenderParameters;
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.render.beam.BeamEffects;
-import dev.gegy.magic.client.render.beam.BeamRenderParameters;
-import dev.gegy.magic.client.render.glyph.GlyphEffects;
-import dev.gegy.magic.client.render.glyph.GlyphRenderParameters;
 import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;

@@ -1,7 +1,6 @@
 package dev.gegy.magic.spellcasting;
 
 import dev.gegy.magic.event.LateTrackingEvent;
-import dev.gegy.magic.event.PlayerLeaveEvent;
 import dev.gegy.magic.glyph.ServerGlyph;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -10,6 +9,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -34,7 +34,7 @@ public final class ServerSpellcastingTracker {
         LateTrackingEvent.START.register(INSTANCE::onPlayerStartTracking);
         EntityTrackingEvents.STOP_TRACKING.register(INSTANCE::onPlayerStopTracking);
 
-        PlayerLeaveEvent.EVENT.register(INSTANCE::onPlayerLeave);
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> INSTANCE.onPlayerLeave(handler.player));
     }
 
     private ServerSpellcastingTracker() {
@@ -71,7 +71,7 @@ public final class ServerSpellcastingTracker {
     public ServerGlyph removeGlyph(int networkId) {
         ServerGlyph glyph = this.glyphsById.remove(networkId);
         if (glyph != null) {
-            ServerSpellcastingSource source = glyph.getSource();
+            ServerSpellcastingSource source = glyph.source();
             source.removeGlyph(glyph);
             return glyph;
         } else {
@@ -98,7 +98,7 @@ public final class ServerSpellcastingTracker {
         if (source != null) {
             ServerGlyph glyph = source.stopDrawing();
             if (glyph != null) {
-                this.removeGlyph(glyph.getNetworkId());
+                this.removeGlyph(glyph.networkId());
             }
         }
     }
@@ -154,7 +154,7 @@ public final class ServerSpellcastingTracker {
         if (source != null) {
             List<ServerGlyph> glyphs = source.clearGlyphs();
             for (ServerGlyph glyph : glyphs) {
-                this.glyphsById.remove(glyph.getNetworkId());
+                this.glyphsById.remove(glyph.networkId());
             }
         }
     }

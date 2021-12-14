@@ -19,8 +19,8 @@ final class BeginDraw implements SpellDrawState {
             GlyphOutline outline = this.outlineTracker.pushSample(player.getRotationVec(1.0F));
             if (outline != null) {
                 ClientGlyph glyph = outline.createGlyph(player);
-                BeginGlyphC2SPacket.sendToServer(outline.plane.getDirection(), outline.radius);
-                return new DrawGlyph.OutsideCircle(glyph, outline.plane);
+                BeginGlyphC2SPacket.sendToServer(outline.plane().getDirection(), outline.radius());
+                return new DrawGlyph.OutsideCircle(glyph, outline.plane());
             }
         }
 

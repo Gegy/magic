@@ -1,8 +1,8 @@
-package dev.gegy.magic.client.render.glyph;
+package dev.gegy.magic.client.effect.glyph;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.render.GeometryBuilder;
-import dev.gegy.magic.client.render.shader.EffectTexture;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.resource.ResourceManager;

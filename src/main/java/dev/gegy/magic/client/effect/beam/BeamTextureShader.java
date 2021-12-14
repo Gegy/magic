@@ -1,10 +1,10 @@
-package dev.gegy.magic.client.render.beam;
+package dev.gegy.magic.client.effect.beam;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.client.effect.shader.EffectShader;
+import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.render.GeometryBuilder;
-import dev.gegy.magic.client.render.shader.EffectShader;
-import dev.gegy.magic.client.render.shader.EffectShaderProgram;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;

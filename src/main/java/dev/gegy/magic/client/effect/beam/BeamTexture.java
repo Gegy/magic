@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.render.beam;
+package dev.gegy.magic.client.effect.beam;
 
 final class BeamTexture {
     public static final int RESOLUTION = 8;

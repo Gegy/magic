@@ -1,9 +1,9 @@
 package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
-import dev.gegy.magic.spellcasting.Spell;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.spellcasting.Spell;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;

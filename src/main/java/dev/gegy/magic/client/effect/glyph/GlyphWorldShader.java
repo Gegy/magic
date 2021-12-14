@@ -1,77 +1,71 @@
-package dev.gegy.magic.client.render.beam;
+package dev.gegy.magic.client.effect.glyph;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.client.effect.shader.EffectShader;
+import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.render.GeometryBuilder;
-import dev.gegy.magic.client.render.shader.EffectShader;
-import dev.gegy.magic.client.render.shader.EffectShaderProgram;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.math.Matrix4f;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
-import java.util.function.Function;
 
-final class BeamEndWorldShader implements EffectShader<BeamRenderParameters> {
+final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
     private final EffectShaderProgram program;
 
     private final int uniformModelViewProject;
-    private final int uniformSampler;
     private final int uniformScale;
-
-    private final Function<BeamRenderParameters, Matrix4f> modelViewProject;
+    private final int uniformDistance;
+    private final int uniformSampler;
 
     private final FloatBuffer modelViewProjectData = MemoryUtil.memAllocFloat(4 * 4);
 
-    private BeamEndWorldShader(
+    private GlyphWorldShader(
             EffectShaderProgram program,
             int uniformModelViewProject,
-            int uniformSampler,
             int uniformScale,
-            Function<BeamRenderParameters, Matrix4f> modelViewProject
+            int uniformDistance,
+            int uniformSampler
     ) {
         this.program = program;
         this.uniformModelViewProject = uniformModelViewProject;
-        this.uniformSampler = uniformSampler;
         this.uniformScale = uniformScale;
-        this.modelViewProject = modelViewProject;
+        this.uniformDistance = uniformDistance;
+        this.uniformSampler = uniformSampler;
     }
 
-    public static BeamEndWorldShader create(ResourceManager resources, Function<BeamRenderParameters, Matrix4f> modelViewProject) throws IOException {
-        EffectShaderProgram program = EffectShaderProgram.compile(
-                resources,
-                Magic.identifier("beam/end_world"),
-                Magic.identifier("effect_world"),
-                GeometryBuilder.POSITION_2F
-        );
+    public static GlyphWorldShader create(ResourceManager resources) throws IOException {
+        EffectShaderProgram program = EffectShaderProgram.compile(resources, Magic.identifier("glyph/world"), Magic.identifier("effect_world"), GeometryBuilder.POSITION_2F);
 
         int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
-        int uniformSampler = program.getUniformLocation("Sampler");
         int uniformScale = program.getUniformLocation("Scale");
+        int uniformDistance = program.getUniformLocation("Distance");
+        int uniformSampler = program.getUniformLocation("Sampler");
 
-        return new BeamEndWorldShader(
+        return new GlyphWorldShader(
                 program,
                 uniformModelViewProject,
-                uniformSampler,
                 uniformScale,
-                modelViewProject
+                uniformDistance,
+                uniformSampler
         );
     }
 
     @Override
-    public void bind(BeamRenderParameters parameters) {
+    public void bind(GlyphRenderParameters parameters) {
         this.program.bind();
 
         RenderSystem.glUniform1i(this.uniformSampler, 0);
 
         FloatBuffer modelViewProjectData = this.modelViewProjectData;
-        this.modelViewProject.apply(parameters).writeColumnMajor(modelViewProjectData);
+        parameters.modelViewProject.writeColumnMajor(modelViewProjectData);
         modelViewProjectData.clear();
         RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
 
-        GL20.glUniform1f(this.uniformScale, BeamTexture.END_SCALE * parameters.sourceRadius);
+        GL20.glUniform1f(this.uniformScale, parameters.radius * GlyphTexture.RENDER_SCALE);
+        GL20.glUniform1f(this.uniformDistance, parameters.distance);
     }
 
     @Override

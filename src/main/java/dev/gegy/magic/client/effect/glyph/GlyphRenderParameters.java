@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.render.glyph;
+package dev.gegy.magic.client.effect.glyph;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.GlyphColor;
@@ -23,7 +23,7 @@ public final class GlyphRenderParameters {
     public GlyphStroke stroke;
 
     public void set(ClientGlyph glyph, WorldRenderContext context) {
-        Matrix4f modelMatrix = context.matrixStack().peek().getModel();
+        Matrix4f modelMatrix = context.matrixStack().peek().getPositionMatrix();
         Vec3d cameraPos = context.camera().getPos();
         float tickDelta = context.tickDelta();
 

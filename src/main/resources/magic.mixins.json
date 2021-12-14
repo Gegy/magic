@@ -6,8 +6,7 @@
   "mixins": [
     "EntityTrackerEntryMixin",
     "Matrix3fMixin",
-    "Matrix4fMixin",
-    "PlayerManagerMixin"
+    "Matrix4fMixin"
   ],
   "client": [
     "client.ClientEntityHandlerMixin",

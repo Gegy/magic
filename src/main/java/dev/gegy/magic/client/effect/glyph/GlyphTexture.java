@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.render.glyph;
+package dev.gegy.magic.client.effect.glyph;
 
 final class GlyphTexture {
     public static final int RESOLUTION = 32;
