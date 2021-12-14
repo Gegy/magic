@@ -20,7 +20,7 @@ public abstract class PlayerEntityModelMixin<T extends LivingEntity> extends Bip
     }
 
     @Inject(
-            method = "setAngles",
+            method = "setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/client/render/entity/model/BipedEntityModel;setAngles(Lnet/minecraft/entity/LivingEntity;FFFFF)V",

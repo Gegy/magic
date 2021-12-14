@@ -1,7 +1,7 @@
 package dev.gegy.magic.network.s2c;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -20,7 +20,7 @@ public final class SetPreparedSpellS2CPacket {
             client.submit(() -> {
                 Entity sourceEntity = handler.getWorld().getEntityById(sourceId);
                 if (sourceEntity != null) {
-                    ClientGlyphTracker.INSTANCE.prepareSpellFor(sourceEntity, animate);
+                    ClientSpellcastingTracker.INSTANCE.prepareSpellFor(sourceEntity, animate);
                 }
             });
         });

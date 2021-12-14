@@ -2,7 +2,10 @@ package dev.gegy.magic.glyph.shape;
 
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public final class GlyphShapeGenerator {
@@ -28,25 +31,25 @@ public final class GlyphShapeGenerator {
         return new ArrayList<>(result);
     }
 
-    private void generateAll(Consumer<GlyphShape> yield) {
+    private void generateAll(Consumer<GlyphShape> add) {
         // we always have to start from a point on the circumference because that is where our pen must start!
         for (GlyphNode rootNode : GlyphNode.CIRCUMFERENCE) {
-            this.advanceFromRoot(new GlyphEdge[0], rootNode, yield);
+            this.advanceFromRoot(new GlyphEdge[0], rootNode, add);
         }
     }
 
-    private void advanceFromRoot(GlyphEdge[] glyph, GlyphNode node, Consumer<GlyphShape> yield) {
+    private void advanceFromRoot(GlyphEdge[] glyph, GlyphNode node, Consumer<GlyphShape> add) {
         for (GlyphEdge nextEdge : GlyphEdge.getConnectedEdgesTo(node)) {
-            this.tryAdvanceWithEdge(glyph, node, nextEdge, yield);
+            this.tryAdvanceWithEdge(glyph, node, nextEdge, add);
         }
     }
 
-    private void tryAdvanceFrom(GlyphEdge[] glyph, GlyphNode node, Consumer<GlyphShape> yield) {
+    private void tryAdvanceFrom(GlyphEdge[] glyph, GlyphNode node, Consumer<GlyphShape> add) {
         int size = GlyphShape.getSize(glyph);
 
         // if this glyph has enough edges, yield
         if (size >= this.minSize) {
-            yield.accept(new GlyphShape(glyph, size));
+            add.accept(new GlyphShape(glyph, size));
         }
 
         // only continue picking new points if this glyph has not exceeded the maximum size
@@ -58,18 +61,18 @@ public final class GlyphShapeGenerator {
         if (node.isAtCircumference()) {
             for (GlyphNode nextNode : GlyphNode.CIRCUMFERENCE) {
                 if (nextNode != node) {
-                    this.advanceFromRoot(glyph, nextNode, yield);
+                    this.advanceFromRoot(glyph, nextNode, add);
                 }
             }
         }
 
         // find the all next nodes to travel to
         for (GlyphEdge nextEdge : GlyphEdge.getConnectedEdgesTo(node)) {
-            this.tryAdvanceWithEdge(glyph, node, nextEdge, yield);
+            this.tryAdvanceWithEdge(glyph, node, nextEdge, add);
         }
     }
 
-    private void tryAdvanceWithEdge(GlyphEdge[] glyph, GlyphNode node, GlyphEdge nextEdge, Consumer<GlyphShape> yield) {
+    private void tryAdvanceWithEdge(GlyphEdge[] glyph, GlyphNode node, GlyphEdge nextEdge, Consumer<GlyphShape> add) {
         // don't append this edge if we've already used it
         if (GlyphShape.containsEdge(glyph, nextEdge)) {
             return;
@@ -80,6 +83,6 @@ public final class GlyphShapeGenerator {
         GlyphEdge[] nextGlyph = Arrays.copyOf(glyph, glyph.length + 1);
         nextGlyph[glyph.length] = nextEdge;
 
-        this.tryAdvanceFrom(nextGlyph, nextNode, yield);
+        this.tryAdvanceFrom(nextGlyph, nextNode, add);
     }
 }

@@ -1,7 +1,7 @@
 package dev.gegy.magic.network.c2s;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.glyph.ServerGlyphTracker;
+import dev.gegy.magic.spellcasting.ServerSpellcastingTracker;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -15,7 +15,7 @@ public final class DrawGlyphShapeC2SPacket {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
             int shape = buf.readShort();
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.updateDrawingShape(player, shape);
+                ServerSpellcastingTracker.INSTANCE.updateDrawingShape(player, shape);
             });
         });
     }

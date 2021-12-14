@@ -12,28 +12,44 @@ public final class ArmPose {
     final Vec3f target = new Vec3f();
     final Vec3f prevTarget = new Vec3f();
 
-    public void resetPrevTarget() {
-        Vec3f target = this.target;
-        this.prevTarget.set(target.getX(), target.getY(), target.getZ());
+    public void resetInterpolation() {
+        this.prevTarget.set(this.target);
     }
 
-    public void pointTo(Vec3f newTarget) {
+    public void pointTo(LivingEntity entity, Vec3f newTarget) {
+        this.prevTarget.set(this.target);
+
         Vec3f target = this.target;
-        this.resetPrevTarget();
+        target.set(newTarget);
+
+        rotateVectorRelativeToBody(target, entity);
+        target.add(0.0F, entity.getStandingEyeHeight(), 0.0F);
 
         target.set(
-                newTarget.getX() * 16.0F,
-                24.0F - newTarget.getY() * 16.0F,
-                newTarget.getZ() * 16.0F
+                target.getX() * 16.0F,
+                24.0F - target.getY() * 16.0F,
+                target.getZ() * 16.0F
+        );
+    }
+
+    public static void rotateVectorRelativeToBody(Vec3f vector, LivingEntity entity) {
+        rotateVectorY(vector, (float) -Math.toRadians(entity.bodyYaw));
+    }
+
+    private static void rotateVectorY(Vec3f vector, float rotationY) {
+        float x = vector.getX();
+        float y = vector.getY();
+        float z = vector.getZ();
+        vector.set(
+                x * MathHelper.cos(rotationY) - z * MathHelper.sin(rotationY),
+                y,
+                x * MathHelper.sin(rotationY) + z * MathHelper.cos(rotationY)
         );
     }
 
     public void pointToPointOnPlane(LivingEntity entity, GlyphTransform transform, Vec3f target) {
-        transform.projectFromPlane(target, 1.0F);
-        SpellcastingAnimator.rotateVectorRelativeToBody(target, entity);
-        target.add(0.0F, entity.getStandingEyeHeight(), 0.0F);
-
-        this.pointTo(target);
+        transform.projectFromPlane(target);
+        this.pointTo(entity, target);
     }
 
     public void apply(ModelPart part, float tickDelta, float weight) {

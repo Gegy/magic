@@ -8,26 +8,26 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 public final class EffectTexture<T> implements AutoCloseable {
-    private final RenderEffect<T> effect;
+    private final EffectShader<T> shader;
 
     private final int width;
     private final int height;
     private final int framebufferRef;
     private final int textureRef;
 
-    private EffectTexture(RenderEffect<T> effect, int width, int height, int framebufferRef, int textureRef) {
-        this.effect = effect;
+    private EffectTexture(EffectShader<T> shader, int width, int height, int framebufferRef, int textureRef) {
+        this.shader = shader;
         this.width = width;
         this.height = height;
         this.framebufferRef = framebufferRef;
         this.textureRef = textureRef;
     }
 
-    public static <T> EffectTexture<T> create(RenderEffect<T> shader, int size) {
+    public static <T> EffectTexture<T> create(EffectShader<T> shader, int size) {
         return create(shader, size, size);
     }
 
-    public static <T> EffectTexture<T> create(RenderEffect<T> shader, int width, int height) {
+    public static <T> EffectTexture<T> create(EffectShader<T> shader, int width, int height) {
         int framebufferRef = GlStateManager.glGenFramebuffers();
         int textureRef = TextureUtil.generateTextureId();
 
@@ -46,18 +46,18 @@ public final class EffectTexture<T> implements AutoCloseable {
         return new EffectTexture<>(shader, width, height, framebufferRef, textureRef);
     }
 
-    public void renderWith(T data, VertexBuffer geometry) {
-        this.effect.bind(data);
+    public void renderWith(T parameters, VertexBuffer geometry) {
+        this.shader.bind(parameters);
 
         this.bindWrite();
         RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
         RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
 
-        geometry.method_35665();
+        geometry.drawElements();
 
         this.unbindWrite();
 
-        this.effect.unbind();
+        this.shader.unbind();
     }
 
     private void bindWrite() {

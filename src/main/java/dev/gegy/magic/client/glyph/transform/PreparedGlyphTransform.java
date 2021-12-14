@@ -1,12 +1,12 @@
 package dev.gegy.magic.client.glyph.transform;
 
 import dev.gegy.magic.math.Matrix4fAccess;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.Vector4f;
 
 public final class PreparedGlyphTransform implements GlyphTransform {
     private static final float FORM_TICKS = 6.0F;
@@ -43,7 +43,7 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         this.source = source;
         this.startTime = 0;
         this.initialDistance = 1.0F;
-        this.initialDirection = Vec3f.field_29501;
+        this.initialDirection = Vec3f.ZERO;
 
         this.targetDirection = new Vec3f(source.getRotationVec(1.0F));
         this.prevTargetDirection = this.targetDirection.copy();
@@ -133,7 +133,6 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         transformed.transform(matrix);
 
         float distance = this.getDistance(tickDelta);
-        vector.set(transformed.getX(), transformed.getY(), transformed.getZ() / distance);
 
         // once we're in plane space, move it onto the plane by scaling such that z=distance
         vector.scale(distance / vector.getZ());
@@ -146,7 +145,6 @@ public final class PreparedGlyphTransform implements GlyphTransform {
         Vector4f transformed = new Vector4f(vector);
         transformed.transform(matrix);
 
-        float distance = this.getDistance(tickDelta);
-        vector.set(transformed.getX(), transformed.getY(), transformed.getZ() * distance);
+        vector.set(transformed.getX(), transformed.getY(), transformed.getZ());
     }
 }

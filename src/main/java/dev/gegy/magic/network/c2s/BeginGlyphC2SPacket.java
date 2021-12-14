@@ -1,13 +1,13 @@
 package dev.gegy.magic.network.c2s;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.glyph.ServerGlyphTracker;
+import dev.gegy.magic.spellcasting.ServerSpellcastingTracker;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3f;
 
 public final class BeginGlyphC2SPacket {
     private static final Identifier CHANNEL = Magic.identifier("begin_glyph");
@@ -18,7 +18,7 @@ public final class BeginGlyphC2SPacket {
             Vec3f direction = new Vec3f(buf.readFloat(), buf.readFloat(), buf.readFloat());
             float radius = buf.readFloat();
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.startDrawing(player, direction, radius);
+                ServerSpellcastingTracker.INSTANCE.startDrawing(player, direction, radius);
             });
         });
     }

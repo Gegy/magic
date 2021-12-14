@@ -1,10 +1,10 @@
 package dev.gegy.magic.network.s2c;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
+import dev.gegy.magic.spellcasting.Spell;
 import dev.gegy.magic.glyph.ServerGlyph;
 import dev.gegy.magic.glyph.shape.GlyphNode;
-import dev.gegy.magic.spell.Spell;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -22,7 +22,7 @@ public final class UpdateGlyphS2CPacket {
             GlyphNode stroke = GlyphNode.byId(buf.readUnsignedByte());
 
             Spell matchedSpell = Spell.REGISTRY.get(buf.readVarInt());
-            client.submit(() -> ClientGlyphTracker.INSTANCE.updateGlyph(networkId, shape, stroke, matchedSpell));
+            client.submit(() -> ClientSpellcastingTracker.INSTANCE.updateGlyph(networkId, shape, stroke, matchedSpell));
         });
     }
 

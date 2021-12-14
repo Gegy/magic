@@ -2,9 +2,9 @@ package dev.gegy.magic.client.glyph.transform;
 
 import dev.gegy.magic.math.Matrix3fAccess;
 import dev.gegy.magic.math.Matrix4fAccess;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3f;
 
 public final class GlyphPlane implements GlyphTransform {
     public static final float DRAW_DISTANCE = 1.5F;

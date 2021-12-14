@@ -1,10 +1,11 @@
 package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
+import dev.gegy.magic.spellcasting.Spell;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
-import dev.gegy.magic.spell.Spell;
 import net.minecraft.entity.Entity;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
@@ -72,9 +73,9 @@ public final class ClientGlyph {
 
             float distance2 = x * x + y * y;
             if (distance2 >= 1.0F) {
-                float distance = (float) Math.sqrt(distance2);
-                x /= distance;
-                y /= distance;
+                float factor = MathHelper.fastInverseSqrt(distance2);
+                x *= factor;
+                y *= factor;
             }
 
             stroke.tick(x, y);
@@ -94,7 +95,7 @@ public final class ClientGlyph {
         this.lastLook = look;
 
         lookingAt.set((float) look.x, (float) look.y, (float) look.z);
-        this.transform.projectOntoPlane(lookingAt, 1.0F);
+        this.transform.projectOntoPlane(lookingAt);
     }
 
     public boolean putEdge(GlyphEdge edge) {

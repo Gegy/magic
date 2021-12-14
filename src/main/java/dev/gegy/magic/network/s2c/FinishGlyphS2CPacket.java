@@ -1,9 +1,9 @@
 package dev.gegy.magic.network.s2c;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
+import dev.gegy.magic.spellcasting.Spell;
 import dev.gegy.magic.glyph.ServerGlyph;
-import dev.gegy.magic.spell.Spell;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -19,7 +19,7 @@ public final class FinishGlyphS2CPacket {
             int networkId = buf.readVarInt();
             Spell spell = Spell.REGISTRY.get(buf.readVarInt());
             if (spell != null) {
-                client.submit(() -> ClientGlyphTracker.INSTANCE.finishDrawingOwnGlyph(networkId, spell));
+                client.submit(() -> ClientSpellcastingTracker.INSTANCE.finishDrawingOwnGlyph(networkId, spell));
             }
         });
     }

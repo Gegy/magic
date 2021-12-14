@@ -2,17 +2,19 @@ package dev.gegy.magic.client.render;
 
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
-import dev.gegy.magic.client.render.beam.BeamRenderData;
-import dev.gegy.magic.client.render.beam.BeamRenderer;
-import dev.gegy.magic.client.render.glyph.GlyphRenderData;
-import dev.gegy.magic.client.render.glyph.GlyphRenderer;
+import dev.gegy.magic.client.render.beam.BeamEffects;
+import dev.gegy.magic.client.render.beam.BeamRenderParameters;
+import dev.gegy.magic.client.render.glyph.GlyphEffects;
+import dev.gegy.magic.client.render.glyph.GlyphRenderParameters;
+import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.particle.ParticleManager;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
@@ -25,11 +27,11 @@ public final class EffectRenderManager {
 
     private static EffectRenderManager instance;
 
-    private GlyphRenderer glyphRenderer;
-    private BeamRenderer beamRenderer;
+    private GlyphEffects glyphEffects;
+    private BeamEffects beamEffects;
 
-    private final GlyphRenderData glyphRenderData = new GlyphRenderData();
-    private final BeamRenderData beamRenderData = new BeamRenderData();
+    private final GlyphRenderParameters glyphParameters = new GlyphRenderParameters();
+    private final BeamRenderParameters beamParameters = new BeamRenderParameters();
 
     public static void onInitialize() {
         if (EffectRenderManager.instance != null) {
@@ -51,6 +53,7 @@ public final class EffectRenderManager {
             }
         });
 
+        ClientTickEvents.END_CLIENT_TICK.register(instance::tick);
         WorldRenderEvents.AFTER_TRANSLUCENT.register(instance::render);
     }
 
@@ -63,99 +66,89 @@ public final class EffectRenderManager {
     }
 
     private void render(WorldRenderContext context) {
-        ClientPlayerEntity player = CLIENT.player;
-        if (player != null) {
-            this.renderGlyphs(context);
-            this.renderBeams(context);
+        if (CLIENT.world == null) return;
+
+        GlyphEffects glyphEffects = this.glyphEffects;
+        if (glyphEffects != null) {
+            this.renderGlyphs(context, glyphEffects);
+        }
+
+        BeamEffects beamEffects = this.beamEffects;
+        if (beamEffects != null) {
+            this.renderBeams(context, beamEffects);
         }
     }
 
-    private void renderGlyphs(WorldRenderContext context) {
-        GlyphRenderer glyphRenderer = this.glyphRenderer;
-        if (glyphRenderer == null) {
+    private void tick(MinecraftClient client) {
+        ClientWorld world = CLIENT.world;
+        if (world == null) return;
+
+        ParticleManager particleManager = client.particleManager;
+
+        // TODO: generic spell effect system
+        BeamEffects beamEffects = this.beamEffects;
+        if (beamEffects != null) {
+            for (ClientGlyph glyph : ClientSpellcastingTracker.INSTANCE.getGlyphs()) {
+                beamEffects.spawnParticles(particleManager, glyph);
+            }
+        }
+    }
+
+    private void renderGlyphs(WorldRenderContext context, GlyphEffects glyphEffects) {
+        Collection<ClientGlyph> glyphs = ClientSpellcastingTracker.INSTANCE.getGlyphs();
+        if (glyphs.isEmpty()) {
             return;
         }
 
-        ClientGlyphTracker glyphTracker = ClientGlyphTracker.INSTANCE;
-        Collection<ClientGlyph> glyphs = glyphTracker.getGlyphs();
-        ClientGlyph drawingGlyph = glyphTracker.getOwnDrawingGlyph();
-        if (glyphs.isEmpty() && drawingGlyph == null) {
-            return;
-        }
-
-        try (GlyphRenderer.Batcher batcher = glyphRenderer.start(CLIENT.getFramebuffer())) {
+        try (GlyphEffects.Renderer renderer = glyphEffects.renderTo(CLIENT.getFramebuffer())) {
+            GlyphRenderParameters parameters = this.glyphParameters;
             for (ClientGlyph glyph : glyphs) {
-                this.renderGlyph(batcher, glyph, context);
-            }
-
-            if (drawingGlyph != null) {
-                this.renderGlyph(batcher, drawingGlyph, context);
+                parameters.set(glyph, context);
+                renderer.render(parameters);
             }
         }
     }
 
-    private void renderGlyph(GlyphRenderer.Batcher renderer, ClientGlyph glyph, WorldRenderContext context) {
-        GlyphRenderData renderData = this.glyphRenderData;
-        renderData.set(glyph, context);
-        renderer.render(renderData);
-    }
-
-    private void renderBeams(WorldRenderContext context) {
-        BeamRenderer beamRenderer = this.beamRenderer;
-        if (beamRenderer == null) {
+    private void renderBeams(WorldRenderContext context, BeamEffects beamEffects) {
+        Collection<ClientGlyph> glyphs = ClientSpellcastingTracker.INSTANCE.getGlyphs();
+        if (glyphs.isEmpty()) {
             return;
         }
 
-        // TODO: should not be identical to glyph rendering
-        ClientGlyphTracker glyphTracker = ClientGlyphTracker.INSTANCE;
-        Collection<ClientGlyph> glyphs = glyphTracker.getGlyphs();
-        ClientGlyph drawingGlyph = glyphTracker.getOwnDrawingGlyph();
-        if (glyphs.isEmpty() && drawingGlyph == null) {
-            return;
-        }
-
-        try (BeamRenderer.Batcher batcher = beamRenderer.start(CLIENT.getFramebuffer())) {
+        try (BeamEffects.Renderer renderer = beamEffects.renderTo(CLIENT.getFramebuffer())) {
+            BeamRenderParameters parameters = this.beamParameters;
             for (ClientGlyph glyph : glyphs) {
-                this.renderBeam(batcher, glyph, context);
-            }
-
-            if (drawingGlyph != null) {
-                this.renderBeam(batcher, drawingGlyph, context);
+                parameters.set(glyph, context);
+                renderer.render(parameters);
             }
         }
-    }
-
-    private void renderBeam(BeamRenderer.Batcher renderer, ClientGlyph glyph, WorldRenderContext context) {
-        BeamRenderData renderData = this.beamRenderData;
-        renderData.set(glyph, context);
-        renderer.render(renderData);
     }
 
     private void load(ResourceManager resources) {
         this.close();
 
         try {
-            this.glyphRenderer = GlyphRenderer.create(resources);
+            this.glyphEffects = GlyphEffects.create(resources);
         } catch (IOException e) {
-            Magic.LOGGER.error("Failed to create glyph renderer", e);
+            Magic.LOGGER.error("Failed to create glyph effects", e);
         }
 
         try {
-            this.beamRenderer = BeamRenderer.create(resources);
+            this.beamEffects = BeamEffects.create(resources);
         } catch (IOException e) {
-            Magic.LOGGER.error("Failed to create beam renderer", e);
+            Magic.LOGGER.error("Failed to create beam effects", e);
         }
     }
 
     private void close() {
-        if (this.glyphRenderer != null) {
-            this.glyphRenderer.close();
-            this.glyphRenderer = null;
+        if (this.glyphEffects != null) {
+            this.glyphEffects.close();
+            this.glyphEffects = null;
         }
 
-        if (this.beamRenderer != null) {
-            this.beamRenderer.close();
-            this.beamRenderer = null;
+        if (this.beamEffects != null) {
+            this.beamEffects.close();
+            this.beamEffects = null;
         }
     }
 }

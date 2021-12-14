@@ -1,7 +1,7 @@
 package dev.gegy.magic.network.c2s;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.glyph.ServerGlyphTracker;
+import dev.gegy.magic.spellcasting.ServerSpellcastingTracker;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
@@ -16,7 +16,7 @@ public final class DrawGlyphStrokeC2SPacket {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
             GlyphNode node = GlyphNode.byId(buf.readUnsignedByte());
             server.submit(() -> {
-                ServerGlyphTracker.INSTANCE.updateDrawingStroke(player, node);
+                ServerSpellcastingTracker.INSTANCE.updateDrawingStroke(player, node);
             });
         });
     }

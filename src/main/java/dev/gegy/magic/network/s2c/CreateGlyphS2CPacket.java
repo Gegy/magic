@@ -2,19 +2,19 @@ package dev.gegy.magic.network.s2c;
 
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
 import dev.gegy.magic.client.glyph.transform.GlyphPlane;
+import dev.gegy.magic.spellcasting.Spell;
 import dev.gegy.magic.glyph.ServerGlyph;
-import dev.gegy.magic.spell.Spell;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3f;
 
 public final class CreateGlyphS2CPacket {
     private static final Identifier CHANNEL = Magic.identifier("create_glyph");
@@ -35,7 +35,7 @@ public final class CreateGlyphS2CPacket {
                 ClientWorld world = handler.getWorld();
                 Entity sourceEntity = world.getEntityById(sourceId);
                 if (sourceEntity != null) {
-                    ClientGlyph glyph = ClientGlyphTracker.INSTANCE.addGlyph(networkId, sourceEntity, plane, radius, shape);
+                    ClientGlyph glyph = ClientSpellcastingTracker.INSTANCE.addGlyph(networkId, sourceEntity, plane, radius, shape);
                     if (matchedSpell != null) {
                         glyph.applySpell(matchedSpell);
                     }

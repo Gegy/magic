@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.animator;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.ClientGlyphTracker;
+import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.Arm;
@@ -24,13 +24,13 @@ public interface SpellcastingPose {
 
         @Override
         public void beginAnimating() {
-            this.leftArm.resetPrevTarget();
-            this.rightArm.resetPrevTarget();
+            this.leftArm.resetInterpolation();
+            this.rightArm.resetInterpolation();
         }
 
         @Override
         public boolean tick(LivingEntity entity) {
-            ClientGlyph glyph = ClientGlyphTracker.INSTANCE.getDrawingGlyphFor(entity);
+            ClientGlyph glyph = ClientSpellcastingTracker.INSTANCE.getDrawingGlyphFor(entity);
             if (glyph == null) {
                 return false;
             }
@@ -63,12 +63,12 @@ public interface SpellcastingPose {
 
         @Override
         public void beginAnimating() {
-            this.mainArm.resetPrevTarget();
+            this.mainArm.resetInterpolation();
         }
 
         @Override
         public boolean tick(LivingEntity entity) {
-            List<ClientGlyph> preparedGlyphs = ClientGlyphTracker.INSTANCE.getPreparedGlyphsFor(entity);
+            List<ClientGlyph> preparedGlyphs = ClientSpellcastingTracker.INSTANCE.getPreparedGlyphsFor(entity);
             if (preparedGlyphs.isEmpty()) {
                 return false;
             }
@@ -76,18 +76,13 @@ public interface SpellcastingPose {
             ClientGlyph glyph = preparedGlyphs.get(0);
 
             Vec3f direction = glyph.transform.getDirection(1.0F);
-            SpellcastingAnimator.rotateVectorRelativeToBody(direction, entity);
-
             float distance = glyph.transform.getDistance(1.0F);
 
             Vec3f target = this.target;
-            target.set(
-                    direction.getX() * distance,
-                    entity.getStandingEyeHeight() + direction.getY() * distance,
-                    direction.getZ() * distance
-            );
+            target.set(direction);
+            target.scale(distance);
 
-            this.mainArm.pointTo(target);
+            this.mainArm.pointTo(entity, target);
 
             return true;
         }
