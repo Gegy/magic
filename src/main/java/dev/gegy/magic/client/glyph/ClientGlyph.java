@@ -3,6 +3,7 @@ package dev.gegy.magic.client.glyph;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.math.Easings;
 import dev.gegy.magic.spellcasting.Spell;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
@@ -12,7 +13,7 @@ import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
 public final class ClientGlyph {
-    public static final float FORM_TICKS = 2;
+    public static final float FORM_TICKS = 5.0F;
 
     private int networkId = -1;
 
@@ -110,7 +111,8 @@ public final class ClientGlyph {
 
     public float getFormProgress(long time, float tickDelta) {
         float age = (float) (time - this.createTime) + tickDelta;
-        return Math.min(age / FORM_TICKS, 1.0F);
+        float progress = Math.min(age / FORM_TICKS, 1.0F);
+        return Easings.easeInCirc(progress);
     }
 
     public GlyphStroke startStroke(GlyphNode node) {

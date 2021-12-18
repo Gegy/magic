@@ -52,6 +52,7 @@ public final class GlyphEffects implements AutoCloseable {
             this.target = target;
 
             RenderSystem.disableCull();
+            RenderSystem.enableBlend();
 
             GlyphEffects.this.geometry.bind();
             GeometryBuilder.POSITION_2F.startDrawing();
@@ -83,6 +84,7 @@ public final class GlyphEffects implements AutoCloseable {
             VertexBuffer.unbind();
 
             RenderSystem.enableCull();
+            RenderSystem.disableBlend();
 
             this.target = null;
         }

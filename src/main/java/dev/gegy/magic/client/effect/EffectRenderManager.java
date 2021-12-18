@@ -73,10 +73,10 @@ public final class EffectRenderManager {
             this.renderGlyphs(context, glyphEffects);
         }
 
-        BeamEffects beamEffects = this.beamEffects;
+        /*BeamEffects beamEffects = this.beamEffects;
         if (beamEffects != null) {
             this.renderBeams(context, beamEffects);
-        }
+        }*/
     }
 
     private void tick(MinecraftClient client) {
@@ -86,12 +86,12 @@ public final class EffectRenderManager {
         ParticleManager particleManager = client.particleManager;
 
         // TODO: generic spell effect system
-        BeamEffects beamEffects = this.beamEffects;
+        /*BeamEffects beamEffects = this.beamEffects;
         if (beamEffects != null) {
             for (ClientGlyph glyph : ClientSpellcastingTracker.INSTANCE.getGlyphs()) {
                 beamEffects.spawnParticles(particleManager, glyph);
             }
-        }
+        }*/
     }
 
     private void renderGlyphs(WorldRenderContext context, GlyphEffects glyphEffects) {

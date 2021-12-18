@@ -20,16 +20,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 public final class EffectShaderProgram implements GlShader, AutoCloseable {
-    final int programRef;
-    final Program vertexShader;
-    final Program fragmentShader;
-    final VertexFormat format;
+    private final int programRef;
+    private final Program vertexShader;
+    private final Program fragmentShader;
 
-    private EffectShaderProgram(int programRef, Program vertexShader, Program fragmentShader, VertexFormat format) {
+    private EffectShaderProgram(int programRef, Program vertexShader, Program fragmentShader) {
         this.programRef = programRef;
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
-        this.format = format;
     }
 
     public static EffectShaderProgram compile(ResourceManager resources, Identifier location, VertexFormat format) throws IOException {
@@ -41,7 +39,7 @@ public final class EffectShaderProgram implements GlShader, AutoCloseable {
         Program fragmentShader = compileShader(resources, Program.Type.FRAGMENT, fragmentLocation);
 
         int programRef = GlProgramManager.createProgram();
-        EffectShaderProgram shader = new EffectShaderProgram(programRef, vertexShader, fragmentShader, format);
+        EffectShaderProgram shader = new EffectShaderProgram(programRef, vertexShader, fragmentShader);
         shader.bindAttributes(format);
 
         GlProgramManager.linkProgram(shader);
