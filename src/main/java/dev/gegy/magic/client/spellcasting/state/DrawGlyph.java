@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.spellcasting.draw;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.GlyphStroke;
@@ -8,13 +8,13 @@ import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.network.c2s.CancelGlyphC2SPacket;
 import dev.gegy.magic.network.c2s.DrawGlyphShapeC2SPacket;
 import dev.gegy.magic.network.c2s.DrawGlyphStrokeC2SPacket;
-import dev.gegy.magic.spellcasting.Spell;
+import dev.gegy.magic.glyph.GlyphType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
-abstract class DrawGlyph implements SpellDrawState {
+abstract class DrawGlyph implements SpellCastState {
     // 15% of circle radius
     private static final float SELECT_DISTANCE = 0.15F;
     private static final float SELECT_DISTANCE_2 = SELECT_DISTANCE * SELECT_DISTANCE;
@@ -31,7 +31,7 @@ abstract class DrawGlyph implements SpellDrawState {
     }
 
     @Override
-    public final SpellDrawState tick(ClientPlayerEntity player) {
+    public final SpellCastState tick(ClientPlayerEntity player) {
         if (player.isSneaking()) {
             CancelGlyphC2SPacket.sendToServer();
             return new ContinueDraw();
@@ -54,12 +54,12 @@ abstract class DrawGlyph implements SpellDrawState {
     }
 
     @Override
-    public final FinishDrawingResult finishDrawingGlyph(Spell spell) {
-        this.glyph.applySpell(spell);
+    public final FinishDrawingResult finishDrawingGlyph(GlyphType matchedType) {
+        this.glyph.applyMatchedType(matchedType);
         return FinishDrawingResult.finishGlyph(new ContinueDraw(), this.glyph);
     }
 
-    protected abstract SpellDrawState tickDraw(float x, float y);
+    protected abstract SpellCastState tickDraw(float x, float y);
 
     protected boolean putEdge(GlyphEdge edge) {
         if (this.glyph.putEdge(edge)) {
@@ -103,7 +103,7 @@ abstract class DrawGlyph implements SpellDrawState {
         }
 
         @Override
-        protected SpellDrawState tickDraw(float x, float y) {
+        protected SpellCastState tickDraw(float x, float y) {
             GlyphNode node = this.selectNodeAt(GlyphNode.CIRCUMFERENCE, x, y);
             if (node != null) {
                 return new Line(this.glyph, this.plane, node);
@@ -126,7 +126,7 @@ abstract class DrawGlyph implements SpellDrawState {
         }
 
         @Override
-        protected SpellDrawState tickDraw(float x, float y) {
+        protected SpellCastState tickDraw(float x, float y) {
             if (this.isOutsideCircle(x, y)) {
                 this.stopStroke();
                 return new OutsideCircle(this.glyph, this.plane);

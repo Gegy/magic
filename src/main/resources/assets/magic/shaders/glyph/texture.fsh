@@ -3,7 +3,7 @@
 uniform float TexelSize;
 uniform float RenderSize;
 
-uniform float FormProgress;
+uniform float Opacity;
 uniform vec3 PrimaryColor;
 uniform vec3 SecondaryColor;
 uniform int Flags;
@@ -142,7 +142,7 @@ void main() {
     mirrored_texel.x = abs(mirrored_texel.x);
 
     if (should_highlight_node(mirrored_texel)) {
-        fragColor = vec4(vec3(1.0), FormProgress);
+        fragColor = vec4(vec3(1.0), Opacity);
         return;
     }
 
@@ -157,5 +157,5 @@ void main() {
         discard;
     }
 
-    fragColor = vec4(result, FormProgress);
+    fragColor = vec4(result, Opacity);
 }

@@ -1,8 +1,8 @@
 package dev.gegy.magic.client.effect;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.client.effect.beam.BeamEffects;
-import dev.gegy.magic.client.effect.beam.BeamRenderParameters;
+import dev.gegy.magic.client.effect.casting.beam.BeamEffects;
+import dev.gegy.magic.client.effect.casting.beam.BeamRenderParameters;
 import dev.gegy.magic.client.effect.glyph.GlyphEffects;
 import dev.gegy.magic.client.effect.glyph.GlyphRenderParameters;
 import dev.gegy.magic.client.glyph.ClientGlyph;

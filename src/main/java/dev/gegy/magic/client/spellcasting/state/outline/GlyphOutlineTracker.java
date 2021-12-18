@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.spellcasting.draw.outline;
+package dev.gegy.magic.client.spellcasting.state.outline;
 
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;

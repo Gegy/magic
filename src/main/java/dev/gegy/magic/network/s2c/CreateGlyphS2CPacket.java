@@ -5,7 +5,7 @@ import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
 import dev.gegy.magic.glyph.ServerGlyph;
-import dev.gegy.magic.spellcasting.Spell;
+import dev.gegy.magic.glyph.GlyphType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -29,15 +29,15 @@ public final class CreateGlyphS2CPacket {
             GlyphPlane plane = GlyphPlane.create(new Vec3f(directionX, directionY, directionZ), GlyphPlane.DRAW_DISTANCE);
             float radius = buf.readFloat();
             int shape = buf.readShort();
-            Spell matchedSpell = Spell.REGISTRY.get(buf.readVarInt());
+            GlyphType matchedGlyphType = GlyphType.REGISTRY.get(buf.readVarInt());
 
             client.submit(() -> {
                 ClientWorld world = handler.getWorld();
                 Entity sourceEntity = world.getEntityById(sourceId);
                 if (sourceEntity != null) {
                     ClientGlyph glyph = ClientSpellcastingTracker.INSTANCE.addGlyph(networkId, sourceEntity, plane, radius, shape);
-                    if (matchedSpell != null) {
-                        glyph.applySpell(matchedSpell);
+                    if (matchedGlyphType != null) {
+                        glyph.applyMatchedType(matchedGlyphType);
                     }
                 }
             });
@@ -58,8 +58,8 @@ public final class CreateGlyphS2CPacket {
         buf.writeFloat(glyph.radius());
         buf.writeShort(glyph.getShape());
 
-        Spell matchedSpell = glyph.getMatchedSpell();
-        buf.writeVarInt(matchedSpell != null ? Spell.REGISTRY.getRawId(matchedSpell) : -1);
+        GlyphType matchedGlyphType = glyph.getMatchedType();
+        buf.writeVarInt(matchedGlyphType != null ? GlyphType.REGISTRY.getRawId(matchedGlyphType) : -1);
 
         return buf;
     }

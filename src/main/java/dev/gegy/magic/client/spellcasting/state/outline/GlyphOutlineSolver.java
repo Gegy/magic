@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.spellcasting.draw.outline;
+package dev.gegy.magic.client.spellcasting.state.outline;
 
 import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import net.minecraft.util.math.MathHelper;

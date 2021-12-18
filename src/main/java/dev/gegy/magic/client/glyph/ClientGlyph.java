@@ -1,10 +1,11 @@
 package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
+import dev.gegy.magic.glyph.GlyphStyle;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.math.Easings;
-import dev.gegy.magic.spellcasting.Spell;
+import dev.gegy.magic.glyph.GlyphType;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
@@ -22,8 +23,8 @@ public final class ClientGlyph {
 
     public final float radius;
 
-    private final GlyphColor primaryColor = new GlyphColor(GlyphColor.DEFAULT_PRIMARY);
-    private final GlyphColor secondaryColor = new GlyphColor(GlyphColor.DEFAULT_SECONDARY);
+    private final FadingColor primaryColor = new FadingColor(GlyphStyle.UNDIFFERENTIATED.primaryColor());
+    private final FadingColor secondaryColor = new FadingColor(GlyphStyle.UNDIFFERENTIATED.secondaryColor());
 
     public int shape;
 
@@ -126,9 +127,9 @@ public final class ClientGlyph {
         this.stroke = null;
     }
 
-    public void applySpell(Spell spell) {
-        this.primaryColor.set(spell.red, spell.green, spell.blue);
-        this.secondaryColor.set(GlyphColor.primaryToSecondary(spell.red, spell.green, spell.blue));
+    public void applyMatchedType(GlyphType type) {
+        this.primaryColor.set(type.style().primaryColor());
+        this.secondaryColor.set(type.style().secondaryColor());
         this.stroke = null;
     }
 
@@ -140,11 +141,11 @@ public final class ClientGlyph {
         }
     }
 
-    public GlyphColor getPrimaryColor() {
+    public FadingColor getPrimaryColor() {
         return this.primaryColor;
     }
 
-    public GlyphColor getSecondaryColor() {
+    public FadingColor getSecondaryColor() {
         return this.secondaryColor;
     }
 

@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.effect.beam;
+package dev.gegy.magic.client.effect.casting.beam;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -45,12 +45,13 @@ public final class BeamRenderParameters {
         this.time = (glyphTime + tickDelta) / 20.0F;
     }
 
-    // TODO: unify cloud and impact
     private void setCloudModelViewProject(Matrix4f viewProject, Matrix4f glyphTransform) {
+        float distance = this.sourceRadius * 0.8F + this.distance;
+
         Matrix4f cloudModelViewProject = this.cloudModelViewProject;
         cloudModelViewProject.load(viewProject);
         cloudModelViewProject.multiply(glyphTransform);
-        cloudModelViewProject.multiplyByTranslation(0.0F, 0.0F, this.sourceRadius * 0.8F + this.distance);
+        cloudModelViewProject.multiplyByTranslation(0.0F, 0.0F, distance);
     }
 
     private void setImpactModelViewProject(WorldRenderContext context, Matrix4f viewProject, Matrix4f glyphTransform) {

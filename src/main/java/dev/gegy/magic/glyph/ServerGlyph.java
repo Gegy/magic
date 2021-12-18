@@ -1,9 +1,8 @@
 package dev.gegy.magic.glyph;
 
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
 import dev.gegy.magic.spellcasting.ServerSpellcastingSource;
-import dev.gegy.magic.spellcasting.Spell;
-import dev.gegy.magic.spellcasting.SpellGlyphStorage;
 import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,7 +14,7 @@ public final class ServerGlyph {
 
     private int shape;
 
-    private Spell matchedSpell;
+    private GlyphType matchedType;
 
     private GlyphNode stroke;
 
@@ -50,11 +49,17 @@ public final class ServerGlyph {
         this.stroke = stroke;
     }
 
-    public Spell tryMatchSpell(SpellGlyphStorage spellStorage) {
-        Spell spell = spellStorage.matchSpell(this.shape);
-        this.matchedSpell = spell;
-        this.stroke = null;
-        return spell;
+    public GlyphType tryMatchGlyph(GlyphShapeStorage glyphShapes) {
+        int shape = this.shape;
+        GlyphType matchedType = glyphShapes.getGlyphForShape(shape);
+        this.setComplete(shape, matchedType);
+        return matchedType;
+    }
+
+    public void setComplete(int shape, GlyphType matchedType) {
+        this.shape = shape;
+        this.matchedType = matchedType;
+        this.stroke= null;
     }
 
     public int getShape() {
@@ -62,8 +67,8 @@ public final class ServerGlyph {
     }
 
     @Nullable
-    public Spell getMatchedSpell() {
-        return this.matchedSpell;
+    public GlyphType getMatchedType() {
+        return this.matchedType;
     }
 
     @Nullable

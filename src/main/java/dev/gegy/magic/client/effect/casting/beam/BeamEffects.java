@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.effect.beam;
+package dev.gegy.magic.client.effect.casting.beam;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.client.effect.shader.EffectShader;

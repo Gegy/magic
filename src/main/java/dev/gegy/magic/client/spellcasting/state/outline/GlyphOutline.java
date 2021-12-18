@@ -1,4 +1,4 @@
-package dev.gegy.magic.client.spellcasting.draw.outline;
+package dev.gegy.magic.client.spellcasting.state.outline;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphPlane;

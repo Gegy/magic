@@ -4,7 +4,7 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.spellcasting.ClientSpellcastingTracker;
 import dev.gegy.magic.glyph.ServerGlyph;
 import dev.gegy.magic.glyph.shape.GlyphNode;
-import dev.gegy.magic.spellcasting.Spell;
+import dev.gegy.magic.glyph.GlyphType;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -21,8 +21,8 @@ public final class UpdateGlyphS2CPacket {
             int shape = buf.readShort();
             GlyphNode stroke = GlyphNode.byId(buf.readUnsignedByte());
 
-            Spell matchedSpell = Spell.REGISTRY.get(buf.readVarInt());
-            client.submit(() -> ClientSpellcastingTracker.INSTANCE.updateGlyph(networkId, shape, stroke, matchedSpell));
+            GlyphType matchedGlyphType = GlyphType.REGISTRY.get(buf.readVarInt());
+            client.submit(() -> ClientSpellcastingTracker.INSTANCE.updateGlyph(networkId, shape, stroke, matchedGlyphType));
         });
     }
 
@@ -35,8 +35,8 @@ public final class UpdateGlyphS2CPacket {
         int strokeId = stroke != null ? stroke.ordinal() : 0xFF;
         buf.writeByte(strokeId & 0xFF);
 
-        Spell matchedSpell = glyph.getMatchedSpell();
-        buf.writeVarInt(matchedSpell != null ? Spell.REGISTRY.getRawId(matchedSpell) : -1);
+        GlyphType matchedGlyphType = glyph.getMatchedType();
+        buf.writeVarInt(matchedGlyphType != null ? GlyphType.REGISTRY.getRawId(matchedGlyphType) : -1);
 
         return buf;
     }

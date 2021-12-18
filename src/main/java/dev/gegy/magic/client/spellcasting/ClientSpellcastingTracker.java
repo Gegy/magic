@@ -6,9 +6,9 @@ import dev.gegy.magic.client.event.ClientRemoveEntityEvent;
 import dev.gegy.magic.client.glyph.ClientGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphPlane;
 import dev.gegy.magic.client.glyph.transform.PreparedGlyphTransform;
-import dev.gegy.magic.client.spellcasting.draw.SpellDrawController;
+import dev.gegy.magic.client.spellcasting.state.SpellCastController;
 import dev.gegy.magic.glyph.shape.GlyphNode;
-import dev.gegy.magic.spellcasting.Spell;
+import dev.gegy.magic.glyph.GlyphType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -26,7 +26,7 @@ import java.util.List;
 public final class ClientSpellcastingTracker {
     public static final ClientSpellcastingTracker INSTANCE = new ClientSpellcastingTracker();
 
-    private final SpellDrawController drawController = new SpellDrawController();
+    private final SpellCastController drawController = new SpellCastController();
 
     static {
         ClientTickEvents.END_CLIENT_TICK.register(INSTANCE::tick);
@@ -126,12 +126,12 @@ public final class ClientSpellcastingTracker {
         return this.sources.computeIfAbsent(entity.getId(), i -> new ClientSpellcastingSource());
     }
 
-    public void updateGlyph(int networkId, int shape, @Nullable GlyphNode stroke, @Nullable Spell matchedSpell) {
+    public void updateGlyph(int networkId, int shape, @Nullable GlyphNode stroke, @Nullable GlyphType matchedType) {
         ClientGlyph glyph = this.getGlyphById(networkId);
         if (glyph != null) {
             glyph.shape = shape;
-            if (matchedSpell != null) {
-                glyph.applySpell(matchedSpell);
+            if (matchedType != null) {
+                glyph.applyMatchedType(matchedType);
             } else {
                 glyph.applyStroke(stroke);
             }
@@ -141,8 +141,8 @@ public final class ClientSpellcastingTracker {
         }
     }
 
-    public void finishDrawingOwnGlyph(int networkId, Spell spell) {
-        ClientGlyph glyph = this.drawController.finishDrawingGlyph(spell);
+    public void finishDrawingOwnGlyph(int networkId, GlyphType matchedType) {
+        ClientGlyph glyph = this.drawController.finishDrawingGlyph(matchedType);
         if (glyph != null) {
             glyph.setNetworkId(networkId);
             this.glyphsById.put(networkId, glyph);

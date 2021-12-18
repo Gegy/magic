@@ -117,11 +117,6 @@ public final class GlyphShape {
 
     @Override
     public int hashCode() {
-        // hash must to be commutative given order-independent equality!
-        int hash = this.edges.length * 31;
-        for (GlyphEdge edge : this.edges) {
-            hash += edge.hashCode();
-        }
-        return hash;
+        return this.bits * 31;
     }
 }

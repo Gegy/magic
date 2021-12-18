@@ -1,7 +1,9 @@
 package dev.gegy.magic.spellcasting;
 
+import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.ServerGlyph;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
 import dev.gegy.magic.network.s2c.CreateGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.FinishGlyphS2CPacket;
 import dev.gegy.magic.network.s2c.RemoveGlyphS2CPacket;
@@ -56,11 +58,11 @@ public final class ServerSpellcastingSource {
         if (glyph != null) {
             glyph.setShape(shape);
 
-            SpellGlyphStorage spellStorage = SpellGlyphStorage.get(this.player.server);
+            GlyphShapeStorage glyphShapes = GlyphShapeStorage.get(this.player.server);
 
-            Spell spell = glyph.tryMatchSpell(spellStorage);
-            if (spell != null) {
-                PacketByteBuf packet = FinishGlyphS2CPacket.create(glyph, spell);
+            GlyphType glyphType = glyph.tryMatchGlyph(glyphShapes);
+            if (glyphType != null) {
+                PacketByteBuf packet = FinishGlyphS2CPacket.create(glyph, glyphType);
                 FinishGlyphS2CPacket.sendTo(this.player, packet);
             }
 

@@ -1,15 +1,15 @@
-package dev.gegy.magic.client.spellcasting.draw;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.spellcasting.Spell;
+import dev.gegy.magic.glyph.GlyphType;
 import net.minecraft.client.network.ClientPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
-public final class SpellDrawController {
-    private SpellDrawState state;
+public final class SpellCastController {
+    private SpellCastState state;
 
     public void tick(ClientPlayerEntity player) {
-        SpellDrawState state = this.state;
+        var state = this.state;
         if (state == null) {
             this.state = state = new BeginDraw();
         }
@@ -21,10 +21,10 @@ public final class SpellDrawController {
     }
 
     @Nullable
-    public ClientGlyph finishDrawingGlyph(Spell spell) {
-        SpellDrawState state = this.state;
+    public ClientGlyph finishDrawingGlyph(GlyphType matchedType) {
+        var state = this.state;
         if (state != null) {
-            var result = state.finishDrawingGlyph(spell);
+            var result = state.finishDrawingGlyph(matchedType);
             this.state = result.state();
             return result.glyph();
         }
@@ -33,7 +33,7 @@ public final class SpellDrawController {
 
     @Nullable
     public ClientGlyph getDrawingGlyph() {
-        SpellDrawState state = this.state;
+        var state = this.state;
         if (state != null) {
             return state.getDrawingGlyph();
         }

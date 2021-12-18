@@ -1,13 +1,13 @@
-package dev.gegy.magic.client.spellcasting.draw;
+package dev.gegy.magic.client.spellcasting.state;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.spellcasting.draw.outline.GlyphOutline;
-import dev.gegy.magic.client.spellcasting.draw.outline.GlyphOutlineTracker;
+import dev.gegy.magic.client.spellcasting.state.outline.GlyphOutline;
+import dev.gegy.magic.client.spellcasting.state.outline.GlyphOutlineTracker;
 import dev.gegy.magic.network.c2s.BeginGlyphC2SPacket;
 import dev.gegy.magic.network.c2s.PrepareSpellC2SPacket;
 import net.minecraft.client.network.ClientPlayerEntity;
 
-final class ContinueDraw implements SpellDrawState {
+final class ContinueDraw implements SpellCastState {
     private static final int SAMPLE_INTERVAL = 2;
     private static final int SAMPLE_PERIOD = 80;
     private static final int SAMPLE_BUFFER_SIZE = SAMPLE_PERIOD / SAMPLE_INTERVAL;
@@ -15,7 +15,7 @@ final class ContinueDraw implements SpellDrawState {
     private final GlyphOutlineTracker outlineTracker = new GlyphOutlineTracker(SAMPLE_BUFFER_SIZE);
 
     @Override
-    public SpellDrawState tick(ClientPlayerEntity player) {
+    public SpellCastState tick(ClientPlayerEntity player) {
         // TODO: crude detection
         if (player.handSwinging) {
             PrepareSpellC2SPacket.sendToServer();

@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.effect.glyph;
 
 import dev.gegy.magic.client.glyph.ClientGlyph;
-import dev.gegy.magic.client.glyph.GlyphColor;
+import dev.gegy.magic.client.glyph.FadingColor;
 import dev.gegy.magic.client.glyph.GlyphStroke;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.entity.Entity;
@@ -12,7 +12,7 @@ public final class GlyphRenderParameters {
     public final Matrix4f modelViewProject = new Matrix4f();
     public float distance;
     public float radius;
-    public float formProgress;
+    public float opacity;
     public float primaryRed, primaryGreen, primaryBlue;
     public float secondaryRed, secondaryGreen, secondaryBlue;
     public int shape;
@@ -42,14 +42,14 @@ public final class GlyphRenderParameters {
 
         this.distance = glyph.transform.getDistance(tickDelta);
         this.radius = glyph.radius;
-        this.formProgress = glyph.getFormProgress(context.world().getTime(), tickDelta);
+        this.opacity = glyph.getFormProgress(context.world().getTime(), tickDelta);
 
-        GlyphColor primaryColor = glyph.getPrimaryColor();
+        FadingColor primaryColor = glyph.getPrimaryColor();
         this.primaryRed = primaryColor.getRed(tickDelta);
         this.primaryGreen = primaryColor.getGreen(tickDelta);
         this.primaryBlue = primaryColor.getBlue(tickDelta);
 
-        GlyphColor secondaryColor = glyph.getSecondaryColor();
+        FadingColor secondaryColor = glyph.getSecondaryColor();
         this.secondaryRed = secondaryColor.getRed(tickDelta);
         this.secondaryGreen = secondaryColor.getGreen(tickDelta);
         this.secondaryBlue = secondaryColor.getBlue(tickDelta);
