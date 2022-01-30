@@ -1,11 +1,15 @@
 package dev.gegy.magic.glyph;
 
 import dev.gegy.magic.math.ColorRgb;
+import dev.gegy.magic.network.codec.PacketCodec;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.math.MathHelper;
 
 import java.awt.Color;
 
 public final record GlyphStyle(ColorRgb primaryColor, ColorRgb secondaryColor) {
+    public static final PacketCodec<GlyphStyle> PACKET_CODEC = PacketCodec.of(GlyphStyle::encode, GlyphStyle::decode);
+
     public static final GlyphStyle UNDIFFERENTIATED = GlyphStyle.of(0xFFE633);
 
     public static final GlyphStyle CYAN = GlyphStyle.of(0x19E6FF);
@@ -50,5 +54,16 @@ public final record GlyphStyle(ColorRgb primaryColor, ColorRgb secondaryColor) {
         if (hue < 0.0F) hue += 1.0F;
 
         return hue;
+    }
+
+    private void encode(PacketByteBuf buf) {
+        ColorRgb.PACKET_CODEC.encode(this.primaryColor, buf);
+        ColorRgb.PACKET_CODEC.encode(this.secondaryColor, buf);
+    }
+
+    private static GlyphStyle decode(PacketByteBuf buf) {
+        var primaryColor = ColorRgb.PACKET_CODEC.decode(buf);
+        var secondaryColor = ColorRgb.PACKET_CODEC.decode(buf);
+        return new GlyphStyle(primaryColor, secondaryColor);
     }
 }

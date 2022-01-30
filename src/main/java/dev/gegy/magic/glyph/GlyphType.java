@@ -2,56 +2,54 @@ package dev.gegy.magic.glyph;
 
 import com.google.common.base.Preconditions;
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.glyph.action.BeamCastingAction;
-import dev.gegy.magic.glyph.action.CastingAction;
-import dev.gegy.magic.glyph.action.TeleportCastingAction;
+import dev.gegy.magic.casting.ServerCasting;
+import dev.gegy.magic.casting.spell.beam.ServerCastingBeam;
+import dev.gegy.magic.network.codec.PacketCodec;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.SimpleRegistry;
+import org.jetbrains.annotations.Nullable;
 
-// TODO: terminology- a spell is a combination of glyphs
 public final class GlyphType {
-    public static final SimpleRegistry<GlyphType> REGISTRY = FabricRegistryBuilder.createSimple(GlyphType.class, Magic.identifier("spell"))
+    public static final SimpleRegistry<GlyphType> REGISTRY = FabricRegistryBuilder.createSimple(GlyphType.class, Magic.identifier("glyph_type"))
             .attribute(RegistryAttribute.SYNCED)
             .buildAndRegister();
 
+    public static final PacketCodec<@Nullable GlyphType> PACKET_CODEC = PacketCodec.ofRegistry(REGISTRY);
+
     public static final GlyphType BEAM = register("beam", GlyphType.builder()
             .style(GlyphStyle.RED)
-            .action(new BeamCastingAction())
-    );
-    public static final GlyphType TELEPORT = register("teleport", GlyphType.builder()
-            .style(GlyphStyle.PURPLE)
-            .action(new TeleportCastingAction())
+            .casts(ServerCastingBeam::build)
     );
 
     private final GlyphStyle style;
-    private final CastingAction action;
+    private final ServerCasting.Factory castFunction;
 
-    private GlyphType(GlyphStyle style, CastingAction action) {
+    private GlyphType(GlyphStyle style, ServerCasting.Factory castFunction) {
         this.style = style;
-        this.action = action;
+        this.castFunction = castFunction;
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    private static GlyphType register(String id, Builder spell) {
-        return Registry.register(REGISTRY, Magic.identifier(id), spell.build());
+    private static GlyphType register(String id, Builder glyph) {
+        return Registry.register(REGISTRY, Magic.identifier(id), glyph.build());
     }
 
     public GlyphStyle style() {
         return this.style;
     }
 
-    public CastingAction action() {
-        return this.action;
+    public ServerCasting.Factory castFunction() {
+        return this.castFunction;
     }
 
     public static final class Builder {
         private GlyphStyle style;
-        private CastingAction action;
+        private ServerCasting.Factory castFunction;
 
         private Builder() {
         }
@@ -61,15 +59,15 @@ public final class GlyphType {
             return this;
         }
 
-        public Builder action(CastingAction action) {
-            this.action = action;
+        public Builder casts(ServerCasting.Factory castFunction) {
+            this.castFunction = castFunction;
             return this;
         }
 
         public GlyphType build() {
             return new GlyphType(
                     Preconditions.checkNotNull(this.style, "style not set"),
-                    Preconditions.checkNotNull(this.action, "action not set")
+                    Preconditions.checkNotNull(this.castFunction, "casting build function not set")
             );
         }
     }

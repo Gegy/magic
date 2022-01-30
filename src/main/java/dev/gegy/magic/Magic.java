@@ -1,5 +1,6 @@
 package dev.gegy.magic;
 
+import dev.gegy.magic.casting.ServerCastingTracker;
 import dev.gegy.magic.client.particle.MagicParticles;
 import dev.gegy.magic.network.c2s.MagicC2SNetworking;
 import net.fabricmc.api.ModInitializer;
@@ -16,6 +17,8 @@ public final class Magic implements ModInitializer {
         MagicC2SNetworking.registerReceivers();
 
         MagicParticles.onInitialize();
+
+        ServerCastingTracker.register();
     }
 
     public static Identifier identifier(String id) {

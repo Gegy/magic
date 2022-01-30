@@ -90,9 +90,9 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
         RenderSystem.glUniform1i(this.uniformFlags, this.getGlyphFlags(parameters));
 
         GlyphStroke stroke = parameters.stroke;
-        FloatBuffer strokeData = this.strokeData;
         if (stroke != null) {
-            stroke.writeToBuffer(strokeData, parameters.tickDelta);
+            FloatBuffer strokeData = this.strokeData;
+            stroke.writeToBuffer(strokeData);
             strokeData.clear();
             RenderSystem.glUniform4(this.uniformStroke, strokeData);
         }

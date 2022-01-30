@@ -1,7 +1,7 @@
 package dev.gegy.magic.mixin.client;
 
-import dev.gegy.magic.client.animator.SpellcastingAnimatableEntity;
-import dev.gegy.magic.client.animator.SpellcastingAnimator;
+import dev.gegy.magic.client.animator.CastingAnimatableEntity;
+import dev.gegy.magic.client.animator.CastingAnimator;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,23 +13,23 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerEntity.class)
-public abstract class PlayerEntityMixin extends LivingEntity implements SpellcastingAnimatableEntity {
+public abstract class PlayerEntityMixin extends LivingEntity implements CastingAnimatableEntity {
     @Unique
-    private final SpellcastingAnimator spellcastingAnimator = new SpellcastingAnimator();
+    private final CastingAnimator castingAnimator = new CastingAnimator();
 
     private PlayerEntityMixin(EntityType<? extends LivingEntity> type, World world) {
         super(type, world);
     }
 
     @Override
-    public SpellcastingAnimator getSpellcastingAnimator() {
-        return this.spellcastingAnimator;
+    public CastingAnimator getCastingAnimator() {
+        return this.castingAnimator;
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(CallbackInfo ci) {
         if (this.world.isClient) {
-            this.spellcastingAnimator.tick(this);
+            this.castingAnimator.tick((PlayerEntity) (Object) this);
         }
     }
 }

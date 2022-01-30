@@ -1,5 +1,6 @@
 package dev.gegy.magic.glyph.shape;
 
+import dev.gegy.magic.network.codec.PacketCodec;
 import net.minecraft.util.math.Vec2f;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +15,14 @@ public enum GlyphNode {
     CENTER_UPPER(false, 0.0F, 0.5F),
     CENTER(false, 0.0F, 0.0F),
     CENTER_LOWER(false, 0.0F, -0.5F);
+
+    public static final PacketCodec<@Nullable GlyphNode> PACKET_CODEC = PacketCodec.of(
+            (node, buf) -> {
+                int id = node != null ? node.ordinal() : 0xFF;
+                buf.writeByte(id & 0xFF);
+            },
+            buf -> GlyphNode.byId(buf.readUnsignedByte())
+    );
 
     public static final GlyphNode[] NODES = values();
 

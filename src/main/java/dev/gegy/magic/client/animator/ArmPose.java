@@ -1,6 +1,6 @@
 package dev.gegy.magic.client.animator;
 
-import dev.gegy.magic.client.glyph.transform.GlyphTransform;
+import dev.gegy.magic.client.glyph.GlyphPlane;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
@@ -47,8 +47,8 @@ public final class ArmPose {
         );
     }
 
-    public void pointToPointOnPlane(LivingEntity entity, GlyphTransform transform, Vec3f target) {
-        transform.projectFromPlane(target);
+    public void pointToPointOnPlane(LivingEntity entity, GlyphPlane plane, Vec3f target) {
+        plane.projectFromPlane(target);
         this.pointTo(entity, target);
     }
 
