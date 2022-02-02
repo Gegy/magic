@@ -81,7 +81,7 @@ public final class ServerCastingSource implements AutoCloseable {
     public void onStartTracking(ServerPlayerEntity player) {
         var casting = this.casting;
         if (casting != null) {
-            var packet = SetCastingS2CPacket.create(player, casting.createClientCasting());
+            var packet = SetCastingS2CPacket.create(this.player, casting.createClientCasting());
             SetCastingS2CPacket.sendTo(player, packet);
         }
     }

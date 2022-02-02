@@ -73,10 +73,9 @@ public final class BeamEffectSystem implements EffectSystem {
         float radius = scale * 0.5F + this.random.nextFloat() * 0.25F;
         float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
 
-        var origin = this.plane.projectFromPlane(
+        var origin = this.plane.projectToWorld(
                 MathHelper.sin(theta) * radius,
-                MathHelper.cos(theta) * radius,
-                plane.getDistance()
+                MathHelper.cos(theta) * radius
         );
 
         var direction = plane.getDirection();
@@ -97,11 +96,11 @@ public final class BeamEffectSystem implements EffectSystem {
 
     private void spawnImpactParticles(ParticleManager particleManager, BeamEffect beam, Vec3d sourcePos, GlyphPlane plane) {
         var length = beam.getLength(1.0F);
-        var origin = plane.projectFromPlane(0.0F, 0.0F, plane.getDistance() + length);
+        var origin = plane.projectToWorld(0.0F, 0.0F, length);
 
         float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
 
-        var ejectVelocity =  plane.projectFromPlane(
+        var ejectVelocity =  plane.projectToWorld(
                 MathHelper.sin(theta) * 0.5F,
                 MathHelper.cos(theta) * 0.5F,
                 0.0F

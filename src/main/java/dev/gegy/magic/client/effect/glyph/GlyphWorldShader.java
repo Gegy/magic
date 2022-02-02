@@ -17,7 +17,6 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
 
     private final int uniformModelViewProject;
     private final int uniformScale;
-    private final int uniformDistance;
     private final int uniformSampler;
 
     private final FloatBuffer modelViewProjectData = MemoryUtil.memAllocFloat(4 * 4);
@@ -26,13 +25,11 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
             EffectShaderProgram program,
             int uniformModelViewProject,
             int uniformScale,
-            int uniformDistance,
             int uniformSampler
     ) {
         this.program = program;
         this.uniformModelViewProject = uniformModelViewProject;
         this.uniformScale = uniformScale;
-        this.uniformDistance = uniformDistance;
         this.uniformSampler = uniformSampler;
     }
 
@@ -41,14 +38,12 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
 
         int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
         int uniformScale = program.getUniformLocation("Scale");
-        int uniformDistance = program.getUniformLocation("Distance");
         int uniformSampler = program.getUniformLocation("Sampler");
 
         return new GlyphWorldShader(
                 program,
                 uniformModelViewProject,
                 uniformScale,
-                uniformDistance,
                 uniformSampler
         );
     }
@@ -65,7 +60,6 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
         RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
 
         GL20.glUniform1f(this.uniformScale, parameters.radius * GlyphTexture.RENDER_SCALE);
-        GL20.glUniform1f(this.uniformDistance, parameters.distance);
     }
 
     @Override

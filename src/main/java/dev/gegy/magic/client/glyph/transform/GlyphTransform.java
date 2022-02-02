@@ -6,26 +6,26 @@ public interface GlyphTransform {
     float DRAW_DISTANCE = 1.5F;
 
     static GlyphTransform of(Vec3f direction, float distance) {
+        var origin = direction.copy();
+        origin.scale(distance);
+        return GlyphTransform.of(origin, direction);
+    }
+
+    static GlyphTransform of(Vec3f origin, Vec3f direction) {
         return new GlyphTransform() {
+            @Override
+            public Vec3f getOrigin(float tickDelta) {
+                return origin;
+            }
+
             @Override
             public Vec3f getDirection(float tickDelta) {
                 return direction;
             }
-
-            @Override
-            public float getDistance(float tickDelta) {
-                return distance;
-            }
         };
     }
 
+    Vec3f getOrigin(float tickDelta);
+
     Vec3f getDirection(float tickDelta);
-
-    float getDistance(float tickDelta);
-
-    default Vec3f getOrigin(float tickDelta) {
-        var origin = this.getDirection(tickDelta).copy();
-        origin.scale(this.getDistance(tickDelta));
-        return origin;
-    }
 }

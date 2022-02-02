@@ -10,7 +10,6 @@ import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.math.AnimatedColor;
 import dev.gegy.magic.math.Easings;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
@@ -33,8 +32,7 @@ public final class ClientDrawingGlyph {
 
     private GlyphStrokeTracker stroke;
 
-    private final Vec3f drawPointer = new Vec3f();
-
+    private Vec3f drawPointer;
     private Vec3d lastLook;
 
     private int formTicks;
@@ -53,11 +51,20 @@ public final class ClientDrawingGlyph {
         this.primaryColor.tick(COLOR_LERP_SPEED);
         this.secondaryColor.tick(COLOR_LERP_SPEED);
 
-        Vec3f drawPointer = this.computeDrawPointer(this.drawPointer);
+        Vec3d look = this.source.getLookVector(1.0F);
+        if (!look.equals(this.lastLook)) {
+            this.drawPointer = this.computeDrawPointer(look);
+            this.lastLook = look;
+        }
 
         GlyphStrokeTracker stroke = this.stroke;
         if (stroke != null) {
-            this.tickStroke(drawPointer, stroke);
+            var pointer = this.drawPointer;
+            if (pointer != null) {
+                this.tickStroke(pointer, stroke);
+            } else {
+                this.stroke = null;
+            }
         }
     }
 
@@ -76,18 +83,15 @@ public final class ClientDrawingGlyph {
         stroke.tick(x, y);
     }
 
-    private Vec3f computeDrawPointer(Vec3f drawPointer) {
-        Vec3d look = this.source.getLookVector(1.0F);
-        if (look.equals(this.lastLook)) {
-            return drawPointer;
+    @Nullable
+    private Vec3f computeDrawPointer(Vec3d look) {
+        var intersection = this.plane.raycast(Vec3f.ZERO, new Vec3f(look));
+        if (intersection != null) {
+            this.plane.projectFromWorld(intersection);
+            return intersection;
+        } else {
+            return null;
         }
-
-        this.lastLook = look;
-
-        drawPointer.set((float) look.x, (float) look.y, (float) look.z);
-        this.plane.projectOntoPlane(drawPointer);
-
-        return drawPointer;
     }
 
     public void setShape(int shape) {
@@ -161,6 +165,7 @@ public final class ClientDrawingGlyph {
         return new GlyphForm(this.radius, this.shape, style);
     }
 
+    @Nullable
     public Vec3f drawPointer() {
         return this.drawPointer;
     }

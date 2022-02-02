@@ -9,13 +9,13 @@ import java.util.List;
 public record Spell(
         SpellSource source,
         SpellTransform transform,
-        List<PreparedGlyph> glyphs
+        List<SpellCastingGlyph> glyphs
 ) {
     public static Spell prepare(SpellSource source, List<ClientDrawingGlyph> drawingGlyphs) {
         float castingDistance = SpellTransform.getDistanceForGlyph(drawingGlyphs.size());
         var spellTransform = new SpellTransform(source.getLookVector(1.0F), castingDistance);
 
-        var glyphs = new ArrayList<PreparedGlyph>(drawingGlyphs.size());
+        var glyphs = new ArrayList<SpellCastingGlyph>(drawingGlyphs.size());
 
         for (int index = 0; index < drawingGlyphs.size(); index++) {
             var drawingGlyph = drawingGlyphs.get(index);
@@ -23,7 +23,7 @@ public record Spell(
             var form = drawingGlyph.asForm();
             var targetTransform = spellTransform.getTransformForGlyph(index);
 
-            glyphs.add(new PreparedGlyph(source, form, targetTransform));
+            glyphs.add(new SpellCastingGlyph(source, form, targetTransform));
         }
 
         return new Spell(source, spellTransform, glyphs);

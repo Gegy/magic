@@ -24,7 +24,7 @@ public final class GlyphEffectSystem implements EffectSystem {
     @Override
     public void render(MinecraftClient client, WorldRenderContext context, EffectSelector effects) {
         var glyphs = effects.select(GlyphEffect.TYPE);
-        if (glyphs.isEmpty()) {
+        if (!this.hasAnyGlyphs(glyphs)) {
             return;
         }
 
@@ -33,6 +33,15 @@ public final class GlyphEffectSystem implements EffectSystem {
                 this.renderGlyphs(context, batch, effect);
             }
         }
+    }
+
+    private boolean hasAnyGlyphs(EffectSelector.Selection<GlyphEffect<?>> glyphs) {
+        for (var glyph : glyphs) {
+            if (!glyph.glyphs().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private <T> void renderGlyphs(WorldRenderContext context, GlyphEffectRenderer.Batch batch, GlyphEffect<T> effect) {

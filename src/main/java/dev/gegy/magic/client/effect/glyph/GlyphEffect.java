@@ -4,8 +4,8 @@ import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
 import dev.gegy.magic.client.casting.drawing.FadingGlyph;
 import dev.gegy.magic.client.effect.Effect;
 import dev.gegy.magic.client.effect.EffectType;
-import dev.gegy.magic.client.glyph.spell.PreparedGlyph;
 import dev.gegy.magic.client.glyph.spell.Spell;
+import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 
 import java.util.Collection;
 
@@ -19,7 +19,7 @@ public final record GlyphEffect<T>(
         return new GlyphEffect<>(glyphs, GlyphRenderParameters::setDrawing);
     }
 
-    public static GlyphEffect<PreparedGlyph> spell(Spell spell) {
+    public static GlyphEffect<SpellCastingGlyph> spell(Spell spell) {
         return new GlyphEffect<>(spell.glyphs(), GlyphRenderParameters::setSpell);
     }
 

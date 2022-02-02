@@ -8,7 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
 public final class ServerCastingBeam {
-    public static final int MAXIMUM_LENGTH = 16;
+    public static final int MAXIMUM_LENGTH = 8;
 
     private final ServerPlayerEntity player;
 

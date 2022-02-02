@@ -18,6 +18,7 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
     private final int uniformScale;
     private final int uniformColor;
     private final int uniformTime;
+    private final int uniformLength;
 
     private final FloatBuffer scaleData = MemoryUtil.memAllocFloat(2);
     private final FloatBuffer colorData = MemoryUtil.memAllocFloat(3);
@@ -27,12 +28,14 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
             int uniformScale,
             int uniformColor,
             int uniformTime,
+            int uniformLength,
             float scaleX, float scaleY
     ) {
         this.program = program;
         this.uniformScale = uniformScale;
         this.uniformColor = uniformColor;
         this.uniformTime = uniformTime;
+        this.uniformLength = uniformLength;
 
         this.scaleData.put(scaleX).put(scaleY);
         this.scaleData.clear();
@@ -62,12 +65,14 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
         int uniformScale = program.getUniformLocation("Scale");
         int uniformColor = program.getUniformLocation("Color");
         int uniformTime = program.getUniformLocation("Time");
+        int uniformLength = program.getUniformLocation("Length");
 
         return new BeamTextureShader(
                 program,
                 uniformScale,
                 uniformColor,
                 uniformTime,
+                uniformLength,
                 scaleX, scaleY
         );
     }
@@ -84,6 +89,8 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
         RenderSystem.glUniform3(this.uniformColor, colorData);
 
         GL20.glUniform1f(this.uniformTime, parameters.time);
+
+        GL20.glUniform1f(this.uniformLength, parameters.length);
     }
 
     @Override

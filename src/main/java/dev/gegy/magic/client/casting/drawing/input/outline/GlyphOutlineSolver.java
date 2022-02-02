@@ -38,8 +38,16 @@ public class GlyphOutlineSolver {
         GlyphPlane plane = new GlyphPlane(forward, GlyphTransform.DRAW_DISTANCE);
 
         Vec2f[] projectedPoints = projectPoints(points, plane);
+        if (projectedPoints == null) {
+            return null;
+        }
+
         if (this.trySolveFromPoints(projectedPoints)) {
-            plane.centerOn(this.centerX, this.centerY);
+            forward = plane.projectToWorld(this.centerX, this.centerY);
+            forward.normalize();
+
+            plane.set(forward, GlyphTransform.DRAW_DISTANCE);
+
             return new GlyphOutline(plane, this.radius);
         } else {
             return null;
@@ -165,6 +173,7 @@ public class GlyphOutlineSolver {
         return new Vec2f(directionX, directionY);
     }
 
+    @Nullable
     private static Vec2f[] projectPoints(List<Vec3f> points, GlyphPlane plane) {
         Vec2f[] projectedPoints = new Vec2f[points.size()];
 
@@ -173,8 +182,13 @@ public class GlyphOutlineSolver {
         for (int i = 0; i < projectedPoints.length; i++) {
             Vec3f point = points.get(i);
 
-            projected.set(point.getX(), point.getY(), point.getZ());
-            plane.projectOntoPlane(projected);
+            var intersection = plane.raycast(Vec3f.ZERO, point);
+            if (intersection == null) {
+                return null;
+            }
+
+            projected.set(intersection);
+            plane.projectFromWorld(projected);
 
             projectedPoints[i] = new Vec2f(projected.getX(), projected.getY());
         }

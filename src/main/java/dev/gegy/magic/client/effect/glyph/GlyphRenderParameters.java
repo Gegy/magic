@@ -5,7 +5,7 @@ import dev.gegy.magic.client.casting.drawing.FadingGlyph;
 import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.GlyphStroke;
 import dev.gegy.magic.client.glyph.SpellSource;
-import dev.gegy.magic.client.glyph.spell.PreparedGlyph;
+import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.GlyphForm;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 
 public final class GlyphRenderParameters {
     public final Matrix4f modelViewProject = new Matrix4f();
-    public float distance;
     public float radius;
     public float opacity;
     public float primaryRed, primaryGreen, primaryBlue;
@@ -51,7 +50,7 @@ public final class GlyphRenderParameters {
         this.stroke = glyph.getStroke(tickDelta);
     }
 
-    public void setSpell(PreparedGlyph glyph, WorldRenderContext context) {
+    public void setSpell(SpellCastingGlyph glyph, WorldRenderContext context) {
         this.setTransform(glyph.source(), glyph.transform(), context);
         this.setForm(glyph.form());
 
@@ -90,9 +89,7 @@ public final class GlyphRenderParameters {
                 (float) (sourcePos.y - cameraPos.y),
                 (float) (sourcePos.z - cameraPos.z)
         );
-        modelViewProject.multiply(plane.getTransformationMatrix());
-
-        this.distance = plane.getDistance();
+        modelViewProject.multiply(plane.getPlaneToWorldMatrix());
     }
 
     private void setForm(GlyphForm form) {

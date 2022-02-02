@@ -29,11 +29,8 @@ abstract class DrawGlyph implements DrawingInputState {
 
     @Override
     public final DrawingInputState tick(ClientCastingDrawing casting, PlayerEntity player) {
-        this.glyph.tick();
-
         Vec3f drawPointer = this.glyph.drawPointer();
-
-        if (this.isPointerOutOfBounds(drawPointer)) {
+        if (drawPointer == null || this.isPointerOutOfBounds(drawPointer)) {
             return this.cancelGlyph(casting);
         }
 

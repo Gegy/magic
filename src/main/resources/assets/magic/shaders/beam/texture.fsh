@@ -2,6 +2,7 @@
 
 uniform vec3 Color;
 uniform float Time;
+uniform float Length;
 
 in vec2 uv;
 
@@ -32,6 +33,11 @@ float sample_temperature(vec2 point) {
 }
 
 void main() {
-    float temperature = sample_temperature(uv);
-    fragColor = beam_color(temperature);
+    if (uv.x < Length) {
+        float temperature = sample_temperature(uv);
+        fragColor = beam_color(temperature);
+    } else {
+        // TODO
+        fragColor = vec4(0.0);
+    }
 }

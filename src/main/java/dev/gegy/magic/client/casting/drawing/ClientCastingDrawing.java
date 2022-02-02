@@ -123,6 +123,11 @@ public final class ClientCastingDrawing {
     }
 
     private void tick() {
+        var drawing = this.drawing;
+        if (drawing != null) {
+            drawing.tick();
+        }
+
         for (var glyph : this.glyphs) {
             glyph.tick();
         }

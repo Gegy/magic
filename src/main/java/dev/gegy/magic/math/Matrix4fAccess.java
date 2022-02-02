@@ -2,6 +2,7 @@ package dev.gegy.magic.math;
 
 import net.minecraft.util.math.Matrix3f;
 import net.minecraft.util.math.Matrix4f;
+import net.minecraft.util.math.Vec3f;
 
 public interface Matrix4fAccess {
     static Matrix4f create(
@@ -29,6 +30,15 @@ public interface Matrix4fAccess {
             float m30, float m31, float m32, float m33
     ) {
         ((Matrix4fAccess) (Object) matrix).set(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
+    }
+
+    static void setLookAt(Matrix4f matrix, Vec3f left, Vec3f up, Vec3f forward) {
+        set(matrix,
+                left.getX(), up.getX(), forward.getX(), 0.0F,
+                left.getY(), up.getY(), forward.getY(), 0.0F,
+                left.getZ(), up.getZ(), forward.getZ(), 0.0F,
+                0.0F, 0.0F, 0.0F, 1.0F
+        );
     }
 
     static void set(Matrix4f matrix, Matrix3f from) {

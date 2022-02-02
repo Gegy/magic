@@ -71,7 +71,7 @@ final class BeamEndWorldShader implements EffectShader<BeamRenderParameters> {
         modelViewProjectData.clear();
         RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
 
-        GL20.glUniform1f(this.uniformScale, BeamTexture.END_SCALE * parameters.sourceRadius);
+        GL20.glUniform1f(this.uniformScale, BeamTexture.END_SCALE);
     }
 
     @Override

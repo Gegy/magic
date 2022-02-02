@@ -22,7 +22,7 @@ public final class SpellPrepareBlender {
     public static SpellPrepareBlender create(List<ClientDrawingGlyph> drawingGlyphs, Spell spell) {
         Preconditions.checkState(spell.glyphs().size() == drawingGlyphs.size(), "mismatched drawing and prepared glyphs");
 
-        var blendingGlyphs = new ArrayList<PreparedGlyph>(drawingGlyphs.size());
+        var blendingGlyphs = new ArrayList<SpellCastingGlyph>(drawingGlyphs.size());
         var blendingSpell = new Spell(spell.source(), spell.transform(), blendingGlyphs);
 
         var timer = new AnimationTimer(LENGTH);
@@ -31,11 +31,11 @@ public final class SpellPrepareBlender {
             var glyph = spell.glyphs().get(index);
             var drawingGlyph = drawingGlyphs.get(index);
 
-            var sourceTransform = drawingGlyph.plane();
+            var sourceTransform = drawingGlyph.plane().asTransform();
             var targetTransform = spell.transform().getTransformForGlyph(index);
 
             var blendingTransform = new BlendingGlyphTransform(sourceTransform, targetTransform, timer);
-            blendingGlyphs.add(new PreparedGlyph(glyph.source(), glyph.form(), blendingTransform));
+            blendingGlyphs.add(new SpellCastingGlyph(glyph.source(), glyph.form(), blendingTransform));
         }
 
         return new SpellPrepareBlender(blendingSpell, timer);

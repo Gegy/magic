@@ -9,7 +9,9 @@ public final class SpellTransform implements GlyphTransform {
 
     private final Vec3f direction;
     private final Vec3f prevDirection;
-    private final Vec3f interpolatedDirection = new Vec3f();
+
+    private final Vec3f resultOrigin = new Vec3f();
+    private final Vec3f resultDirection = new Vec3f();
 
     private final float castingDistance;
 
@@ -32,15 +34,18 @@ public final class SpellTransform implements GlyphTransform {
 
     @Override
     public Vec3f getDirection(float tickDelta) {
-        var interpolatedDirection = this.interpolatedDirection;
-        interpolatedDirection.set(this.prevDirection);
-        interpolatedDirection.lerp(this.direction, tickDelta);
-        return interpolatedDirection;
+        var result = this.resultDirection;
+        result.set(this.prevDirection);
+        result.lerp(this.direction, tickDelta);
+        return result;
     }
 
     @Override
-    public float getDistance(float tickDelta) {
-        return this.castingDistance;
+    public Vec3f getOrigin(float tickDelta) {
+        var result = this.resultOrigin;
+        result.set(this.getDirection(tickDelta));
+        result.scale(this.castingDistance);
+        return result;
     }
 
     public static float getDistanceForGlyph(int index) {
@@ -51,14 +56,19 @@ public final class SpellTransform implements GlyphTransform {
         float distance = getDistanceForGlyph(index);
 
         return new GlyphTransform() {
+            private final Vec3f origin = new Vec3f();
+
             @Override
-            public Vec3f getDirection(float tickDelta) {
-                return SpellTransform.this.getDirection(tickDelta);
+            public Vec3f getOrigin(float tickDelta) {
+                var origin = this.origin;
+                origin.set(this.getDirection(tickDelta));
+                origin.scale(distance);
+                return origin;
             }
 
             @Override
-            public float getDistance(float tickDelta) {
-                return distance;
+            public Vec3f getDirection(float tickDelta) {
+                return SpellTransform.this.getDirection(tickDelta);
             }
         };
     }

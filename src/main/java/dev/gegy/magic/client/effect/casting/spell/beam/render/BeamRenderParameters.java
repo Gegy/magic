@@ -15,10 +15,10 @@ public final class BeamRenderParameters {
     public final Matrix4f cloudModelViewProject = new Matrix4f();
     public final Matrix4f impactModelViewProject = new Matrix4f();
 
-    public float distance;
-    public float sourceRadius;
     public float red, green, blue;
     public float time;
+
+    public float length;
 
     private final Matrix4f viewProject = new Matrix4f();
     private final Vector4f endPoint = new Vector4f();
@@ -32,19 +32,19 @@ public final class BeamRenderParameters {
         var plane = this.plane;
         plane.set(spell.transform(), tickDelta);
 
-        this.distance = plane.getDistance();
-        this.sourceRadius = beam.scale();
+        float length = beam.getLength(context.tickDelta());
+        this.length = length;
 
         Matrix4f viewProject = this.computeViewProject(spell, context);
 
-        Matrix4f glyphTransform = plane.getTransformationMatrix();
+        Matrix4f glyphTransform = plane.getPlaneToWorldMatrix();
 
         Matrix4f modelViewProject = this.modelViewProject;
         modelViewProject.load(viewProject);
         modelViewProject.multiply(glyphTransform);
 
         this.setCloudModelViewProject(viewProject, glyphTransform);
-        this.setImpactModelViewProject(context, viewProject, glyphTransform, beam.getLength(tickDelta));
+        this.setImpactModelViewProject(context, viewProject, glyphTransform, length);
 
         this.red = beam.color().red();
         this.green = beam.color().green();
@@ -54,21 +54,17 @@ public final class BeamRenderParameters {
         this.time = (glyphTime + tickDelta) / 20.0F;
     }
 
-    private void setCloudModelViewProject(Matrix4f viewProject, Matrix4f glyphTransform) {
-        float distance = this.sourceRadius * 0.8F + this.distance;
-
+    private void setCloudModelViewProject(Matrix4f viewProject, Matrix4f spellTransform) {
         Matrix4f cloudModelViewProject = this.cloudModelViewProject;
         cloudModelViewProject.load(viewProject);
-        cloudModelViewProject.multiply(glyphTransform);
-        cloudModelViewProject.multiplyByTranslation(0.0F, 0.0F, distance);
+        cloudModelViewProject.multiply(spellTransform);
+        cloudModelViewProject.multiplyByTranslation(0.0F, 0.0F, 0.8F);
     }
 
-    private void setImpactModelViewProject(WorldRenderContext context, Matrix4f viewProject, Matrix4f glyphTransform, float length) {
-        float distance = (length * this.sourceRadius) + this.distance;
-
+    private void setImpactModelViewProject(WorldRenderContext context, Matrix4f viewProject, Matrix4f spellTransform, float length) {
         Vector4f point = this.endPoint;
-        point.set(0.0F, 0.0F, distance, 1.0F);
-        point.transform(glyphTransform);
+        point.set(0.0F, 0.0F, length, 1.0F);
+        point.transform(spellTransform);
 
         Matrix4f impactModelViewProject = this.impactModelViewProject;
 

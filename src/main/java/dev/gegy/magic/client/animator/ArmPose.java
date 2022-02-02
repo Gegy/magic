@@ -48,7 +48,7 @@ public final class ArmPose {
     }
 
     public void pointToPointOnPlane(LivingEntity entity, GlyphPlane plane, Vec3f target) {
-        plane.projectFromPlane(target);
+        plane.projectToWorld(target);
         this.pointTo(entity, target);
     }
 

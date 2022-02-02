@@ -38,16 +38,19 @@ public interface CastingPose {
             }
 
             ClientDrawingGlyph glyph = drawing.getGlyph();
-            Vec3f point = glyph.drawPointer();
+            Vec3f pointer = glyph.drawPointer();
+            if (pointer == null) {
+                return false;
+            }
 
-            float leftX = Math.abs(point.getX());
+            float leftX = Math.abs(pointer.getX());
             float rightX = -leftX;
 
             Vec3f target = this.target;
-            target.set(leftX, point.getY(), point.getZ());
+            target.set(leftX, pointer.getY(), pointer.getZ());
             this.leftArm.pointToPointOnPlane(entity, glyph.plane(), target);
 
-            target.set(rightX, point.getY(), point.getZ());
+            target.set(rightX, pointer.getY(), pointer.getZ());
             this.rightArm.pointToPointOnPlane(entity, glyph.plane(), target);
 
             return true;
@@ -62,7 +65,6 @@ public interface CastingPose {
 
     final class Prepared implements CastingPose {
         private final ArmPose mainArm = new ArmPose();
-        private final Vec3f target = new Vec3f();
 
         @Override
         public void beginAnimating() {
@@ -79,10 +81,7 @@ public interface CastingPose {
 
             var transform = preparedSpell.spell().transform();
 
-            Vec3f target = this.target;
-            target.set(transform.getDirection(1.0F));
-            target.scale(transform.getDistance(1.0F));
-
+            var target = transform.getOrigin(1.0F);
             this.mainArm.pointTo(entity, target);
 
             return true;
