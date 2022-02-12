@@ -3,11 +3,16 @@ package dev.gegy.magic.client.effect.shader;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gl.VertexBuffer;
+import dev.gegy.magic.client.render.gl.GlBinding;
+import dev.gegy.magic.client.render.gl.GlGeometry;
+import dev.gegy.magic.client.render.gl.GlObject;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
-public final class EffectTexture<T> implements AutoCloseable {
+public final class EffectTexture<T> implements GlObject {
+    private static final ReadBinding READ_BINDING = new ReadBinding();
+    private static final WriteBinding WRITE_BINDING = new WriteBinding();
+
     private final EffectShader<T> shader;
 
     private final int width;
@@ -46,39 +51,31 @@ public final class EffectTexture<T> implements AutoCloseable {
         return new EffectTexture<>(shader, width, height, framebufferRef, textureRef);
     }
 
-    public void renderWith(T parameters, VertexBuffer geometry) {
-        this.shader.bind(parameters);
+    public void renderWith(T parameters, GlGeometry.Binding geometryBinding) {
+        try (
+                var shaderBinding = this.shader.bind(parameters);
+                var writeBinding = this.bindWrite()
+        ) {
+            RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
 
-        this.bindWrite();
-        RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
-        RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
-
-        geometry.drawElements();
-
-        this.unbindWrite();
-
-        this.shader.unbind();
+            geometryBinding.draw();
+        }
     }
 
-    private void bindWrite() {
+    public ReadBinding bindRead() {
+        GlStateManager._bindTexture(this.textureRef);
+        return READ_BINDING;
+    }
+
+    private WriteBinding bindWrite() {
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.framebufferRef);
         RenderSystem.viewport(0, 0, this.width, this.height);
-    }
-
-    private void unbindWrite() {
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
-    }
-
-    public void bindRead() {
-        GlStateManager._bindTexture(this.textureRef);
-    }
-
-    public void unbindRead() {
-        GlStateManager._bindTexture(0);
+        return WRITE_BINDING;
     }
 
     @Override
-    public void close() {
+    public void delete() {
         TextureUtil.releaseTextureId(this.textureRef);
         GlStateManager._glDeleteFramebuffers(this.framebufferRef);
     }
@@ -89,5 +86,25 @@ public final class EffectTexture<T> implements AutoCloseable {
 
     public int getHeight() {
         return this.height;
+    }
+
+    public static final class ReadBinding implements GlBinding {
+        private ReadBinding() {
+        }
+
+        @Override
+        public void unbind() {
+            GlStateManager._bindTexture(0);
+        }
+    }
+
+    public static final class WriteBinding implements GlBinding {
+        private WriteBinding() {
+        }
+
+        @Override
+        public void unbind() {
+            GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, 0);
+        }
     }
 }

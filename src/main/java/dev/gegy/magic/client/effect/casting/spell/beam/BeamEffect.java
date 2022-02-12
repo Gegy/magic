@@ -15,7 +15,7 @@ public final class BeamEffect implements Effect {
     private float prevLength;
     private float length;
 
-    private final float scale = 0.5F;
+    private boolean visible;
 
     public BeamEffect(Spell spell) {
         this.spell = spell;
@@ -24,6 +24,10 @@ public final class BeamEffect implements Effect {
     public void tick(float length) {
         this.prevLength = Math.min(length, this.length);
         this.length = length;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 
     public Spell spell() {
@@ -38,8 +42,8 @@ public final class BeamEffect implements Effect {
         return MathHelper.lerp(tickDelta, this.prevLength, this.length);
     }
 
-    public float scale() {
-        return this.scale;
+    public boolean visible() {
+        return this.visible;
     }
 
     @Override

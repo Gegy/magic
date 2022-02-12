@@ -5,6 +5,7 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.render.GeometryBuilder;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
@@ -78,8 +79,8 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
     }
 
     @Override
-    public void bind(BeamRenderParameters parameters) {
-        this.program.bind();
+    public GlBinding bind(BeamRenderParameters parameters) {
+        var binding = this.program.bind();
 
         RenderSystem.glUniform2(this.uniformScale, this.scaleData);
 
@@ -91,16 +92,13 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
         GL20.glUniform1f(this.uniformTime, parameters.time);
 
         GL20.glUniform1f(this.uniformLength, parameters.length);
+
+        return binding;
     }
 
     @Override
-    public void unbind() {
-        this.program.unbind();
-    }
-
-    @Override
-    public void close() {
-        this.program.close();
+    public void delete() {
+        this.program.delete();
 
         MemoryUtil.memFree(this.scaleData);
         MemoryUtil.memFree(this.colorData);

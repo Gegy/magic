@@ -1,16 +1,25 @@
 package dev.gegy.magic.network.codec;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
+    PacketCodec<Boolean> BOOLEAN = PacketCodec.of(
+            (value, buf) -> buf.writeBoolean(value),
+            PacketByteBuf::readBoolean
+    );
+
     PacketCodec<java.util.UUID> UUID = PacketCodec.of(
             (uuid, buf) -> buf.writeUuid(uuid),
             PacketByteBuf::readUuid
@@ -24,6 +33,34 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
             },
             buf -> new Vec3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
     );
+
+    PacketCodec<Formatting> FORMATTING = PacketCodec.ofEnum(Formatting.class);
+
+    static <T> PacketCodec<T> unit(Supplier<T> supplier) {
+        return PacketCodec.of((value, buf) -> {}, buf -> supplier.get());
+    }
+
+    static <T extends Enum<T>> PacketCodec<@Nullable T> ofEnum(Class<T> enumClass) {
+        var values = enumClass.getEnumConstants();
+        return PacketCodec.of(
+                (value, buf) -> buf.writeByte(value != null ? value.ordinal() & 0xFF : Byte.MIN_VALUE),
+                buf -> {
+                    int ordinal = buf.readUnsignedByte();
+                    return ordinal >= 0 && ordinal < values.length ? values[ordinal] : null;
+                }
+        );
+    }
+
+    static <T> PacketCodec<@Nullable T> ofRegistry(Registry<T> registry) {
+        return PacketCodec.of(
+                (value, buf) -> buf.writeVarInt(registry.getRawId(value)),
+                buf -> registry.get(buf.readVarInt())
+        );
+    }
+
+    static <K, V> PacketCodec<Map<K, V>> mapOf(PacketCodec<K> keyCodec, PacketCodec<V> valueCodec) {
+        return new MapOf<>(keyCodec, valueCodec);
+    }
 
     static <T> PacketCodec<T> of(PacketEncoder<T> encoder, PacketDecoder<T> decoder) {
         return new PacketCodec<>() {
@@ -39,17 +76,6 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
         };
     }
 
-    static <T> PacketCodec<T> unit(Supplier<T> supplier) {
-        return PacketCodec.of((value, buf) -> {}, buf -> supplier.get());
-    }
-
-    static <T> PacketCodec<@Nullable T> ofRegistry(Registry<T> registry) {
-        return PacketCodec.of(
-                (value, buf) -> buf.writeVarInt(registry.getRawId(value)),
-                buf -> registry.get(buf.readVarInt())
-        );
-    }
-
     @Override
     void encode(T value, PacketByteBuf buf);
 
@@ -62,6 +88,13 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
 
     default PacketCodec<@Nullable T> nullable() {
         return new NullableOf<>(this);
+    }
+
+    default PacketCodec<T> orElse(T defaultValue) {
+        return PacketCodec.of(
+                (value, buf) -> this.encode(value != null ? value : defaultValue, buf),
+                buf -> Objects.requireNonNullElse(this.decode(buf), defaultValue)
+        );
     }
 
     default <R> PacketCodec<R> map(
@@ -79,6 +112,29 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
                 return mapTo.apply(PacketCodec.this.decode(buf));
             }
         };
+    }
+
+    record MapOf<K, V>(PacketCodec<K> keyCodec, PacketCodec<V> valueCodec) implements PacketCodec<Map<K, V>> {
+        @Override
+        public void encode(Map<K, V> map, PacketByteBuf buf) {
+            buf.writeVarInt(map.size());
+            for (var entry : map.entrySet()) {
+                this.keyCodec.encode(entry.getKey(), buf);
+                this.valueCodec.encode(entry.getValue(), buf);
+            }
+        }
+
+        @Override
+        public Map<K, V> decode(PacketByteBuf buf) {
+            int count = buf.readVarInt();
+            var map = new Object2ObjectOpenHashMap<K, V>(count);
+            for (int i = 0; i < count; i++) {
+                var key = this.keyCodec.decode(buf);
+                var value = this.valueCodec.decode(buf);
+                map.put(key, value);
+            }
+            return map;
+        }
     }
 
     record ListOf<T>(PacketCodec<T> elementCodec) implements PacketCodec<List<T>> {

@@ -4,6 +4,7 @@ import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.client.effect.EffectSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.resource.ResourceManager;
 
 import java.io.IOException;
@@ -22,13 +23,13 @@ public final class GlyphEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void render(MinecraftClient client, WorldRenderContext context, EffectSelector effects) {
+    public void render(MinecraftClient client, WorldRenderContext context, Framebuffer targetFramebuffer, EffectSelector effects) {
         var glyphs = effects.select(GlyphEffect.TYPE);
         if (!this.hasAnyGlyphs(glyphs)) {
             return;
         }
 
-        try (var batch = this.renderer.startBatch(client.getFramebuffer())) {
+        try (var batch = this.renderer.startBatch(targetFramebuffer)) {
             for (var effect : glyphs) {
                 this.renderGlyphs(context, batch, effect);
             }

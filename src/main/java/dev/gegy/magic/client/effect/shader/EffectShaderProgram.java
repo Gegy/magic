@@ -1,6 +1,8 @@
 package dev.gegy.magic.client.effect.shader;
 
 import dev.gegy.magic.Magic;
+import dev.gegy.magic.client.render.gl.GlBindableObject;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.client.gl.GLImportProcessor;
 import net.minecraft.client.gl.GlProgramManager;
@@ -19,7 +21,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-public final class EffectShaderProgram implements GlShader, AutoCloseable {
+public final class EffectShaderProgram implements GlShader, GlBindableObject {
+    private static final Binding BINDING = new Binding();
+
     private final int programRef;
     private final Program vertexShader;
     private final Program fragmentShader;
@@ -92,16 +96,24 @@ public final class EffectShaderProgram implements GlShader, AutoCloseable {
     }
 
     @Override
-    public void close() {
+    public Binding bind() {
+        GlProgramManager.useProgram(this.programRef);
+        return BINDING;
+    }
+
+    @Override
+    public void delete() {
         GlProgramManager.deleteProgram(this);
     }
 
-    public void bind() {
-        GlProgramManager.useProgram(this.programRef);
-    }
+    public static final class Binding implements GlBinding {
+        private Binding() {
+        }
 
-    public void unbind() {
-        GlProgramManager.useProgram(0);
+        @Override
+        public void unbind() {
+            GlProgramManager.useProgram(0);
+        }
     }
 
     private static final class ImportProcessor extends GLImportProcessor {

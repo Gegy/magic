@@ -1,10 +1,14 @@
 package dev.gegy.magic.client.effect.shader;
 
-public interface EffectShader<T> extends AutoCloseable {
-    void bind(T parameters);
+import dev.gegy.magic.client.render.gl.GlBinding;
 
-    void unbind();
+public interface EffectShader<T> extends AutoCloseable {
+    GlBinding bind(T parameters);
+
+    void delete();
 
     @Override
-    void close();
+    default void close() {
+        this.delete();
+    }
 }

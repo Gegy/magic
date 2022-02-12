@@ -37,7 +37,6 @@ void main() {
         float temperature = sample_temperature(uv);
         fragColor = beam_color(temperature);
     } else {
-        // TODO
         fragColor = vec4(0.0);
     }
 }

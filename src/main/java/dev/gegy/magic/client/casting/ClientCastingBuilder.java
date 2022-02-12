@@ -39,7 +39,7 @@ public final class ClientCastingBuilder {
         this.blenderIn = blenderIn;
     }
 
-    public <T> void registerInboundEvent(CastingEventSpec<T> spec, Consumer<T> handler) {
+    public <T> void bindInboundEvent(CastingEventSpec<T> spec, Consumer<T> handler) {
         this.getOrCreateInboundEvent(spec).addHandler(handler);
     }
 

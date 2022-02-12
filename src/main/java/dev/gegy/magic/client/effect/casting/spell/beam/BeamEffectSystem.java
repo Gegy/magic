@@ -8,6 +8,7 @@ import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.particle.MagicParticles;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.particle.ParticleManager;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.util.math.MathConstants;
@@ -15,6 +16,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public final class BeamEffectSystem implements EffectSystem {
@@ -24,6 +27,8 @@ public final class BeamEffectSystem implements EffectSystem {
     private final Random random = new Random();
 
     private final GlyphPlane plane = new GlyphPlane();
+
+    private final List<BeamEffect> visibleBeams = new ArrayList<>();
 
     private BeamEffectSystem(BeamEffectRenderer renderer) {
         this.renderer = renderer;
@@ -35,25 +40,39 @@ public final class BeamEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void render(MinecraftClient client, WorldRenderContext context, EffectSelector effects) {
-        var beams = effects.select(BeamEffect.TYPE);
-        if (beams.isEmpty()) {
+    public void render(MinecraftClient client, WorldRenderContext context, Framebuffer targetFramebuffer, EffectSelector effects) {
+        var visibleBeams = this.collectVisibleBeams(effects);
+        if (visibleBeams.isEmpty()) {
             return;
         }
 
-        try (var batch = this.renderer.startBatch(client.getFramebuffer())) {
+        try (var batch = this.renderer.startBatch(targetFramebuffer)) {
             var parameters = this.parameters;
-            for (var beam : beams) {
+            for (var beam : visibleBeams) {
                 parameters.set(beam, context);
                 batch.render(parameters);
             }
+        } finally {
+            visibleBeams.clear();
         }
+    }
+
+    private List<BeamEffect> collectVisibleBeams(EffectSelector effects) {
+        var beams = this.visibleBeams;
+        for (var beam : effects.select(BeamEffect.TYPE)) {
+            if (beam.visible()) {
+                beams.add(beam);
+            }
+        }
+        return beams;
     }
 
     @Override
     public void tick(MinecraftClient client, EffectSelector effects) {
         for (var beam : effects.select(BeamEffect.TYPE)) {
-            this.spawnParticles(client.particleManager, beam);
+            if (beam.visible()) {
+                this.spawnParticles(client.particleManager, beam);
+            }
         }
     }
 
@@ -65,12 +84,12 @@ public final class BeamEffectSystem implements EffectSystem {
 
         var sourcePos = spell.source().getPosition(1.0F);
 
-        this.spawnBeamParticles(particleManager, sourcePos, plane, beam.scale());
+        this.spawnBeamParticles(particleManager, sourcePos, plane);
         this.spawnImpactParticles(particleManager, beam, sourcePos, plane);
     }
 
-    private void spawnBeamParticles(ParticleManager particleManager, Vec3d sourcePos, GlyphPlane plane, float scale) {
-        float radius = scale * 0.5F + this.random.nextFloat() * 0.25F;
+    private void spawnBeamParticles(ParticleManager particleManager, Vec3d sourcePos, GlyphPlane plane) {
+        float radius = 0.5F + this.random.nextFloat() * 0.25F;
         float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
 
         var origin = this.plane.projectToWorld(
@@ -100,7 +119,7 @@ public final class BeamEffectSystem implements EffectSystem {
 
         float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
 
-        var ejectVelocity =  plane.projectToWorld(
+        var ejectVelocity = plane.projectToWorld(
                 MathHelper.sin(theta) * 0.5F,
                 MathHelper.cos(theta) * 0.5F,
                 0.0F

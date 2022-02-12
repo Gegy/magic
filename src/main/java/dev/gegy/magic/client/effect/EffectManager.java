@@ -47,7 +47,7 @@ public final class EffectManager {
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(instance::tick);
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(instance::render);
+        WorldRenderEvents.AFTER_ENTITIES.register(instance::render);
     }
 
     public static EffectManager get() {
@@ -68,8 +68,10 @@ public final class EffectManager {
 
     private void render(WorldRenderContext context) {
         if (context.world() != null) {
+            // TODO: handle fabulous framebuffer
+            var framebuffer = CLIENT.getFramebuffer();
             for (var system : this.effectSystems) {
-                system.render(CLIENT, context, this.effects.selector());
+                system.render(CLIENT, context, framebuffer, this.effects.selector());
             }
         }
     }

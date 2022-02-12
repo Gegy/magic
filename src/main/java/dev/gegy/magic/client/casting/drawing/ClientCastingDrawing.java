@@ -55,9 +55,9 @@ public final class ClientCastingDrawing {
         casting.attachEffect(GlyphEffect.drawing(drawing.allGlyphs));
         casting.attachEffect(new DrawingEffect(drawing));
 
-        casting.registerInboundEvent(DrawGlyphS2CEvent.SPEC, drawing::drawGlyph);
-        casting.registerInboundEvent(CancelDrawingS2CEvent.SPEC, drawing::cancelDrawing);
-        casting.registerInboundEvent(UpdateDrawingS2CEvent.SPEC, drawing::updateDrawing);
+        casting.bindInboundEvent(DrawGlyphS2CEvent.SPEC, drawing::drawGlyph);
+        casting.bindInboundEvent(CancelDrawingS2CEvent.SPEC, drawing::cancelDrawing);
+        casting.bindInboundEvent(UpdateDrawingS2CEvent.SPEC, drawing::updateDrawing);
 
         casting.registerTicker(drawing::tick);
 
@@ -75,14 +75,14 @@ public final class ClientCastingDrawing {
     private void bindInput(PlayerEntity player, ClientCastingBuilder casting) {
         var input = new DrawingCastingInput();
 
-        casting.registerInboundEvent(UpdateDrawingS2CEvent.SPEC, event -> {
+        casting.bindInboundEvent(UpdateDrawingS2CEvent.SPEC, event -> {
             var matchedType = event.formedGlyphType();
             if (matchedType != null) {
                 input.finishDrawing(matchedType);
             }
         });
 
-        casting.registerInboundEvent(CancelDrawingS2CEvent.SPEC, event -> {
+        casting.bindInboundEvent(CancelDrawingS2CEvent.SPEC, event -> {
             input.cancelDrawing();
         });
 

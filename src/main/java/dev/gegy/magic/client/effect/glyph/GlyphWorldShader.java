@@ -5,6 +5,7 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.render.GeometryBuilder;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
@@ -49,8 +50,8 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
     }
 
     @Override
-    public void bind(GlyphRenderParameters parameters) {
-        this.program.bind();
+    public GlBinding bind(GlyphRenderParameters parameters) {
+        var binding = this.program.bind();
 
         RenderSystem.glUniform1i(this.uniformSampler, 0);
 
@@ -60,16 +61,13 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
         RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
 
         GL20.glUniform1f(this.uniformScale, parameters.radius * GlyphTexture.RENDER_SCALE);
+
+        return binding;
     }
 
     @Override
-    public void unbind() {
-        this.program.unbind();
-    }
-
-    @Override
-    public void close() {
-        this.program.close();
+    public void delete() {
+        this.program.delete();
 
         MemoryUtil.memFree(this.modelViewProjectData);
     }

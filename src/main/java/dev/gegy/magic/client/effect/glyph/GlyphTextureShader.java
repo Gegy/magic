@@ -6,6 +6,7 @@ import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.glyph.GlyphStroke;
 import dev.gegy.magic.client.render.GeometryBuilder;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
@@ -69,8 +70,8 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
     }
 
     @Override
-    public void bind(GlyphRenderParameters parameters) {
-        this.program.bind();
+    public GlBinding bind(GlyphRenderParameters parameters) {
+        var binding = this.program.bind();
 
         GL20.glUniform1f(this.uniformTexelSize, GlyphTexture.TEXEL_SIZE);
         GL20.glUniform1f(this.uniformRenderSize, GlyphTexture.RENDER_SIZE);
@@ -96,6 +97,8 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
             strokeData.clear();
             RenderSystem.glUniform4(this.uniformStroke, strokeData);
         }
+
+        return binding;
     }
 
     private int getGlyphFlags(GlyphRenderParameters parameters) {
@@ -107,13 +110,8 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
     }
 
     @Override
-    public void unbind() {
-        this.program.unbind();
-    }
-
-    @Override
-    public void close() {
-        this.program.close();
+    public void delete() {
+        this.program.delete();
 
         MemoryUtil.memFree(this.primaryColorData);
         MemoryUtil.memFree(this.secondaryColorData);

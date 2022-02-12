@@ -1,23 +1,24 @@
 package dev.gegy.magic.client.effect.glyph;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.render.GeometryBuilder;
+import dev.gegy.magic.client.render.gl.GlGeometry;
 import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.VertexBuffer;
 import net.minecraft.resource.ResourceManager;
 
 import java.io.IOException;
 
 public final class GlyphEffectRenderer implements AutoCloseable {
     private final GlyphWorldShader worldShader;
-    private final VertexBuffer geometry;
+    private final GlGeometry geometry;
 
     private final EffectTexture<GlyphRenderParameters> texture;
 
     private final Batch batch = new Batch();
 
-    private GlyphEffectRenderer(GlyphWorldShader worldShader, VertexBuffer geometry, EffectTexture<GlyphRenderParameters> texture) {
+    private GlyphEffectRenderer(GlyphWorldShader worldShader, GlGeometry geometry, EffectTexture<GlyphRenderParameters> texture) {
         this.worldShader = worldShader;
         this.geometry = geometry;
         this.texture = texture;
@@ -40,52 +41,51 @@ public final class GlyphEffectRenderer implements AutoCloseable {
 
     @Override
     public void close() {
-        this.worldShader.close();
-        this.geometry.close();
-        this.texture.close();
+        this.worldShader.delete();
+        this.geometry.delete();
+        this.texture.delete();
     }
 
     public final class Batch implements AutoCloseable {
         private Framebuffer target;
+        private GlGeometry.Binding geometryBinding;
 
         void start(Framebuffer target) {
             this.target = target;
 
             RenderSystem.disableCull();
             RenderSystem.enableBlend();
+            RenderSystem.enableDepthTest();
+            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
 
-            GlyphEffectRenderer.this.geometry.bind();
-            GeometryBuilder.POSITION_2F.startDrawing();
+            this.geometryBinding = GlyphEffectRenderer.this.geometry.bind();
         }
 
         public void render(GlyphRenderParameters parameters) {
-            GlyphEffectRenderer.this.texture.renderWith(parameters, GlyphEffectRenderer.this.geometry);
+            GlyphEffectRenderer.this.texture.renderWith(parameters, this.geometryBinding);
 
             this.target.beginWrite(true);
             this.renderToWorld(parameters);
         }
 
         private void renderToWorld(GlyphRenderParameters parameters) {
-            var texture = GlyphEffectRenderer.this.texture;
-            var shader = GlyphEffectRenderer.this.worldShader;
-
-            texture.bindRead();
-            shader.bind(parameters);
-
-            GlyphEffectRenderer.this.geometry.drawElements();
-
-            shader.unbind();
-            texture.unbindRead();
+            try (
+                    var textureBinding = GlyphEffectRenderer.this.texture.bindRead();
+                    var shaderBinding = GlyphEffectRenderer.this.worldShader.bind(parameters);
+            ) {
+                this.geometryBinding.draw();
+            }
         }
 
         @Override
         public void close() {
-            GeometryBuilder.POSITION_2F.endDrawing();
-            VertexBuffer.unbind();
+            this.geometryBinding.unbind();
 
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
+            RenderSystem.disableDepthTest();
 
+            this.geometryBinding = null;
             this.target = null;
         }
     }

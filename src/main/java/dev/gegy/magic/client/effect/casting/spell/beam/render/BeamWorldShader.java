@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.resource.ResourceManager;
 import org.lwjgl.system.MemoryUtil;
@@ -54,8 +55,8 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
     }
 
     @Override
-    public void bind(BeamRenderParameters parameters) {
-        this.program.bind();
+    public GlBinding bind(BeamRenderParameters parameters) {
+        var binding = this.program.bind();
 
         RenderSystem.glUniform1i(this.uniformSampler, 0);
 
@@ -68,16 +69,13 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
         scaleData.put(BeamTexture.SCALE_X).put(BeamTexture.SCALE_Y);
         scaleData.clear();
         RenderSystem.glUniform2(this.uniformScale, scaleData);
+
+        return binding;
     }
 
     @Override
-    public void unbind() {
-        this.program.unbind();
-    }
-
-    @Override
-    public void close() {
-        this.program.close();
+    public void delete() {
+        this.program.delete();
 
         MemoryUtil.memFree(this.scaleData);
         MemoryUtil.memFree(this.modelViewProjectData);
