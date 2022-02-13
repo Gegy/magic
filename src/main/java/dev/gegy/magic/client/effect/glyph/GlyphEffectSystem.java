@@ -11,10 +11,13 @@ import java.io.IOException;
 
 public final class GlyphEffectSystem implements EffectSystem {
     private final GlyphEffectRenderer renderer;
+    private final Frame frame;
+
     private final GlyphRenderParameters parameters = new GlyphRenderParameters();
 
     private GlyphEffectSystem(GlyphEffectRenderer renderer) {
         this.renderer = renderer;
+        this.frame = new Frame(renderer);
     }
 
     public static GlyphEffectSystem create(ResourceManager resources) throws IOException {
@@ -24,39 +27,55 @@ public final class GlyphEffectSystem implements EffectSystem {
 
     @Override
     public void render(MinecraftClient client, WorldRenderContext context, Framebuffer targetFramebuffer, EffectSelector effects) {
-        var glyphs = effects.select(GlyphEffect.TYPE);
-        if (!this.hasAnyGlyphs(glyphs)) {
-            return;
-        }
+        // TODO: frustum culling
 
-        try (var batch = this.renderer.startBatch(targetFramebuffer)) {
-            for (var effect : glyphs) {
-                this.renderGlyphs(context, batch, effect);
+        try (var frame = this.frame.setup(targetFramebuffer)) {
+            var parameters = this.parameters;
+            for (var effect : effects.select(GlyphsEffect.TYPE)) {
+                effect.render(parameters, context, frame);
             }
-        }
-    }
-
-    private boolean hasAnyGlyphs(EffectSelector.Selection<GlyphEffect<?>> glyphs) {
-        for (var glyph : glyphs) {
-            if (!glyph.glyphs().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private <T> void renderGlyphs(WorldRenderContext context, GlyphEffectRenderer.Batch batch, GlyphEffect<T> effect) {
-        var parameters = this.parameters;
-
-        var applicator = effect.parametersApplicator();
-        for (var glyph : effect.glyphs()) {
-            applicator.set(parameters, glyph, context);
-            batch.render(parameters);
         }
     }
 
     @Override
     public void close() {
         this.renderer.close();
+    }
+
+    private static final class Frame implements GlyphsEffect.RenderFunction, AutoCloseable {
+        private final GlyphEffectRenderer renderer;
+
+        private Framebuffer target;
+        private GlyphEffectRenderer.Batch batch;
+
+        public Frame(GlyphEffectRenderer renderer) {
+            this.renderer = renderer;
+        }
+
+        public Frame setup(Framebuffer target) {
+            this.target = target;
+            return this;
+        }
+
+        @Override
+        public void accept(GlyphRenderParameters parameters) {
+            var batch = this.batch;
+            if (batch == null) {
+                this.batch = batch = this.renderer.startBatch(this.target);
+            }
+
+            batch.render(parameters);
+        }
+
+        @Override
+        public void close() {
+            var batch = this.batch;
+            if (batch != null) {
+                batch.close();
+            }
+
+            this.target = null;
+            this.batch = null;
+        }
     }
 }

@@ -42,10 +42,10 @@ public final class AnimatedColor {
     }
 
     public ColorRgb get(float tickDelta) {
-        return new ColorRgb(this.getRed(tickDelta), this.getGreen(tickDelta), this.getBlue(tickDelta));
+        return ColorRgb.of(this.getRed(tickDelta), this.getGreen(tickDelta), this.getBlue(tickDelta));
     }
 
     public ColorRgb target() {
-        return new ColorRgb(this.targetRed, this.targetGreen, this.targetBlue);
+        return ColorRgb.of(this.targetRed, this.targetGreen, this.targetBlue);
     }
 }

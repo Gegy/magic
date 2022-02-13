@@ -9,6 +9,7 @@ import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.math.AnimatedColor;
+import dev.gegy.magic.math.AnimationTimer;
 import dev.gegy.magic.math.Easings;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
@@ -25,8 +26,8 @@ public final class ClientDrawingGlyph {
 
     private final float radius;
 
-    private final AnimatedColor primaryColor = new AnimatedColor(GlyphStyle.UNDIFFERENTIATED.primaryColor());
-    private final AnimatedColor secondaryColor = new AnimatedColor(GlyphStyle.UNDIFFERENTIATED.secondaryColor());
+    private final AnimatedColor primaryColor = new AnimatedColor(GlyphStyle.WILD.primaryColor());
+    private final AnimatedColor secondaryColor = new AnimatedColor(GlyphStyle.WILD.secondaryColor());
 
     private int shape;
 
@@ -173,5 +174,9 @@ public final class ClientDrawingGlyph {
     @Nullable
     public GlyphStroke getStroke(float tickDelta) {
         return this.stroke != null ? this.stroke.resolve(tickDelta) : null;
+    }
+
+    public FadingGlyph toFading(AnimationTimer timer) {
+        return new FadingGlyph(this.source, this.plane, this.asForm(), timer);
     }
 }

@@ -3,34 +3,33 @@ package dev.gegy.magic.client.glyph.spell;
 import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
 import dev.gegy.magic.client.glyph.SpellSource;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public record Spell(
+public final record Spell(
         SpellSource source,
         SpellTransform transform,
-        List<SpellCastingGlyph> glyphs
+        SpellGlyphs glyphs
 ) {
-    public static Spell prepare(SpellSource source, List<ClientDrawingGlyph> drawingGlyphs) {
-        float castingDistance = SpellTransform.getDistanceForGlyph(drawingGlyphs.size());
-        var spellTransform = new SpellTransform(source.getLookVector(1.0F), castingDistance);
-
-        var glyphs = new ArrayList<SpellCastingGlyph>(drawingGlyphs.size());
+    public static Spell prepare(SpellSource source, SpellTransform transform, List<ClientDrawingGlyph> drawingGlyphs) {
+        var glyphs = new SpellGlyphs();
 
         for (int index = 0; index < drawingGlyphs.size(); index++) {
             var drawingGlyph = drawingGlyphs.get(index);
 
             var form = drawingGlyph.asForm();
-            var targetTransform = spellTransform.getTransformForGlyph(index);
+            var targetTransform = transform.getTransformForGlyph(index);
 
             glyphs.add(new SpellCastingGlyph(source, form, targetTransform));
         }
 
-        return new Spell(source, spellTransform, glyphs);
+        return new Spell(source, transform, glyphs);
     }
 
     public void tick() {
-        var look = this.source.getLookVector(1.0F);
-        this.transform.tick(look);
+        this.transform.tick();
+    }
+
+    public interface TransformFactory {
+        SpellTransform create(SpellSource source, List<ClientDrawingGlyph> glyphs);
     }
 }

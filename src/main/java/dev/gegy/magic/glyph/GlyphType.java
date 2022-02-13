@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.casting.ServerCasting;
 import dev.gegy.magic.casting.spell.beam.ServerCastingBeam;
+import dev.gegy.magic.casting.spell.teleport.ServerCastingTeleport;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
@@ -21,6 +22,10 @@ public final class GlyphType {
     public static final GlyphType BEAM = register("beam", GlyphType.builder()
             .style(GlyphStyle.RED)
             .casts(ServerCastingBeam::build)
+    );
+    public static final GlyphType TELEPORT = register("teleport", GlyphType.builder()
+            .style(GlyphStyle.PURPLE)
+            .casts(ServerCastingTeleport::build)
     );
 
     private final GlyphStyle style;

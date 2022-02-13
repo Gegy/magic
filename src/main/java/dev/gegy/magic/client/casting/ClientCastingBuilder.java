@@ -14,6 +14,7 @@ import dev.gegy.magic.network.NetworkSender;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Unit;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -64,15 +65,20 @@ public final class ClientCastingBuilder {
         return effect;
     }
 
-    public <T> CastingBlender.Entry<T> blendTo(CastingBlendType<T> type) {
+    public <T, P> CastingBlender.Entry<T, P> blendTo(CastingBlendType<T, P> type) {
         return this.blenderOut.entry(type);
     }
 
     @Nullable
-    public <T> T blendFrom(CastingBlendType<T> type) {
+    public <T> T blendFrom(CastingBlendType<T, Unit> type) {
+        return this.blendFrom(type, Unit.INSTANCE);
+    }
+
+    @Nullable
+    public <T, P> T blendFrom(CastingBlendType<T, P> type, P parameter) {
         var input = this.blenderIn.loadBlendInto(type);
         if (input != null) {
-            return input.apply(this.blendBuilder);
+            return input.apply(this.blendBuilder, parameter);
         } else {
             return null;
         }

@@ -2,6 +2,7 @@ package dev.gegy.magic.client.effect;
 
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.effect.casting.spell.beam.BeamEffectSystem;
+import dev.gegy.magic.client.effect.casting.spell.teleport.TeleportEffectSystem;
 import dev.gegy.magic.client.effect.glyph.GlyphEffectSystem;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -89,6 +90,7 @@ public final class EffectManager {
 
         this.tryLoadSystem(resources, GlyphEffectSystem::create);
         this.tryLoadSystem(resources, BeamEffectSystem::create);
+        this.tryLoadSystem(resources, TeleportEffectSystem::create);
     }
 
     private void tryLoadSystem(ResourceManager resources, EffectSystem.Factory<?> factory) {

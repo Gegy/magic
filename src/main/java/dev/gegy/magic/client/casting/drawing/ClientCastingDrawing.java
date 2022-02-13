@@ -1,6 +1,5 @@
 package dev.gegy.magic.client.casting.drawing;
 
-import com.google.common.collect.Iterators;
 import dev.gegy.magic.casting.drawing.DrawingGlyphParameters;
 import dev.gegy.magic.casting.drawing.DrawingParameters;
 import dev.gegy.magic.casting.drawing.event.ClientDrawingEventSenders;
@@ -13,31 +12,34 @@ import dev.gegy.magic.client.casting.blend.CastingBlendBuilder;
 import dev.gegy.magic.client.casting.blend.CastingBlendType;
 import dev.gegy.magic.client.casting.drawing.input.DrawingCastingInput;
 import dev.gegy.magic.client.effect.casting.drawing.DrawingEffect;
-import dev.gegy.magic.client.effect.glyph.GlyphEffect;
+import dev.gegy.magic.client.effect.glyph.GlyphRenderParameters;
+import dev.gegy.magic.client.effect.glyph.GlyphsEffect;
 import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.Spell;
 import dev.gegy.magic.client.glyph.spell.SpellPrepareBlender;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.math.AnimationTimer;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.entity.player.PlayerEntity;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public final class ClientCastingDrawing {
+    private static final int FADE_LENGTH = 10;
+
     private final PlayerEntity player;
     private final ClientDrawingEventSenders senders;
 
     private final List<ClientDrawingGlyph> glyphs = new ArrayList<>();
     private ClientDrawingGlyph drawing;
 
-    private final AllGlyphs allGlyphs = new AllGlyphs();
+    private final List<Fading> fading = new ArrayList<>();
+
+    private final GlyphsEffect glyphsEffect = new DrawingGlyphsEffect();
 
     private ClientCastingDrawing(PlayerEntity player, ClientDrawingEventSenders senders) {
         this.player = player;
@@ -52,7 +54,7 @@ public final class ClientCastingDrawing {
             drawing.drawGlyph(glyph);
         }
 
-        casting.attachEffect(GlyphEffect.drawing(drawing.allGlyphs));
+        casting.attachEffect(drawing.glyphsEffect);
         casting.attachEffect(new DrawingEffect(drawing));
 
         casting.bindInboundEvent(DrawGlyphS2CEvent.SPEC, drawing::drawGlyph);
@@ -82,13 +84,26 @@ public final class ClientCastingDrawing {
             }
         });
 
-        casting.bindInboundEvent(CancelDrawingS2CEvent.SPEC, event -> {
-            input.cancelDrawing();
-        });
+        casting.bindInboundEvent(CancelDrawingS2CEvent.SPEC, event -> input.cancelDrawing());
 
         casting.registerTicker(() -> {
-            this.drawing = input.tick(this, player);
+            var newDrawing = input.tick(this, player);
+            this.updateOwnDrawing(newDrawing);
         });
+    }
+
+    private void updateOwnDrawing(ClientDrawingGlyph drawing) {
+        var lastDrawing = this.drawing;
+        this.drawing = drawing;
+
+        if (lastDrawing != null && drawing == null) {
+            this.fadeGlyph(lastDrawing);
+        }
+    }
+
+    private void fadeGlyph(ClientDrawingGlyph glyph) {
+        var timer = new AnimationTimer(FADE_LENGTH);
+        this.fading.add(new Fading(glyph.toFading(timer), timer));
     }
 
     private void drawGlyph(DrawGlyphS2CEvent event) {
@@ -105,7 +120,11 @@ public final class ClientCastingDrawing {
     }
 
     private void cancelDrawing(CancelDrawingS2CEvent event) {
-        this.drawing = null;
+        var drawing = this.drawing;
+        if (drawing != null) {
+            this.drawing = null;
+            this.fadeGlyph(drawing);
+        }
     }
 
     private void updateDrawing(UpdateDrawingS2CEvent event) {
@@ -131,6 +150,8 @@ public final class ClientCastingDrawing {
         for (var glyph : this.glyphs) {
             glyph.tick();
         }
+
+        this.fading.removeIf(Fading::tick);
     }
 
     private ClientDrawingGlyph createGlyph(DrawingGlyphParameters parameters) {
@@ -157,51 +178,55 @@ public final class ClientCastingDrawing {
         return this.senders;
     }
 
-    private Spell blendIntoPrepared(CastingBlendBuilder blend) {
-        var spell = Spell.prepare(SpellSource.of(this.player), this.glyphs);
-
+    private Spell blendIntoPrepared(CastingBlendBuilder blend, Spell.TransformFactory transformFactory) {
         this.glyphs.sort(Comparator.comparingDouble(ClientDrawingGlyph::radius));
 
-        var prepareSpell = SpellPrepareBlender.create(this.glyphs, spell);
+        var source = SpellSource.of(this.player);
 
-        blend.attachEffect(GlyphEffect.spell(prepareSpell.spell()));
-        blend.registerTicker(prepareSpell::tick);
+        var spellTransform = transformFactory.create(source, this.glyphs);
+        var spell = Spell.prepare(source, spellTransform, this.glyphs);
+        var blender = SpellPrepareBlender.create(this.glyphs, spell);
+
+        blend.attachEffect(GlyphsEffect.fromSpell(blender.spell()));
+        blend.registerTicker(blender::tick);
 
         return spell;
     }
 
     private void blendOut(CastingBlendBuilder blend) {
-        var fadeTimer = new AnimationTimer(10);
+        var fadeTimer = new AnimationTimer(FADE_LENGTH);
 
         var fadingGlyphs = this.glyphs.stream()
-                .map(glyph -> new FadingGlyph(glyph.source(), glyph.plane(), glyph.asForm(), fadeTimer))
-                .collect(Collectors.toList());
+                .map(glyph -> glyph.toFading(fadeTimer))
+                .toList();
 
-        blend.attachEffect(GlyphEffect.fading(fadingGlyphs));
+        blend.attachEffect(GlyphsEffect.fromFading(fadingGlyphs));
         blend.registerTicker(fadeTimer::tick);
     }
 
-    private final class AllGlyphs extends AbstractCollection<ClientDrawingGlyph> {
-        @Override
-        public Iterator<ClientDrawingGlyph> iterator() {
-            ClientDrawingGlyph drawingGlyph = ClientCastingDrawing.this.drawing;
-            if (drawingGlyph != null) {
-                return Iterators.concat(
-                        Iterators.singletonIterator(drawingGlyph),
-                        ClientCastingDrawing.this.glyphs.iterator()
-                );
-            } else {
-                return ClientCastingDrawing.this.glyphs.iterator();
-            }
+    private static final record Fading(FadingGlyph glyph, AnimationTimer timer) {
+        public boolean tick() {
+            return this.timer.tick();
         }
+    }
 
+    private final class DrawingGlyphsEffect implements GlyphsEffect {
         @Override
-        public int size() {
-            ClientDrawingGlyph drawingGlyph = ClientCastingDrawing.this.drawing;
-            if (drawingGlyph != null) {
-                return ClientCastingDrawing.this.glyphs.size() + 1;
-            } else {
-                return ClientCastingDrawing.this.glyphs.size();
+        public void render(GlyphRenderParameters parameters, WorldRenderContext context, RenderFunction render) {
+            var drawing = ClientCastingDrawing.this.drawing;
+            if (drawing != null) {
+                parameters.setDrawing(drawing, context);
+                render.accept(parameters);
+            }
+
+            for (var glyph : ClientCastingDrawing.this.glyphs) {
+                parameters.setDrawing(glyph, context);
+                render.accept(parameters);
+            }
+
+            for (var fading : ClientCastingDrawing.this.fading) {
+                parameters.setFading(fading.glyph(), context);
+                render.accept(parameters);
             }
         }
     }

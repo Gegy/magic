@@ -2,6 +2,7 @@ package dev.gegy.magic.network.codec;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.registry.Registry;
@@ -35,6 +36,11 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
     );
 
     PacketCodec<Formatting> FORMATTING = PacketCodec.ofEnum(Formatting.class);
+
+    PacketCodec<TextColor> TEXT_COLOR = PacketCodec.of(
+            (color, buf) -> buf.writeInt(color.getRgb()),
+            buf -> TextColor.fromRgb(buf.readInt())
+    );
 
     static <T> PacketCodec<T> unit(Supplier<T> supplier) {
         return PacketCodec.of((value, buf) -> {}, buf -> supplier.get());

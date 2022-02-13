@@ -10,7 +10,7 @@ public final class BeamEffect implements Effect {
     public static final EffectType<BeamEffect> TYPE = EffectType.create();
 
     private final Spell spell;
-    private final ColorRgb color = new ColorRgb(1.0F, 0.3F, 0.3F);
+    private final ColorRgb color = ColorRgb.of(1.0F, 0.3F, 0.3F);
 
     private float prevLength;
     private float length;

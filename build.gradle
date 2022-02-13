@@ -11,6 +11,7 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+	mavenCentral()
 	maven { url = "https://maven.gegy.dev/" }
 }
 
@@ -24,6 +25,8 @@ dependencies {
 	modRuntimeOnly ("supercoder79:databreaker:0.2.8") {
 		exclude module : "fabric-loader"
 	}
+
+	implementation include('org.hsluv:hsluv:0.2')
 }
 
 processResources {

@@ -23,6 +23,13 @@ public final class CastingBlendBuilder {
         this.tickers.add(ticker);
     }
 
+    public void registerTicker(Runnable ticker) {
+        this.registerTicker(() -> {
+            ticker.run();
+            return false;
+        });
+    }
+
     public ClientCasting build(ClientCasting target) {
         if (!this.isEmpty()) {
             return new BlendingCasting(target, this.effects, this.tickers);

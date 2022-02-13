@@ -5,7 +5,6 @@ import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
 import dev.gegy.magic.client.glyph.transform.BlendingGlyphTransform;
 import dev.gegy.magic.math.AnimationTimer;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class SpellPrepareBlender {
@@ -22,7 +21,7 @@ public final class SpellPrepareBlender {
     public static SpellPrepareBlender create(List<ClientDrawingGlyph> drawingGlyphs, Spell spell) {
         Preconditions.checkState(spell.glyphs().size() == drawingGlyphs.size(), "mismatched drawing and prepared glyphs");
 
-        var blendingGlyphs = new ArrayList<SpellCastingGlyph>(drawingGlyphs.size());
+        var blendingGlyphs = new SpellGlyphs();
         var blendingSpell = new Spell(spell.source(), spell.transform(), blendingGlyphs);
 
         var timer = new AnimationTimer(LENGTH);
