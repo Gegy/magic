@@ -5,11 +5,10 @@ import dev.gegy.magic.casting.spell.beam.ServerCastingBeam;
 import dev.gegy.magic.casting.spell.beam.SetBeamActive;
 import dev.gegy.magic.client.casting.ClientCasting;
 import dev.gegy.magic.client.casting.ClientCastingBuilder;
-import dev.gegy.magic.client.casting.blend.CastingBlendType;
 import dev.gegy.magic.client.effect.casting.spell.SpellEffects;
 import dev.gegy.magic.client.effect.casting.spell.beam.BeamEffect;
 import dev.gegy.magic.client.glyph.spell.Spell;
-import dev.gegy.magic.client.glyph.spell.SpellTransform;
+import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.network.NetworkSender;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
@@ -33,10 +32,8 @@ public final class ClientCastingBeam {
     }
 
     public static ClientCasting build(PlayerEntity player, BeamParameters parameters, ClientCastingBuilder casting) {
-        var spell = casting.blendFrom(CastingBlendType.SPELL, SpellTransform::tracking);
-        if (spell == null) {
-            return ClientCasting.NONE;
-        }
+        var spell = parameters.spell()
+                .blendOrCreate(player, casting, SpellTransformType.TRACKING);
 
         var beamEffect = casting.attachEffect(new BeamEffect(spell));
         beamEffect.setVisible(parameters.active());

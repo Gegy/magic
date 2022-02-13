@@ -1,5 +1,6 @@
 package dev.gegy.magic.casting.drawing;
 
+import dev.gegy.magic.glyph.GlyphForm;
 import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
@@ -50,6 +51,16 @@ public final class ServerDrawingGlyph {
 
     public DrawingGlyphParameters asParameters() {
         return new DrawingGlyphParameters(this.direction, this.radius, this.shape, this.formedType);
+    }
+
+    @Nullable
+    public GlyphForm asForm() {
+        var formedType = this.formedType;
+        if (formedType != null) {
+            return new GlyphForm(this.radius, this.shape, formedType.style());
+        } else {
+            return null;
+        }
     }
 
     public int getShape() {

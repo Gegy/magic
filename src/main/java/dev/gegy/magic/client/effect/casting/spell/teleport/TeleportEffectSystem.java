@@ -30,12 +30,9 @@ public final class TeleportEffectSystem implements EffectSystem {
 
     @Override
     public void tick(MinecraftClient client, EffectSelector effects) {
-        for (var effect : effects.select(TeleportEffect.TYPE)) {
-        }
     }
 
     @Override
     public void close() {
-
     }
 }

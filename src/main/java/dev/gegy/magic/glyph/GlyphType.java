@@ -3,11 +3,14 @@ package dev.gegy.magic.glyph;
 import com.google.common.base.Preconditions;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.casting.ServerCasting;
+import dev.gegy.magic.casting.ServerCastingBuilder;
+import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.casting.spell.beam.ServerCastingBeam;
 import dev.gegy.magic.casting.spell.teleport.ServerCastingTeleport;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -29,9 +32,9 @@ public final class GlyphType {
     );
 
     private final GlyphStyle style;
-    private final ServerCasting.Factory castFunction;
+    private final CastFunction castFunction;
 
-    private GlyphType(GlyphStyle style, ServerCasting.Factory castFunction) {
+    private GlyphType(GlyphStyle style, CastFunction castFunction) {
         this.style = style;
         this.castFunction = castFunction;
     }
@@ -48,13 +51,13 @@ public final class GlyphType {
         return this.style;
     }
 
-    public ServerCasting.Factory castFunction() {
+    public CastFunction castFunction() {
         return this.castFunction;
     }
 
     public static final class Builder {
         private GlyphStyle style;
-        private ServerCasting.Factory castFunction;
+        private CastFunction castFunction;
 
         private Builder() {
         }
@@ -64,7 +67,7 @@ public final class GlyphType {
             return this;
         }
 
-        public Builder casts(ServerCasting.Factory castFunction) {
+        public Builder casts(CastFunction castFunction) {
             this.castFunction = castFunction;
             return this;
         }
@@ -75,5 +78,9 @@ public final class GlyphType {
                     Preconditions.checkNotNull(this.castFunction, "casting build function not set")
             );
         }
+    }
+
+    public interface CastFunction {
+        ServerCasting build(ServerPlayerEntity player, SpellParameters spell, ServerCastingBuilder casting);
     }
 }

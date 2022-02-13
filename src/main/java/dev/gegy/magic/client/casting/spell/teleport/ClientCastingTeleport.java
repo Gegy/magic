@@ -7,10 +7,9 @@ import dev.gegy.magic.casting.spell.teleport.TeleportTarget;
 import dev.gegy.magic.casting.spell.teleport.TeleportTargetSymbol;
 import dev.gegy.magic.client.casting.ClientCasting;
 import dev.gegy.magic.client.casting.ClientCastingBuilder;
-import dev.gegy.magic.client.casting.blend.CastingBlendType;
 import dev.gegy.magic.client.effect.casting.spell.SpellEffects;
 import dev.gegy.magic.client.effect.casting.spell.teleport.TeleportEffect;
-import dev.gegy.magic.client.glyph.spell.SpellTransform;
+import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.network.NetworkSender;
 import net.minecraft.entity.player.PlayerEntity;
 
@@ -32,11 +31,8 @@ public final class ClientCastingTeleport {
     }
 
     public static ClientCasting build(PlayerEntity player, TeleportParameters parameters, ClientCastingBuilder casting) {
-        // TODO: when a player is being tracked for the first time, the blending data is not available!
-        var spell = casting.blendFrom(CastingBlendType.SPELL, SpellTransform::fixed);
-        if (spell == null || spell.glyphs().isEmpty()) {
-            return ClientCasting.NONE;
-        }
+        var spell = parameters.spell()
+                .blendOrCreate(player, casting, SpellTransformType.FIXED);
 
         var sourceGlyph = spell.glyphs().get(0);
 

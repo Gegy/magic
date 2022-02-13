@@ -8,16 +8,17 @@ import dev.gegy.magic.casting.drawing.event.c2s.CancelGlyphC2SEvent;
 import dev.gegy.magic.casting.drawing.event.c2s.DrawGlyphShapeC2SEvent;
 import dev.gegy.magic.casting.drawing.event.c2s.DrawGlyphStrokeC2SEvent;
 import dev.gegy.magic.casting.drawing.event.c2s.PrepareSpellC2SEvent;
+import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.client.glyph.spell.SpellCasting;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public final class ServerCastingDrawing {
     private final ServerPlayerEntity player;
@@ -96,13 +97,28 @@ public final class ServerCastingDrawing {
             var glyphTypes = this.glyphs.stream()
                     .map(ServerDrawingGlyph::getFormedType)
                     .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                    .toList();
 
             var cast = SpellCasting.cast(glyphTypes);
-            return Objects.requireNonNullElse(cast, ServerCastingDrawing::build);
+            if (cast != null) {
+                var spell = this.buildSpellParameters();
+                return (player, casting) -> cast.build(player, spell, casting);
+            } else {
+                return ServerCastingDrawing::build;
+            }
         }
 
         return null;
+    }
+
+    private SpellParameters buildSpellParameters() {
+        var glyphs = this.glyphs.stream()
+                .map(ServerDrawingGlyph::asForm)
+                .filter(Objects::nonNull)
+                .toList();
+        var direction = new Vec3f(this.player.getRotationVec(1.0F));
+
+        return new SpellParameters(glyphs, direction);
     }
 
     private DrawingParameters buildParameters() {

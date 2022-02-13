@@ -1,6 +1,7 @@
-package dev.gegy.magic.client.glyph.spell;
+package dev.gegy.magic.client.glyph.spell.transform;
 
 import dev.gegy.magic.client.glyph.SpellSource;
+import dev.gegy.magic.client.glyph.spell.SpellGlyphs;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import net.minecraft.util.math.Vec3f;
 

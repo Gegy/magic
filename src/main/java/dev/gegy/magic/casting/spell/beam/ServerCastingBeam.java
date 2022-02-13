@@ -3,6 +3,7 @@ package dev.gegy.magic.casting.spell.beam;
 import dev.gegy.magic.casting.ServerCasting;
 import dev.gegy.magic.casting.ServerCastingBuilder;
 import dev.gegy.magic.casting.drawing.ServerCastingDrawing;
+import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.network.NetworkSender;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -12,18 +13,20 @@ public final class ServerCastingBeam {
     public static final int MAXIMUM_LENGTH = 8;
 
     private final ServerPlayerEntity player;
+    private final SpellParameters spell;
     private final EventSenders eventSenders;
 
     private boolean active;
 
-    private ServerCastingBeam(ServerPlayerEntity player, EventSenders eventSenders) {
+    private ServerCastingBeam(ServerPlayerEntity player, SpellParameters spell, EventSenders eventSenders) {
         this.player = player;
+        this.spell = spell;
         this.eventSenders = eventSenders;
     }
 
-    public static ServerCasting build(ServerPlayerEntity player, ServerCastingBuilder casting) {
+    public static ServerCasting build(ServerPlayerEntity player, SpellParameters spell, ServerCastingBuilder casting) {
         var eventSenders = EventSenders.register(casting);
-        var beam = new ServerCastingBeam(player, eventSenders);
+        var beam = new ServerCastingBeam(player, spell, eventSenders);
 
         casting.registerClientCasting(ClientCastingType.BEAM, beam::buildParameters);
         casting.registerTicker(beam::tick);
@@ -48,7 +51,7 @@ public final class ServerCastingBeam {
     }
 
     private BeamParameters buildParameters() {
-        return new BeamParameters(this.active);
+        return new BeamParameters(this.spell, this.active);
     }
 
     private static record EventSenders(NetworkSender<SetBeamActive> setActive) {

@@ -2,6 +2,7 @@ package dev.gegy.magic.client.glyph.spell;
 
 import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
 import dev.gegy.magic.client.glyph.SpellSource;
+import dev.gegy.magic.client.glyph.spell.transform.SpellTransform;
 
 import java.util.List;
 
@@ -27,9 +28,5 @@ public final record Spell(
 
     public void tick() {
         this.transform.tick();
-    }
-
-    public interface TransformFactory {
-        SpellTransform create(SpellSource source, List<ClientDrawingGlyph> glyphs);
     }
 }

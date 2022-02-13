@@ -3,6 +3,7 @@ package dev.gegy.magic.casting.spell.teleport;
 import dev.gegy.magic.casting.ServerCasting;
 import dev.gegy.magic.casting.ServerCastingBuilder;
 import dev.gegy.magic.casting.drawing.ServerCastingDrawing;
+import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.math.ColorRgb;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -19,17 +20,19 @@ import java.util.UUID;
 
 public final class ServerCastingTeleport {
     private final ServerPlayerEntity player;
+    private final SpellParameters spell;
     private final List<TeleportTarget> targets;
     private boolean selectedTarget;
 
-    private ServerCastingTeleport(ServerPlayerEntity player, List<TeleportTarget> targets) {
+    private ServerCastingTeleport(ServerPlayerEntity player, SpellParameters spell, List<TeleportTarget> targets) {
         this.player = player;
+        this.spell = spell;
         this.targets = targets;
     }
 
-    public static ServerCasting build(ServerPlayerEntity player, ServerCastingBuilder casting) {
+    public static ServerCasting build(ServerPlayerEntity player, SpellParameters spell, ServerCastingBuilder casting) {
         // TODO: hardcoded target
-        var teleport = new ServerCastingTeleport(player, List.of(
+        var teleport = new ServerCastingTeleport(player, spell, List.of(
                 generateTarget(player, 'Y', Formatting.LIGHT_PURPLE),
                 generateTarget(player, 'G', Formatting.GREEN),
                 generateTarget(player, 'B', Formatting.BLUE),
@@ -116,6 +119,6 @@ public final class ServerCastingTeleport {
         for (var target : this.targets) {
             symbols.put(target.id(), target.symbol());
         }
-        return new TeleportParameters(symbols);
+        return new TeleportParameters(this.spell, symbols);
     }
 }
