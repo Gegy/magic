@@ -12,13 +12,13 @@ public final class TeleportEffectRenderer {
         long worldTime = context.world().getTime();
         float tickDelta = context.tickDelta();
 
+        var animator = effect.animator();
+        var targets = effect.symbols();
+
         var sourcePos = effect.source().getPosition(tickDelta);
         var cameraPos = context.camera().getPos();
 
         float time = (float) (worldTime - effect.createTime()) + tickDelta;
-
-        var animator = effect.animator();
-        var targets = effect.symbols();
 
         var matrixStack = context.matrixStack();
         matrixStack.push();

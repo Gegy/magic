@@ -51,6 +51,22 @@ public final class TeleportTargetAnimator {
         return rings;
     }
 
+    public int selectWithin(Vec2f pointer, float distance, float time) {
+        int selectedIndex = -1;
+        float minDistance2 = distance * distance;
+
+        for (int index = 0; index < this.ringsByIndex.length; index++) {
+            var position = this.getPosition(index, time);
+            float distance2 = position.distanceSquared(pointer);
+            if (distance2 <= minDistance2) {
+                selectedIndex = index;
+                minDistance2 = distance2;
+            }
+        }
+
+        return selectedIndex;
+    }
+
     public Vec2f getPosition(int index, float time) {
         var position = this.getTargetPosition(index, time);
 
