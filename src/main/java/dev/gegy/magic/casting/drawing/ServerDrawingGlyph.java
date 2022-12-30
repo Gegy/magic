@@ -16,33 +16,33 @@ public final class ServerDrawingGlyph {
 
     private GlyphNode stroke;
 
-    public ServerDrawingGlyph(Vector3f direction, float radius) {
+    public ServerDrawingGlyph(final Vector3f direction, final float radius) {
         this.direction = direction;
         this.radius = radius;
     }
 
     public Vector3f direction() {
-        return this.direction;
+        return direction;
     }
 
     public float radius() {
-        return this.radius;
+        return radius;
     }
 
-    public void setShape(int shape) {
+    public void setShape(final int shape) {
         this.shape = shape;
     }
 
-    public void setStroke(@Nullable GlyphNode stroke) {
+    public void setStroke(@Nullable final GlyphNode stroke) {
         this.stroke = stroke;
     }
 
-    public boolean tryForm(GlyphShapeStorage glyphShapes) {
-        int shape = this.shape;
-        var matchingType = glyphShapes.getGlyphForShape(shape);
+    public boolean tryForm(final GlyphShapeStorage glyphShapes) {
+        final int shape = this.shape;
+        final GlyphType matchingType = glyphShapes.getGlyphForShape(shape);
         if (matchingType != null) {
-            this.formedType = matchingType;
-            this.stroke = null;
+            formedType = matchingType;
+            stroke = null;
             return true;
         } else {
             return false;
@@ -50,30 +50,30 @@ public final class ServerDrawingGlyph {
     }
 
     public DrawingGlyphParameters asParameters() {
-        return new DrawingGlyphParameters(this.direction, this.radius, this.shape, this.formedType);
+        return new DrawingGlyphParameters(direction, radius, shape, formedType);
     }
 
     @Nullable
     public GlyphForm asForm() {
-        var formedType = this.formedType;
+        final GlyphType formedType = this.formedType;
         if (formedType != null) {
-            return new GlyphForm(this.radius, this.shape, formedType.style());
+            return new GlyphForm(radius, shape, formedType.style());
         } else {
             return null;
         }
     }
 
     public int getShape() {
-        return this.shape;
+        return shape;
     }
 
     @Nullable
     public GlyphType getFormedType() {
-        return this.formedType;
+        return formedType;
     }
 
     @Nullable
     public GlyphNode getStroke() {
-        return this.stroke;
+        return stroke;
     }
 }

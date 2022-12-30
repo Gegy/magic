@@ -11,15 +11,15 @@ import java.util.Collection;
 public interface GlyphsEffect extends Effect {
     EffectType<GlyphsEffect> TYPE = EffectType.create();
 
-    static GlyphsEffect fromSpell(Spell spell) {
+    static GlyphsEffect fromSpell(final Spell spell) {
         return homogenous(spell.glyphs(), GlyphRenderParameters::setSpell);
     }
 
-    static GlyphsEffect fromFading(Collection<FadingGlyph> fadingGlyphs) {
+    static GlyphsEffect fromFading(final Collection<FadingGlyph> fadingGlyphs) {
         return homogenous(fadingGlyphs, GlyphRenderParameters::setFading);
     }
 
-    static <T> GlyphsEffect homogenous(Iterable<T> glyphs, GlyphRenderParameters.Applicator<T> parametersApplicator) {
+    static <T> GlyphsEffect homogenous(final Iterable<T> glyphs, final GlyphRenderParameters.Applicator<T> parametersApplicator) {
         return new Homogenous<>(glyphs, parametersApplicator);
     }
 
@@ -34,14 +34,14 @@ public interface GlyphsEffect extends Effect {
         void accept(GlyphRenderParameters parameters);
     }
 
-    final record Homogenous<T>(
+    record Homogenous<T>(
             Iterable<T> glyphs,
             GlyphRenderParameters.Applicator<T> parametersApplicator
     ) implements GlyphsEffect {
         @Override
-        public void render(GlyphRenderParameters parameters, WorldRenderContext context, RenderFunction render) {
-            var parametersApplicator = this.parametersApplicator;
-            for (var glyph : this.glyphs) {
+        public void render(final GlyphRenderParameters parameters, final WorldRenderContext context, final RenderFunction render) {
+            final GlyphRenderParameters.Applicator<T> parametersApplicator = this.parametersApplicator;
+            for (final T glyph : glyphs) {
                 parametersApplicator.set(parameters, glyph, context);
                 render.accept(parameters);
             }

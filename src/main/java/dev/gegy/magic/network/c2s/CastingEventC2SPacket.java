@@ -14,7 +14,7 @@ public final class CastingEventC2SPacket {
 
     static void registerReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
-            var id = buf.readResourceLocation();
+            final ResourceLocation id = buf.readResourceLocation();
             buf.retain();
 
             server.submit(() -> {
@@ -27,8 +27,8 @@ public final class CastingEventC2SPacket {
         });
     }
 
-    public static <T> void sendToServer(CastingEventSpec<T> spec, T event) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
+    public static <T> void sendToServer(final CastingEventSpec<T> spec, final T event) {
+        final FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeResourceLocation(spec.id());
         spec.codec().encode(event, buf);
 

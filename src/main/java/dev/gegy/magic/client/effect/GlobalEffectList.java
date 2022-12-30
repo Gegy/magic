@@ -15,52 +15,52 @@ public final class GlobalEffectList extends AbstractCollection<Effect> {
     private final Selector selector = new Selector();
 
     public EffectSelector selector() {
-        return this.selector;
+        return selector;
     }
 
     @Override
-    public boolean add(Effect effect) {
-        this.getEffectsLike(effect).add(effect);
+    public boolean add(final Effect effect) {
+        getEffectsLike(effect).add(effect);
         return true;
     }
 
     @Override
-    public boolean remove(Object o) {
-        return o instanceof Effect effect && this.remove(effect);
+    public boolean remove(final Object o) {
+        return o instanceof Effect effect && remove(effect);
     }
 
-    private boolean remove(Effect effect) {
-        return this.getEffectsLike(effect).remove(effect);
+    private boolean remove(final Effect effect) {
+        return getEffectsLike(effect).remove(effect);
     }
 
     @Override
     public Iterator<Effect> iterator() {
-        return Iterables.concat(this.effectsByType.values()).iterator();
+        return Iterables.concat(effectsByType.values()).iterator();
     }
 
     @Override
     public int size() {
         int size = 0;
-        for (var effects : this.effectsByType.values()) {
+        for (final List<Effect> effects : effectsByType.values()) {
             size += effects.size();
         }
         return size;
     }
 
     @SuppressWarnings("unchecked")
-    private <E extends Effect> List<E> getEffectsLike(E effect) {
-        return (List<E>) this.getEffectsByType(effect.getType());
+    private <E extends Effect> List<E> getEffectsLike(final E effect) {
+        return (List<E>) getEffectsByType(effect.getType());
     }
 
     @SuppressWarnings("unchecked")
-    private <E extends Effect> List<E> getEffectsByType(EffectType<E> type) {
-        return (List<E>) this.effectsByType.computeIfAbsent(type, t -> new ArrayList<>());
+    private <E extends Effect> List<E> getEffectsByType(final EffectType<E> type) {
+        return (List<E>) effectsByType.computeIfAbsent(type, t -> new ArrayList<>());
     }
 
     private final class Selector implements EffectSelector {
         @Override
-        public <E extends Effect> Selection<E> select(EffectType<E> type) {
-            var effects = GlobalEffectList.this.getEffectsByType(type);
+        public <E extends Effect> Selection<E> select(final EffectType<E> type) {
+            final List<E> effects = getEffectsByType(type);
             return new Selection<>() {
                 @Override
                 public boolean isEmpty() {

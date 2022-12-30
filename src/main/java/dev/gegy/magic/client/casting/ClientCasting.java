@@ -15,7 +15,7 @@ public interface ClientCasting {
         }
 
         @Override
-        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
+        public void handleEvent(final ResourceLocation id, final FriendlyByteBuf buf) {
             Magic.LOGGER.warn("Received unexpected inbound casting event '{}' while no casting is active", id);
         }
 
@@ -25,7 +25,7 @@ public interface ClientCasting {
         }
     };
 
-    default ClientCasting handleServerCast(ClientCasting casting) {
+    default ClientCasting handleServerCast(final ClientCasting casting) {
         return casting;
     }
 

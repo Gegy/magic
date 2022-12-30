@@ -6,7 +6,7 @@ import dev.gegy.magic.network.codec.PacketCodec;
 
 import java.util.UUID;
 
-public final record SelectTeleportTarget(UUID targetId) {
+public record SelectTeleportTarget(UUID targetId) {
     public static final PacketCodec<SelectTeleportTarget> CODEC = PacketCodec.UUID
             .map(SelectTeleportTarget::new, SelectTeleportTarget::targetId);
 

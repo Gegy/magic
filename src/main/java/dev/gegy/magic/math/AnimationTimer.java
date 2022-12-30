@@ -4,16 +4,16 @@ public final class AnimationTimer {
     private final int length;
     private int time;
 
-    public AnimationTimer(int length) {
+    public AnimationTimer(final int length) {
         this.length = length;
     }
 
     public boolean tick() {
-        return this.time++ > this.length;
+        return time++ > length;
     }
 
-    public float getProgress(float tickDelta) {
-        float time = Math.min(this.time + tickDelta, this.length);
-        return time / this.length;
+    public float getProgress(final float tickDelta) {
+        final float time = Math.min(this.time + tickDelta, length);
+        return time / length;
     }
 }

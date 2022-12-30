@@ -9,7 +9,11 @@ import dev.gegy.magic.math.ColorRgb;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -24,15 +28,15 @@ public final class ServerCastingTeleport {
     private final List<TeleportTarget> targets;
     private boolean selectedTarget;
 
-    private ServerCastingTeleport(ServerPlayer player, SpellParameters spell, List<TeleportTarget> targets) {
+    private ServerCastingTeleport(final ServerPlayer player, final SpellParameters spell, final List<TeleportTarget> targets) {
         this.player = player;
         this.spell = spell;
         this.targets = targets;
     }
 
-    public static ServerCasting build(ServerPlayer player, SpellParameters spell, ServerCastingBuilder casting) {
+    public static ServerCasting build(final ServerPlayer player, final SpellParameters spell, final ServerCastingBuilder casting) {
         // TODO: hardcoded target
-        var teleport = new ServerCastingTeleport(player, spell, List.of(
+        final ServerCastingTeleport teleport = new ServerCastingTeleport(player, spell, List.of(
                 generateTarget(player, 'Y', ChatFormatting.LIGHT_PURPLE),
                 generateTarget(player, 'G', ChatFormatting.GREEN),
                 generateTarget(player, 'B', ChatFormatting.BLUE),
@@ -64,49 +68,49 @@ public final class ServerCastingTeleport {
         return casting.build();
     }
 
-    private static TeleportTarget generateTarget(ServerPlayer player, char character, ChatFormatting formatting) {
-        var symbol = new TeleportTargetSymbol(character, ColorRgb.of(Objects.requireNonNull(formatting.getColor(), "non-color formatting")));
+    private static TeleportTarget generateTarget(final ServerPlayer player, final char character, final ChatFormatting formatting) {
+        final TeleportTargetSymbol symbol = new TeleportTargetSymbol(character, ColorRgb.of(Objects.requireNonNull(formatting.getColor(), "non-color formatting")));
 
-        var level = player.getLevel();
-        var dimension = level.dimension();
-        var random = player.getRandom();
-        var pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(
+        final ServerLevel level = player.getLevel();
+        final ResourceKey<Level> dimension = level.dimension();
+        final RandomSource random = player.getRandom();
+        final BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(
                 random.nextInt(16) - random.nextInt(16),
                 0,
                 random.nextInt(16) - random.nextInt(16)
         ));
 
-        return TeleportTarget.create(symbol, dimension, pos, 0.0F);
+        return TeleportTarget.create(symbol, dimension, pos, 0.0f);
     }
 
-    private void selectTarget(SelectTeleportTarget event) {
-        var target = this.lookupTarget(event.targetId());
-        this.selectedTarget = true;
+    private void selectTarget(final SelectTeleportTarget event) {
+        final TeleportTarget target = lookupTarget(event.targetId());
+        selectedTarget = true;
 
         if (target != null) {
-            this.teleportPlayer(target);
+            teleportPlayer(target);
         }
     }
 
     @Nullable
     private ServerCasting.Factory tick() {
         // TODO: proper cancel input
-        if (this.player.isShiftKeyDown() || this.selectedTarget) {
+        if (player.isShiftKeyDown() || selectedTarget) {
             return ServerCastingDrawing::build;
         }
 
         return null;
     }
 
-    private void teleportPlayer(TeleportTarget target) {
-        var level = this.player.server.getLevel(target.dimension());
-        var pos = Vec3.atBottomCenterOf(target.pos());
-        this.player.teleportTo(level, pos.x, pos.y, pos.z, target.angle(), 0.0F);
+    private void teleportPlayer(final TeleportTarget target) {
+        final ServerLevel level = player.server.getLevel(target.dimension());
+        final Vec3 pos = Vec3.atBottomCenterOf(target.pos());
+        player.teleportTo(level, pos.x, pos.y, pos.z, target.angle(), 0.0f);
     }
 
     @Nullable
-    private TeleportTarget lookupTarget(UUID id) {
-        for (var target : this.targets) {
+    private TeleportTarget lookupTarget(final UUID id) {
+        for (final TeleportTarget target : targets) {
             if (target.id().equals(id)) {
                 return target;
             }
@@ -115,10 +119,10 @@ public final class ServerCastingTeleport {
     }
 
     private TeleportParameters buildParameters() {
-        var symbols = new Object2ObjectOpenHashMap<UUID, TeleportTargetSymbol>();
-        for (var target : this.targets) {
+        final Object2ObjectOpenHashMap<UUID, TeleportTargetSymbol> symbols = new Object2ObjectOpenHashMap<UUID, TeleportTargetSymbol>();
+        for (final TeleportTarget target : targets) {
             symbols.put(target.id(), target.symbol());
         }
-        return new TeleportParameters(this.spell, symbols);
+        return new TeleportParameters(spell, symbols);
     }
 }

@@ -23,10 +23,10 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
     private final FloatBuffer modelViewProjectData = MemoryUtil.memAllocFloat(4 * 4);
 
     private BeamWorldShader(
-            EffectShaderProgram program,
-            int uniformModelViewProject,
-            int uniformSampler,
-            int uniformScale
+            final EffectShaderProgram program,
+            final int uniformModelViewProject,
+            final int uniformSampler,
+            final int uniformScale
     ) {
         this.program = program;
         this.uniformModelViewProject = uniformModelViewProject;
@@ -34,17 +34,17 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
         this.uniformScale = uniformScale;
     }
 
-    public static BeamWorldShader create(ResourceManager resources) throws IOException {
-        EffectShaderProgram program = EffectShaderProgram.compile(
+    public static BeamWorldShader create(final ResourceManager resources) throws IOException {
+        final EffectShaderProgram program = EffectShaderProgram.compile(
                 resources,
                 Magic.identifier("beam/world"),
                 Magic.identifier("effect_world"),
                 DefaultVertexFormat.POSITION_TEX
         );
 
-        int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
-        int uniformSampler = program.getUniformLocation("Sampler");
-        int uniformScale = program.getUniformLocation("Scale");
+        final int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
+        final int uniformSampler = program.getUniformLocation("Sampler");
+        final int uniformScale = program.getUniformLocation("Scale");
 
         return new BeamWorldShader(
                 program,
@@ -55,16 +55,16 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
     }
 
     @Override
-    public GlBinding bind(BeamRenderParameters parameters) {
-        var binding = this.program.bind();
+    public GlBinding bind(final BeamRenderParameters parameters) {
+        final EffectShaderProgram.Binding binding = program.bind();
 
-        RenderSystem.glUniform1i(this.uniformSampler, 0);
+        RenderSystem.glUniform1i(uniformSampler, 0);
 
-        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false,
-                parameters.modelViewProject.get(this.modelViewProjectData)
+        RenderSystem.glUniformMatrix4(uniformModelViewProject, false,
+                parameters.modelViewProject.get(modelViewProjectData)
         );
-        RenderSystem.glUniform2(this.uniformScale,
-                this.scaleData.put(0, BeamTexture.SCALE_X).put(1, BeamTexture.SCALE_Y)
+        RenderSystem.glUniform2(uniformScale,
+                scaleData.put(0, BeamTexture.SCALE_X).put(1, BeamTexture.SCALE_Y)
         );
 
         return binding;
@@ -72,9 +72,9 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
 
     @Override
     public void delete() {
-        this.program.delete();
+        program.delete();
 
-        MemoryUtil.memFree(this.scaleData);
-        MemoryUtil.memFree(this.modelViewProjectData);
+        MemoryUtil.memFree(scaleData);
+        MemoryUtil.memFree(modelViewProjectData);
     }
 }

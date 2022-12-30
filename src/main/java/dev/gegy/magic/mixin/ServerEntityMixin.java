@@ -18,7 +18,7 @@ public class ServerEntityMixin {
     private Entity entity;
 
     @Inject(method = "addPairing", at = @At("TAIL"))
-    private void onStartTracking(ServerPlayer player, CallbackInfo ci) {
-        LateTrackingEvent.START.invoker().onStartTracking(this.entity, player);
+    private void onStartTracking(final ServerPlayer player, final CallbackInfo ci) {
+        LateTrackingEvent.START.invoker().onStartTracking(entity, player);
     }
 }

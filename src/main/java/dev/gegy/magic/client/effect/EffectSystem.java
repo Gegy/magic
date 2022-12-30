@@ -10,7 +10,7 @@ import java.io.IOException;
 public interface EffectSystem extends AutoCloseable {
     void render(Minecraft client, WorldRenderContext context, RenderTarget targetFramebuffer, EffectSelector effects);
 
-    default void tick(Minecraft client, EffectSelector effects) {
+    default void tick(final Minecraft client, final EffectSelector effects) {
     }
 
     @Override

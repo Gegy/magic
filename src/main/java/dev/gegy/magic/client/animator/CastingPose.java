@@ -2,8 +2,10 @@ package dev.gegy.magic.client.animator;
 
 import dev.gegy.magic.client.casting.ClientCastingTracker;
 import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
+import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.client.effect.casting.drawing.DrawingEffect;
 import dev.gegy.magic.client.effect.casting.spell.PreparedSpellEffect;
+import dev.gegy.magic.client.glyph.spell.transform.SpellTransform;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.player.Player;
@@ -24,39 +26,39 @@ public interface CastingPose {
 
         @Override
         public void beginAnimating() {
-            this.leftArm.resetInterpolation();
-            this.rightArm.resetInterpolation();
+            leftArm.resetInterpolation();
+            rightArm.resetInterpolation();
         }
 
         @Override
-        public boolean tick(Player entity) {
-            var effects = ClientCastingTracker.INSTANCE.effectSelectorFor(entity);
+        public boolean tick(final Player entity) {
+            final EffectSelector effects = ClientCastingTracker.INSTANCE.effectSelectorFor(entity);
 
-            DrawingEffect drawing = effects.selectAny(DrawingEffect.TYPE);
+            final DrawingEffect drawing = effects.selectAny(DrawingEffect.TYPE);
             if (drawing == null || drawing.getGlyph() == null) {
                 return false;
             }
 
-            ClientDrawingGlyph glyph = drawing.getGlyph();
-            Vector3f pointer = glyph.drawPointer();
+            final ClientDrawingGlyph glyph = drawing.getGlyph();
+            final Vector3f pointer = glyph.drawPointer();
             if (pointer == null) {
                 return false;
             }
 
-            float leftX = Math.abs(pointer.x());
-            float rightX = -leftX;
+            final float leftX = Math.abs(pointer.x());
+            final float rightX = -leftX;
 
-            Vector3f target = this.target.set(leftX, pointer.y(), pointer.z());
-            this.leftArm.pointToPointOnPlane(entity, glyph.plane(), target);
+            final Vector3f target = this.target.set(leftX, pointer.y(), pointer.z());
+            leftArm.pointToPointOnPlane(entity, glyph.plane(), target);
 
             target.set(rightX, pointer.y(), pointer.z());
-            this.rightArm.pointToPointOnPlane(entity, glyph.plane(), target);
+            rightArm.pointToPointOnPlane(entity, glyph.plane(), target);
 
             return true;
         }
 
         @Override
-        public void apply(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight) {
+        public void apply(final Player entity, final ModelPart leftArm, final ModelPart rightArm, final float tickDelta, final float weight) {
             this.leftArm.apply(leftArm, tickDelta, weight);
             this.rightArm.apply(rightArm, tickDelta, weight);
         }
@@ -67,29 +69,29 @@ public interface CastingPose {
 
         @Override
         public void beginAnimating() {
-            this.mainArm.resetInterpolation();
+            mainArm.resetInterpolation();
         }
 
         @Override
-        public boolean tick(Player entity) {
-            var effects = ClientCastingTracker.INSTANCE.effectSelectorFor(entity);
-            var preparedSpell = effects.selectAny(PreparedSpellEffect.TYPE);
+        public boolean tick(final Player entity) {
+            final EffectSelector effects = ClientCastingTracker.INSTANCE.effectSelectorFor(entity);
+            final PreparedSpellEffect preparedSpell = effects.selectAny(PreparedSpellEffect.TYPE);
             if (preparedSpell == null) {
                 return false;
             }
 
-            var transform = preparedSpell.spell().transform();
+            final SpellTransform transform = preparedSpell.spell().transform();
 
-            var target = transform.getOrigin(1.0F);
-            this.mainArm.pointTo(entity, target);
+            final Vector3f target = transform.getOrigin(1.0f);
+            mainArm.pointTo(entity, target);
 
             return true;
         }
 
         @Override
-        public void apply(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight) {
-            ModelPart armPart = entity.getMainArm() == HumanoidArm.LEFT ? leftArm : rightArm;
-            this.mainArm.apply(armPart, tickDelta, weight);
+        public void apply(final Player entity, final ModelPart leftArm, final ModelPart rightArm, final float tickDelta, final float weight) {
+            final ModelPart armPart = entity.getMainArm() == HumanoidArm.LEFT ? leftArm : rightArm;
+            mainArm.apply(armPart, tickDelta, weight);
         }
     }
 }

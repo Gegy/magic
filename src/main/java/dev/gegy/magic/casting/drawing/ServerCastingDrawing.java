@@ -11,9 +11,12 @@ import dev.gegy.magic.casting.drawing.event.c2s.PrepareSpellC2SEvent;
 import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.client.glyph.spell.SpellCasting;
+import dev.gegy.magic.glyph.GlyphForm;
+import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +31,14 @@ public final class ServerCastingDrawing {
 
     private boolean preparingSpell;
 
-    private ServerCastingDrawing(ServerPlayer player, ServerDrawingEventSenders senders) {
+    private ServerCastingDrawing(final ServerPlayer player, final ServerDrawingEventSenders senders) {
         this.player = player;
         this.senders = senders;
     }
 
-    public static ServerCasting build(ServerPlayer player, ServerCastingBuilder casting) {
-        var senders = ServerDrawingEventSenders.registerTo(casting);
-        var drawing = new ServerCastingDrawing(player, senders);
+    public static ServerCasting build(final ServerPlayer player, final ServerCastingBuilder casting) {
+        final ServerDrawingEventSenders senders = ServerDrawingEventSenders.registerTo(casting);
+        final ServerCastingDrawing drawing = new ServerCastingDrawing(player, senders);
 
         casting.registerClientCasting(ClientCastingType.DRAWING, drawing::buildParameters);
 
@@ -51,56 +54,56 @@ public final class ServerCastingDrawing {
         return casting.build();
     }
 
-    private void beginGlyph(BeginGlyphC2SEvent event) {
+    private void beginGlyph(final BeginGlyphC2SEvent event) {
         // TODO: input validation on glyphs?
-        var glyph = new ServerDrawingGlyph(event.direction(), event.radius());
+        final ServerDrawingGlyph glyph = new ServerDrawingGlyph(event.direction(), event.radius());
 
-        this.glyphs.add(glyph);
-        this.drawing = glyph;
-        this.senders.drawGlyph(glyph);
+        glyphs.add(glyph);
+        drawing = glyph;
+        senders.drawGlyph(glyph);
     }
 
-    private void cancelGlyph(CancelGlyphC2SEvent event) {
-        var glyph = this.drawing;
+    private void cancelGlyph(final CancelGlyphC2SEvent event) {
+        final ServerDrawingGlyph glyph = drawing;
         if (glyph != null) {
-            this.drawing = null;
-            this.glyphs.remove(glyph);
-            this.senders.cancelDrawing();
+            drawing = null;
+            glyphs.remove(glyph);
+            senders.cancelDrawing();
         }
     }
 
-    private void drawGlyphShape(DrawGlyphShapeC2SEvent event) {
-        var glyph = this.drawing;
+    private void drawGlyphShape(final DrawGlyphShapeC2SEvent event) {
+        final ServerDrawingGlyph glyph = drawing;
         if (glyph != null) {
             glyph.setShape(event.shape());
 
-            if (glyph.tryForm(GlyphShapeStorage.get(this.player.server))) {
-                this.senders.sendUpdateDrawing(glyph);
+            if (glyph.tryForm(GlyphShapeStorage.get(player.server))) {
+                senders.sendUpdateDrawing(glyph);
             }
 
-            this.senders.broadcastUpdateDrawing(glyph);
+            senders.broadcastUpdateDrawing(glyph);
         }
     }
 
-    private void drawGlyphStroke(DrawGlyphStrokeC2SEvent event) {
-        var glyph = this.drawing;
+    private void drawGlyphStroke(final DrawGlyphStrokeC2SEvent event) {
+        final ServerDrawingGlyph glyph = drawing;
         if (glyph != null) {
             glyph.setStroke(event.node());
-            this.senders.broadcastUpdateDrawing(glyph);
+            senders.broadcastUpdateDrawing(glyph);
         }
     }
 
     @Nullable
     private ServerCasting.Factory tick() {
-        if (this.preparingSpell) {
-            var glyphTypes = this.glyphs.stream()
+        if (preparingSpell) {
+            final List<GlyphType> glyphTypes = glyphs.stream()
                     .map(ServerDrawingGlyph::getFormedType)
                     .filter(Objects::nonNull)
                     .toList();
 
-            var cast = SpellCasting.cast(glyphTypes);
+            final GlyphType.CastFunction cast = SpellCasting.cast(glyphTypes);
             if (cast != null) {
-                var spell = this.buildSpellParameters();
+                final SpellParameters spell = buildSpellParameters();
                 return (player, casting) -> cast.build(player, spell, casting);
             } else {
                 return ServerCastingDrawing::build;
@@ -111,18 +114,18 @@ public final class ServerCastingDrawing {
     }
 
     private SpellParameters buildSpellParameters() {
-        var glyphs = this.glyphs.stream()
+        final List<GlyphForm> glyphs = this.glyphs.stream()
                 .map(ServerDrawingGlyph::asForm)
                 .filter(Objects::nonNull)
                 .toList();
-        var direction = this.player.getViewVector(1.0F).toVector3f();
+        final Vector3f direction = player.getViewVector(1.0f).toVector3f();
 
         return new SpellParameters(glyphs, direction);
     }
 
     private DrawingParameters buildParameters() {
-        var glyphs = new ArrayList<DrawingGlyphParameters>(this.glyphs.size());
-        for (var glyph : this.glyphs) {
+        final ArrayList<DrawingGlyphParameters> glyphs = new ArrayList<DrawingGlyphParameters>(this.glyphs.size());
+        for (final ServerDrawingGlyph glyph : this.glyphs) {
             glyphs.add(glyph.asParameters());
         }
         return new DrawingParameters(glyphs);

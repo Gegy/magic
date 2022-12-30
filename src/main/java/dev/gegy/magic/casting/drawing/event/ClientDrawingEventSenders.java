@@ -18,11 +18,11 @@ public final class ClientDrawingEventSenders {
     private final NetworkSender<PrepareSpellC2SEvent> prepareSpell;
 
     private ClientDrawingEventSenders(
-            NetworkSender<BeginGlyphC2SEvent> beginGlyph,
-            NetworkSender<CancelGlyphC2SEvent> cancelGlyph,
-            NetworkSender<DrawGlyphShapeC2SEvent> drawGlyphShape,
-            NetworkSender<DrawGlyphStrokeC2SEvent> drawGlyphStroke,
-            NetworkSender<PrepareSpellC2SEvent> prepareSpell
+            final NetworkSender<BeginGlyphC2SEvent> beginGlyph,
+            final NetworkSender<CancelGlyphC2SEvent> cancelGlyph,
+            final NetworkSender<DrawGlyphShapeC2SEvent> drawGlyphShape,
+            final NetworkSender<DrawGlyphStrokeC2SEvent> drawGlyphStroke,
+            final NetworkSender<PrepareSpellC2SEvent> prepareSpell
     ) {
         this.beginGlyph = beginGlyph;
         this.cancelGlyph = cancelGlyph;
@@ -31,7 +31,7 @@ public final class ClientDrawingEventSenders {
         this.prepareSpell = prepareSpell;
     }
 
-    public static ClientDrawingEventSenders registerTo(ClientCastingBuilder casting) {
+    public static ClientDrawingEventSenders registerTo(final ClientCastingBuilder casting) {
         return new ClientDrawingEventSenders(
                 casting.registerOutboundEvent(BeginGlyphC2SEvent.SPEC),
                 casting.registerOutboundEvent(CancelGlyphC2SEvent.SPEC),
@@ -41,27 +41,27 @@ public final class ClientDrawingEventSenders {
         );
     }
 
-    public void beginGlyph(Vector3f direction, float radius) {
-        this.beginGlyph.send(new BeginGlyphC2SEvent(direction, radius));
+    public void beginGlyph(final Vector3f direction, final float radius) {
+        beginGlyph.send(new BeginGlyphC2SEvent(direction, radius));
     }
 
     public void cancelGlyph() {
-        this.cancelGlyph.send(new CancelGlyphC2SEvent());
+        cancelGlyph.send(new CancelGlyphC2SEvent());
     }
 
-    public void drawGlyphShape(int shape) {
-        this.drawGlyphShape.send(new DrawGlyphShapeC2SEvent(shape));
+    public void drawGlyphShape(final int shape) {
+        drawGlyphShape.send(new DrawGlyphShapeC2SEvent(shape));
     }
 
-    public void startGlyphStroke(GlyphNode node) {
-        this.drawGlyphStroke.send(DrawGlyphStrokeC2SEvent.start(node));
+    public void startGlyphStroke(final GlyphNode node) {
+        drawGlyphStroke.send(DrawGlyphStrokeC2SEvent.start(node));
     }
 
     public void stopGlyphStroke() {
-        this.drawGlyphStroke.send(DrawGlyphStrokeC2SEvent.stop());
+        drawGlyphStroke.send(DrawGlyphStrokeC2SEvent.stop());
     }
 
     public void prepareSpell() {
-        this.prepareSpell.send(new PrepareSpellC2SEvent());
+        prepareSpell.send(new PrepareSpellC2SEvent());
     }
 }

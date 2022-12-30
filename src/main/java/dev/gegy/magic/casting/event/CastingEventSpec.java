@@ -7,7 +7,7 @@ public record CastingEventSpec<T>(
         ResourceLocation id,
         PacketCodec<T> codec
 ) {
-    public static <T> CastingEventSpec<T> of(ResourceLocation id, PacketCodec<T> codec) {
+    public static <T> CastingEventSpec<T> of(final ResourceLocation id, final PacketCodec<T> codec) {
         return new CastingEventSpec<>(id, codec);
     }
 }

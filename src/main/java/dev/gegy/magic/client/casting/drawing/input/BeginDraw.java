@@ -14,11 +14,11 @@ final class BeginDraw implements DrawingInputState {
     private final GlyphOutlineTracker outlineTracker = new GlyphOutlineTracker(SAMPLE_BUFFER_SIZE);
 
     @Override
-    public DrawingInputState tick(ClientCastingDrawing casting, Player player) {
+    public DrawingInputState tick(final ClientCastingDrawing casting, final Player player) {
         if (player.tickCount % SAMPLE_INTERVAL == 0) {
-            GlyphOutline outline = this.outlineTracker.pushSample(player.getViewVector(1.0F));
+            final GlyphOutline outline = outlineTracker.pushSample(player.getViewVector(1.0f));
             if (outline != null) {
-                ClientDrawingGlyph glyph = outline.createGlyph(player);
+                final ClientDrawingGlyph glyph = outline.createGlyph(player);
                 casting.senders().beginGlyph(outline.plane().direction(), outline.radius());
                 return new DrawGlyph.OutsideCircle(glyph, outline.plane());
             }

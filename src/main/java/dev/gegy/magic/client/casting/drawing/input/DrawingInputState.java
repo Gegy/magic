@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 interface DrawingInputState {
     DrawingInputState tick(ClientCastingDrawing casting, Player player);
 
-    default DrawingInputState finishDrawingGlyph(GlyphType matchedType) {
+    default DrawingInputState finishDrawingGlyph(final GlyphType matchedType) {
         return this;
     }
 

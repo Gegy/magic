@@ -6,7 +6,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
-public final record DrawingGlyphParameters(
+public record DrawingGlyphParameters(
         Vector3f direction,
         float radius,
         int shape,
@@ -15,21 +15,21 @@ public final record DrawingGlyphParameters(
     public static final PacketCodec<DrawingGlyphParameters> CODEC = PacketCodec.of(DrawingGlyphParameters::encode, DrawingGlyphParameters::decode);
 
     public boolean isFormed() {
-        return this.formedGlyphType != null;
+        return formedGlyphType != null;
     }
 
-    private void encode(FriendlyByteBuf buf) {
-        PacketCodec.VEC3F.encode(this.direction, buf);
-        buf.writeFloat(this.radius);
-        buf.writeShort(this.shape);
-        GlyphType.PACKET_CODEC.encode(this.formedGlyphType, buf);
+    private void encode(final FriendlyByteBuf buf) {
+        PacketCodec.VEC3F.encode(direction, buf);
+        buf.writeFloat(radius);
+        buf.writeShort(shape);
+        GlyphType.PACKET_CODEC.encode(formedGlyphType, buf);
     }
 
-    private static DrawingGlyphParameters decode(FriendlyByteBuf buf) {
-        var direction = PacketCodec.VEC3F.decode(buf);
-        float radius = buf.readFloat();
-        int shape = buf.readShort();
-        var formedGlyphType = GlyphType.PACKET_CODEC.decode(buf);
+    private static DrawingGlyphParameters decode(final FriendlyByteBuf buf) {
+        final Vector3f direction = PacketCodec.VEC3F.decode(buf);
+        final float radius = buf.readFloat();
+        final int shape = buf.readShort();
+        final GlyphType formedGlyphType = GlyphType.PACKET_CODEC.decode(buf);
         return new DrawingGlyphParameters(direction, radius, shape, formedGlyphType);
     }
 }

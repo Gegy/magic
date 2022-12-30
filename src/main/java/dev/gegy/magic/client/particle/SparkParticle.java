@@ -18,24 +18,24 @@ public final class SparkParticle extends TextureSheetParticle {
     private final float scale;
     private final Vector3f vector = new Vector3f();
 
-    SparkParticle(ClientLevel level, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
+    SparkParticle(final ClientLevel level, final double x, final double y, final double z, final double velocityX, final double velocityY, final double velocityZ) {
         super(level, x, y, z, velocityX, velocityY, velocityZ);
-        this.xd = velocityX;
-        this.yd = velocityY;
-        this.zd = velocityZ;
+        xd = velocityX;
+        yd = velocityY;
+        zd = velocityZ;
 
-        this.scale = 0.025F + this.random.nextFloat() * 0.025F;
-        this.lifetime = this.random.nextInt(20) + 20;
+        scale = 0.025f + random.nextFloat() * 0.025f;
+        lifetime = random.nextInt(20) + 20;
 
         // TODO
-        this.gCol = 0.4F;
-        this.bCol = 0.3F;
-        this.alpha = 0.9F;
+        gCol = 0.4F;
+        bCol = 0.3F;
+        alpha = 0.9F;
 
-        this.gravity = 0.0F;
-        this.friction = 1.0F;
+        gravity = 0.0f;
+        friction = 1.0f;
 
-        this.hasPhysics = false;
+        hasPhysics = false;
     }
 
     @Override
@@ -44,57 +44,57 @@ public final class SparkParticle extends TextureSheetParticle {
     }
 
     @Override
-    public void render(VertexConsumer writer, Camera camera, float tickDelta) {
-        Vec3 cameraPos = camera.getPosition();
-        float dx = (float) (Mth.lerp(tickDelta, this.xo, this.x) - cameraPos.x());
-        float dy = (float) (Mth.lerp(tickDelta, this.yo, this.y) - cameraPos.y());
-        float dz = (float) (Mth.lerp(tickDelta, this.zo, this.z) - cameraPos.z());
+    public void render(final VertexConsumer writer, final Camera camera, final float tickDelta) {
+        final Vec3 cameraPos = camera.getPosition();
+        final float dx = (float) (Mth.lerp(tickDelta, xo, x) - cameraPos.x());
+        final float dy = (float) (Mth.lerp(tickDelta, yo, y) - cameraPos.y());
+        final float dz = (float) (Mth.lerp(tickDelta, zo, z) - cameraPos.z());
 
-        Quaternionf cameraRotation = camera.rotation();
+        final Quaternionf cameraRotation = camera.rotation();
 
-        float scale = this.quadSize;
-        int light = this.getLightColor(tickDelta);
-        float alpha = this.getAlpha(tickDelta);
+        final float scale = quadSize;
+        final int light = getLightColor(tickDelta);
+        final float alpha = getAlpha(tickDelta);
 
-        float minU = this.getU0();
-        float minV = this.getV0();
-        float maxU = this.getU1();
-        float maxV = this.getV1();
+        final float minU = getU0();
+        final float minV = getV0();
+        final float maxU = getU1();
+        final float maxV = getV1();
 
-        this.vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, -1.0F, -1.0F, minU, minV);
-        this.vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, -1.0F, 1.0F, minU, maxV);
-        this.vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, 1.0F, 1.0F, maxU, maxV);
-        this.vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, 1.0F, -1.0F, maxU, minV);
+        vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, -1.0f, -1.0f, minU, minV);
+        vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, -1.0f, 1.0f, minU, maxV);
+        vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, 1.0f, 1.0f, maxU, maxV);
+        vertex(writer, cameraRotation, dx, dy, dz, scale, light, alpha, 1.0f, -1.0f, maxU, minV);
     }
 
     private void vertex(
-            VertexConsumer writer,
-            Quaternionf rotation, float dx, float dy, float dz,
-            float scale, int light, float alpha,
-            float x, float y, float u, float v
+            final VertexConsumer writer,
+            final Quaternionf rotation, final float dx, final float dy, final float dz,
+            final float scale, final int light, final float alpha,
+            final float x, final float y, final float u, final float v
     ) {
-        Vector3f vertex = this.vector.set(x, y, 0.0F)
+        final Vector3f vertex = vector.set(x, y, 0.0f)
                 .rotate(rotation)
                 .mul(scale)
                 .add(dx, dy, dz);
 
         writer.vertex(vertex.x(), vertex.y(), vertex.z())
                 .uv(u, v)
-                .color(this.rCol, this.gCol, this.bCol, alpha)
+                .color(rCol, gCol, bCol, alpha)
                 .uv2(light)
                 .endVertex();
     }
 
-    private float getAlpha(float tickDelta) {
-        float age = this.age + tickDelta;
-        float animation = Mth.clamp((this.lifetime - age) / 5.0F, 0.0F, 1.0F);
-        return animation * this.alpha;
+    private float getAlpha(final float tickDelta) {
+        final float age = this.age + tickDelta;
+        final float animation = Mth.clamp((lifetime - age) / 5.0f, 0.0f, 1.0f);
+        return animation * alpha;
     }
 
     @Override
-    public int getLightColor(float tickDelta) {
-        int blockLight = 15 * 16;
-        int skyLight = 15 * 16;
+    public int getLightColor(final float tickDelta) {
+        final int blockLight = 15 * 16;
+        final int skyLight = 15 * 16;
         return blockLight | skyLight << 16;
     }
 
@@ -106,14 +106,14 @@ public final class SparkParticle extends TextureSheetParticle {
     public static class Factory implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet sprites;
 
-        public Factory(SpriteSet sprites) {
+        public Factory(final SpriteSet sprites) {
             this.sprites = sprites;
         }
 
         @Override
-        public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
-            SparkParticle particle = new SparkParticle(level, x, y, z, velocityX, velocityY, velocityZ);
-            particle.pickSprite(this.sprites);
+        public Particle createParticle(final SimpleParticleType type, final ClientLevel level, final double x, final double y, final double z, final double velocityX, final double velocityY, final double velocityZ) {
+            final SparkParticle particle = new SparkParticle(level, x, y, z, velocityX, velocityY, velocityZ);
+            particle.pickSprite(sprites);
             return particle;
         }
     }

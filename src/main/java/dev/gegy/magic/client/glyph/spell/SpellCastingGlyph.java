@@ -4,7 +4,7 @@ import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.GlyphForm;
 
-public final record SpellCastingGlyph(
+public record SpellCastingGlyph(
         SpellSource source,
         GlyphForm form,
         GlyphTransform transform

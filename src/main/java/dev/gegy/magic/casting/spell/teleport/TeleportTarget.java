@@ -6,11 +6,11 @@ import net.minecraft.world.level.Level;
 
 import java.util.UUID;
 
-public final record TeleportTarget(
+public record TeleportTarget(
         UUID id, TeleportTargetSymbol symbol,
         ResourceKey<Level> dimension, BlockPos pos, float angle
 ) {
-    public static TeleportTarget create(TeleportTargetSymbol symbol, ResourceKey<Level> dimension, BlockPos pos, float angle) {
+    public static TeleportTarget create(final TeleportTargetSymbol symbol, final ResourceKey<Level> dimension, final BlockPos pos, final float angle) {
         return new TeleportTarget(UUID.randomUUID(), symbol, dimension, pos, angle);
     }
 }

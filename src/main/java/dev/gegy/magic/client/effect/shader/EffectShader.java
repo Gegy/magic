@@ -9,6 +9,6 @@ public interface EffectShader<T> extends AutoCloseable {
 
     @Override
     default void close() {
-        this.delete();
+        delete();
     }
 }

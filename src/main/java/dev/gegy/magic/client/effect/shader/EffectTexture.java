@@ -20,7 +20,7 @@ public final class EffectTexture<T> implements GlObject {
     private final int framebufferRef;
     private final int textureRef;
 
-    private EffectTexture(EffectShader<T> shader, int width, int height, int framebufferRef, int textureRef) {
+    private EffectTexture(final EffectShader<T> shader, final int width, final int height, final int framebufferRef, final int textureRef) {
         this.shader = shader;
         this.width = width;
         this.height = height;
@@ -28,13 +28,13 @@ public final class EffectTexture<T> implements GlObject {
         this.textureRef = textureRef;
     }
 
-    public static <T> EffectTexture<T> create(EffectShader<T> shader, int size) {
+    public static <T> EffectTexture<T> create(final EffectShader<T> shader, final int size) {
         return create(shader, size, size);
     }
 
-    public static <T> EffectTexture<T> create(EffectShader<T> shader, int width, int height) {
-        int framebufferRef = GlStateManager.glGenFramebuffers();
-        int textureRef = TextureUtil.generateTextureId();
+    public static <T> EffectTexture<T> create(final EffectShader<T> shader, final int width, final int height) {
+        final int framebufferRef = GlStateManager.glGenFramebuffers();
+        final int textureRef = TextureUtil.generateTextureId();
 
         GlStateManager._bindTexture(textureRef);
         RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
@@ -51,12 +51,12 @@ public final class EffectTexture<T> implements GlObject {
         return new EffectTexture<>(shader, width, height, framebufferRef, textureRef);
     }
 
-    public void renderWith(T parameters, GlGeometry.Binding geometryBinding) {
+    public void renderWith(final T parameters, final GlGeometry.Binding geometryBinding) {
         try (
-                var shaderBinding = this.shader.bind(parameters);
-                var writeBinding = this.bindWrite()
+                final GlBinding shaderBinding = shader.bind(parameters);
+                final WriteBinding writeBinding = bindWrite()
         ) {
-            RenderSystem.clearColor(0.0F, 0.0F, 0.0F, 0.0F);
+            RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
             RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, false);
 
             geometryBinding.draw();
@@ -64,28 +64,28 @@ public final class EffectTexture<T> implements GlObject {
     }
 
     public ReadBinding bindRead() {
-        GlStateManager._bindTexture(this.textureRef);
+        GlStateManager._bindTexture(textureRef);
         return READ_BINDING;
     }
 
     private WriteBinding bindWrite() {
-        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, this.framebufferRef);
-        RenderSystem.viewport(0, 0, this.width, this.height);
+        GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, framebufferRef);
+        RenderSystem.viewport(0, 0, width, height);
         return WRITE_BINDING;
     }
 
     @Override
     public void delete() {
-        TextureUtil.releaseTextureId(this.textureRef);
-        GlStateManager._glDeleteFramebuffers(this.framebufferRef);
+        TextureUtil.releaseTextureId(textureRef);
+        GlStateManager._glDeleteFramebuffers(framebufferRef);
     }
 
     public int getWidth() {
-        return this.width;
+        return width;
     }
 
     public int getHeight() {
-        return this.height;
+        return height;
     }
 
     public static final class ReadBinding implements GlBinding {

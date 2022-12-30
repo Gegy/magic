@@ -25,12 +25,12 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
     private final FloatBuffer colorData = MemoryUtil.memAllocFloat(3);
 
     private BeamTextureShader(
-            EffectShaderProgram program,
-            int uniformScale,
-            int uniformColor,
-            int uniformTime,
-            int uniformLength,
-            float scaleX, float scaleY
+            final EffectShaderProgram program,
+            final int uniformScale,
+            final int uniformColor,
+            final int uniformTime,
+            final int uniformLength,
+            final float scaleX, final float scaleY
     ) {
         this.program = program;
         this.uniformScale = uniformScale;
@@ -38,35 +38,35 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
         this.uniformTime = uniformTime;
         this.uniformLength = uniformLength;
 
-        this.scaleData.put(scaleX).put(scaleY);
-        this.scaleData.clear();
+        scaleData.put(scaleX).put(scaleY);
+        scaleData.clear();
     }
 
-    public static BeamTextureShader create(ResourceManager resources) throws IOException {
+    public static BeamTextureShader create(final ResourceManager resources) throws IOException {
         return create(resources, "beam/texture", "beam/texture", BeamTexture.SCALE_X, BeamTexture.SCALE_Y);
     }
 
-    public static BeamTextureShader createImpact(ResourceManager resources) throws IOException {
+    public static BeamTextureShader createImpact(final ResourceManager resources) throws IOException {
         return create(resources, "beam/end_texture", "beam/impact_texture", BeamTexture.END_SCALE, BeamTexture.END_SCALE);
     }
 
-    public static BeamTextureShader createCloud(ResourceManager resources) throws IOException {
+    public static BeamTextureShader createCloud(final ResourceManager resources) throws IOException {
         return create(resources, "beam/end_texture", "beam/cloud_texture", BeamTexture.END_SCALE, BeamTexture.END_SCALE);
     }
 
     private static BeamTextureShader create(
-            ResourceManager resources, String vertexPath, String fragmentPath,
-            float scaleX, float scaleY
+            final ResourceManager resources, final String vertexPath, final String fragmentPath,
+            final float scaleX, final float scaleY
     ) throws IOException {
-        EffectShaderProgram program = EffectShaderProgram.compile(
+        final EffectShaderProgram program = EffectShaderProgram.compile(
                 resources, Magic.identifier(vertexPath), Magic.identifier(fragmentPath),
                 GeometryBuilder.POSITION_2F
         );
 
-        int uniformScale = program.getUniformLocation("Scale");
-        int uniformColor = program.getUniformLocation("Color");
-        int uniformTime = program.getUniformLocation("Time");
-        int uniformLength = program.getUniformLocation("Length");
+        final int uniformScale = program.getUniformLocation("Scale");
+        final int uniformColor = program.getUniformLocation("Color");
+        final int uniformTime = program.getUniformLocation("Time");
+        final int uniformLength = program.getUniformLocation("Length");
 
         return new BeamTextureShader(
                 program,
@@ -79,28 +79,28 @@ final class BeamTextureShader implements EffectShader<BeamRenderParameters> {
     }
 
     @Override
-    public GlBinding bind(BeamRenderParameters parameters) {
-        var binding = this.program.bind();
+    public GlBinding bind(final BeamRenderParameters parameters) {
+        final EffectShaderProgram.Binding binding = program.bind();
 
-        RenderSystem.glUniform2(this.uniformScale, this.scaleData);
+        RenderSystem.glUniform2(uniformScale, scaleData);
 
-        FloatBuffer colorData = this.colorData;
+        final FloatBuffer colorData = this.colorData;
         colorData.put(parameters.red).put(parameters.green).put(parameters.blue);
         colorData.clear();
-        RenderSystem.glUniform3(this.uniformColor, colorData);
+        RenderSystem.glUniform3(uniformColor, colorData);
 
-        GL20.glUniform1f(this.uniformTime, parameters.time);
+        GL20.glUniform1f(uniformTime, parameters.time);
 
-        GL20.glUniform1f(this.uniformLength, parameters.length);
+        GL20.glUniform1f(uniformLength, parameters.length);
 
         return binding;
     }
 
     @Override
     public void delete() {
-        this.program.delete();
+        program.delete();
 
-        MemoryUtil.memFree(this.scaleData);
-        MemoryUtil.memFree(this.colorData);
+        MemoryUtil.memFree(scaleData);
+        MemoryUtil.memFree(colorData);
     }
 }

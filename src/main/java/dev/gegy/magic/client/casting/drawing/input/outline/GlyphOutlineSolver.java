@@ -11,7 +11,7 @@ import java.util.List;
 
 public class GlyphOutlineSolver {
     // radius can deviate by at most 50% of the mean radius
-    private static final float RADIUS_DEVIATION_THRESHOLD = 0.5F;
+    private static final float RADIUS_DEVIATION_THRESHOLD = 0.5f;
 
     // we can only have 30% of our points be outliers in terms of radius
     private static final float MAX_RADIUS_DEVIATION_PERCENT = 0.3F;
@@ -22,45 +22,45 @@ public class GlyphOutlineSolver {
     // short side of bounds is allowed to be at least 7/10 of long side
     private static final float MIN_SQUARENESS = 0.7F;
 
-    private static final float MIN_RADIUS = 0.125F;
+    private static final float MIN_RADIUS = 0.125f;
 
     float centerX;
     float centerY;
     float radius;
 
     @Nullable
-    public GlyphOutline trySolve(List<Vector3f> points) {
+    public GlyphOutline trySolve(final List<Vector3f> points) {
         if (points.size() < 3) {
             return null;
         }
 
-        Vector3f forward = this.getForwardVectorFor(points);
-        GlyphPlane plane = new GlyphPlane(forward, GlyphTransform.DRAW_DISTANCE);
+        Vector3f forward = getForwardVectorFor(points);
+        final GlyphPlane plane = new GlyphPlane(forward, GlyphTransform.DRAW_DISTANCE);
 
-        Vec2[] projectedPoints = projectPoints(points, plane);
+        final Vec2[] projectedPoints = projectPoints(points, plane);
         if (projectedPoints == null) {
             return null;
         }
 
-        if (this.trySolveFromPoints(projectedPoints)) {
-            forward = plane.projectToWorld(this.centerX, this.centerY).normalize();
+        if (trySolveFromPoints(projectedPoints)) {
+            forward = plane.projectToWorld(centerX, centerY).normalize();
             plane.set(forward, GlyphTransform.DRAW_DISTANCE);
 
-            return new GlyphOutline(plane, this.radius);
+            return new GlyphOutline(plane, radius);
         } else {
             return null;
         }
     }
 
-    private boolean trySolveFromPoints(Vec2[] points) {
+    private boolean trySolveFromPoints(final Vec2[] points) {
         // compute encompassing bounds of these points
         float minX = Float.MAX_VALUE;
         float minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE;
         float maxY = -Float.MAX_VALUE;
-        for (Vec2 point : points) {
-            float x = point.x;
-            float y = point.y;
+        for (final Vec2 point : points) {
+            final float x = point.x;
+            final float y = point.y;
             if (x < minX) minX = x;
             if (y < minY) minY = y;
             if (x > maxX) maxX = x;
@@ -68,60 +68,60 @@ public class GlyphOutlineSolver {
         }
 
         // this is obviously not a circle if the player drew a rectangle
-        if (!this.isValidSquare(minX, minY, maxX, maxY)) {
+        if (!isValidSquare(minX, minY, maxX, maxY)) {
             return false;
         }
 
         // validate this circle by counting number of outliers based on segment direction consistency
-        if (!this.isDirectionConsistent(points)) {
+        if (!isDirectionConsistent(points)) {
             return false;
         }
 
         // find center based on center of bounding box
-        float centerX = (maxX + minX) / 2.0F;
-        float centerY = (maxY + minY) / 2.0F;
+        final float centerX = (maxX + minX) / 2.0f;
+        final float centerY = (maxY + minY) / 2.0f;
 
-        float[] radii = new float[points.length];
+        final float[] radii = new float[points.length];
 
-        float meanRadius = 0.0F;
-        float meanRadiusWeight = 1.0F / radii.length;
+        float meanRadius = 0.0f;
+        final float meanRadiusWeight = 1.0f / radii.length;
 
         // compute apparent radii from each point and find mean
         for (int i = 0; i < points.length; i++) {
-            Vec2 point = points[i];
-            float dx = point.x - centerX;
-            float dy = point.y - centerY;
+            final Vec2 point = points[i];
+            final float dx = point.x - centerX;
+            final float dy = point.y - centerY;
 
-            float radius = (float) Math.sqrt(dx * dx + dy * dy);
+            final float radius = (float) Math.sqrt(dx * dx + dy * dy);
 
             radii[i] = radius;
             meanRadius += radius * meanRadiusWeight;
         }
 
         // validate this circle by counting the number of outliers based on radius
-        if (!this.isRadiusConsistent(radii, meanRadius)) {
+        if (!isRadiusConsistent(radii, meanRadius)) {
             return false;
         }
 
         this.centerX = centerX;
         this.centerY = centerY;
-        this.radius = meanRadius;
+        radius = meanRadius;
 
         return true;
     }
 
-    private boolean isRadiusConsistent(float[] radii, float meanRadius) {
+    private boolean isRadiusConsistent(final float[] radii, final float meanRadius) {
         if (meanRadius < MIN_RADIUS) {
             return false;
         }
 
-        int maxDeviations = Mth.ceil(radii.length * MAX_RADIUS_DEVIATION_PERCENT);
-        float radiusDeviationThreshold = meanRadius * RADIUS_DEVIATION_THRESHOLD;
+        final int maxDeviations = Mth.ceil(radii.length * MAX_RADIUS_DEVIATION_PERCENT);
+        final float radiusDeviationThreshold = meanRadius * RADIUS_DEVIATION_THRESHOLD;
 
         int deviations = 0;
 
-        for (float radius : radii) {
-            float deltaRadius = Math.abs(radius - meanRadius);
+        for (final float radius : radii) {
+            final float deltaRadius = Math.abs(radius - meanRadius);
             if (deltaRadius > radiusDeviationThreshold) {
                 if (++deviations > maxDeviations) {
                     return false;
@@ -132,9 +132,9 @@ public class GlyphOutlineSolver {
         return true;
     }
 
-    private boolean isDirectionConsistent(Vec2[] points) {
-        int segmentCount = points.length - 1;
-        int maxDeviations = Mth.ceil(segmentCount * MAX_DIRECTION_DEVIATION_PERCENT);
+    private boolean isDirectionConsistent(final Vec2[] points) {
+        final int segmentCount = points.length - 1;
+        final int maxDeviations = Mth.ceil(segmentCount * MAX_DIRECTION_DEVIATION_PERCENT);
 
         int deviations = 0;
 
@@ -142,12 +142,12 @@ public class GlyphOutlineSolver {
 
         // check that all segments are vaguely going in the same direction
         for (int i = 0; i < points.length; i++) {
-            Vec2 start = points[i];
-            Vec2 end = points[(i + 1) % points.length];
+            final Vec2 start = points[i];
+            final Vec2 end = points[(i + 1) % points.length];
 
-            Vec2 segmentDirection = getSegmentDirection(start, end);
+            final Vec2 segmentDirection = getSegmentDirection(start, end);
             if (lastSegmentDirection != null) {
-                if (segmentDirection.dot(lastSegmentDirection) < 0.0F) {
+                if (segmentDirection.dot(lastSegmentDirection) < 0.0f) {
                     if (++deviations > maxDeviations) {
                         return false;
                     }
@@ -160,11 +160,11 @@ public class GlyphOutlineSolver {
         return true;
     }
 
-    private static Vec2 getSegmentDirection(Vec2 from, Vec2 to) {
+    private static Vec2 getSegmentDirection(final Vec2 from, final Vec2 to) {
         float directionX = to.x - from.x;
         float directionY = to.y - from.y;
 
-        float normalize = Mth.fastInvSqrt(directionX * directionX + directionY * directionY);
+        final float normalize = Mth.fastInvSqrt(directionX * directionX + directionY * directionY);
         directionX *= normalize;
         directionY *= normalize;
 
@@ -172,15 +172,15 @@ public class GlyphOutlineSolver {
     }
 
     @Nullable
-    private static Vec2[] projectPoints(List<Vector3f> points, GlyphPlane plane) {
-        Vec2[] projectedPoints = new Vec2[points.size()];
+    private static Vec2[] projectPoints(final List<Vector3f> points, final GlyphPlane plane) {
+        final Vec2[] projectedPoints = new Vec2[points.size()];
 
-        Vector3f projected = new Vector3f();
+        final Vector3f projected = new Vector3f();
 
         for (int i = 0; i < projectedPoints.length; i++) {
-            Vector3f point = points.get(i);
+            final Vector3f point = points.get(i);
 
-            var intersection = plane.raycast(new Vector3f(0.0F, 0.0F, 0.0F), point);
+            final Vector3f intersection = plane.raycast(new Vector3f(0.0f, 0.0f, 0.0f), point);
             if (intersection == null) {
                 return null;
             }
@@ -192,15 +192,15 @@ public class GlyphOutlineSolver {
         return projectedPoints;
     }
 
-    private Vector3f getForwardVectorFor(List<Vector3f> points) {
-        Vector3f forward = new Vector3f();
+    private Vector3f getForwardVectorFor(final List<Vector3f> points) {
+        final Vector3f forward = new Vector3f();
 
-        float x = 0.0F;
-        float y = 0.0F;
-        float z = 0.0F;
+        float x = 0.0f;
+        float y = 0.0f;
+        float z = 0.0f;
 
-        float weightPerPoint = 1.0F / points.size();
-        for (Vector3f point : points) {
+        final float weightPerPoint = 1.0f / points.size();
+        for (final Vector3f point : points) {
             x += point.x() * weightPerPoint;
             y += point.y() * weightPerPoint;
             z += point.z() * weightPerPoint;
@@ -209,13 +209,13 @@ public class GlyphOutlineSolver {
         return forward.set(x, y, z).normalize();
     }
 
-    private boolean isValidSquare(float minX, float minY, float maxX, float maxY) {
-        float sizeX = maxX - minX;
-        float sizeY = maxY - minY;
+    private boolean isValidSquare(final float minX, final float minY, final float maxX, final float maxY) {
+        final float sizeX = maxX - minX;
+        final float sizeY = maxY - minY;
 
-        float longSide = Math.max(sizeX, sizeY);
-        float shortSide = Math.min(sizeX, sizeY);
-        float squareness = shortSide / longSide;
+        final float longSide = Math.max(sizeX, sizeY);
+        final float shortSide = Math.min(sizeX, sizeY);
+        final float squareness = shortSide / longSide;
 
         return squareness >= MIN_SQUARENESS;
     }

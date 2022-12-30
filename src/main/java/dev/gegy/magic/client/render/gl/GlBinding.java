@@ -5,6 +5,6 @@ public interface GlBinding extends AutoCloseable {
 
     @Override
     default void close() {
-        this.unbind();
+        unbind();
     }
 }

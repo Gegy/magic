@@ -10,40 +10,40 @@ public final class BeamEffect implements Effect {
     public static final EffectType<BeamEffect> TYPE = EffectType.create();
 
     private final Spell spell;
-    private final ColorRgb color = ColorRgb.of(1.0F, 0.3F, 0.3F);
+    private final ColorRgb color = ColorRgb.of(1.0f, 0.3f, 0.3f);
 
     private float prevLength;
     private float length;
 
     private boolean visible;
 
-    public BeamEffect(Spell spell) {
+    public BeamEffect(final Spell spell) {
         this.spell = spell;
     }
 
-    public void tick(float length) {
-        this.prevLength = Math.min(length, this.length);
+    public void tick(final float length) {
+        prevLength = Math.min(length, this.length);
         this.length = length;
     }
 
-    public void setVisible(boolean visible) {
+    public void setVisible(final boolean visible) {
         this.visible = visible;
     }
 
     public Spell spell() {
-        return this.spell;
+        return spell;
     }
 
     public ColorRgb color() {
-        return this.color;
+        return color;
     }
 
-    public float getLength(float tickDelta) {
-        return Mth.lerp(tickDelta, this.prevLength, this.length);
+    public float getLength(final float tickDelta) {
+        return Mth.lerp(tickDelta, prevLength, length);
     }
 
     public boolean visible() {
-        return this.visible;
+        return visible;
     }
 
     @Override

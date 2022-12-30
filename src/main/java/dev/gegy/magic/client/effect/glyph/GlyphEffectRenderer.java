@@ -5,6 +5,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.render.GeometryBuilder;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import dev.gegy.magic.client.render.gl.GlGeometry;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -18,39 +19,39 @@ public final class GlyphEffectRenderer implements AutoCloseable {
 
     private final Batch batch = new Batch();
 
-    private GlyphEffectRenderer(GlyphWorldShader worldShader, GlGeometry geometry, EffectTexture<GlyphRenderParameters> texture) {
+    private GlyphEffectRenderer(final GlyphWorldShader worldShader, final GlGeometry geometry, final EffectTexture<GlyphRenderParameters> texture) {
         this.worldShader = worldShader;
         this.geometry = geometry;
         this.texture = texture;
     }
 
-    public static GlyphEffectRenderer create(ResourceManager resources) throws IOException {
-        var worldShader = GlyphWorldShader.create(resources);
-        var textureShader = GlyphTextureShader.create(resources);
-        var geometry = GeometryBuilder.uploadQuadPos2f(-1.0F, 1.0F);
-        var texture = EffectTexture.create(textureShader, GlyphTexture.SIZE);
+    public static GlyphEffectRenderer create(final ResourceManager resources) throws IOException {
+        final GlyphWorldShader worldShader = GlyphWorldShader.create(resources);
+        final GlyphTextureShader textureShader = GlyphTextureShader.create(resources);
+        final GlGeometry geometry = GeometryBuilder.uploadQuadPos2f(-1.0f, 1.0f);
+        final EffectTexture<GlyphRenderParameters> texture = EffectTexture.create(textureShader, GlyphTexture.SIZE);
 
         return new GlyphEffectRenderer(worldShader, geometry, texture);
     }
 
-    public Batch startBatch(RenderTarget target) {
-        var batch = this.batch;
+    public Batch startBatch(final RenderTarget target) {
+        final Batch batch = this.batch;
         batch.start(target);
         return batch;
     }
 
     @Override
     public void close() {
-        this.worldShader.delete();
-        this.geometry.delete();
-        this.texture.delete();
+        worldShader.delete();
+        geometry.delete();
+        texture.delete();
     }
 
     public final class Batch implements AutoCloseable {
         private RenderTarget target;
         private GlGeometry.Binding geometryBinding;
 
-        void start(RenderTarget target) {
+        void start(final RenderTarget target) {
             this.target = target;
 
             RenderSystem.disableCull();
@@ -58,35 +59,35 @@ public final class GlyphEffectRenderer implements AutoCloseable {
             RenderSystem.enableDepthTest();
             RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
-            this.geometryBinding = GlyphEffectRenderer.this.geometry.bind();
+            geometryBinding = geometry.bind();
         }
 
-        public void render(GlyphRenderParameters parameters) {
-            GlyphEffectRenderer.this.texture.renderWith(parameters, this.geometryBinding);
+        public void render(final GlyphRenderParameters parameters) {
+            texture.renderWith(parameters, geometryBinding);
 
-            this.target.bindWrite(true);
-            this.renderToWorld(parameters);
+            target.bindWrite(true);
+            renderToWorld(parameters);
         }
 
-        private void renderToWorld(GlyphRenderParameters parameters) {
+        private void renderToWorld(final GlyphRenderParameters parameters) {
             try (
-                    var textureBinding = GlyphEffectRenderer.this.texture.bindRead();
-                    var shaderBinding = GlyphEffectRenderer.this.worldShader.bind(parameters);
+                    final EffectTexture.ReadBinding textureBinding = texture.bindRead();
+                    final GlBinding shaderBinding = worldShader.bind(parameters)
             ) {
-                this.geometryBinding.draw();
+                geometryBinding.draw();
             }
         }
 
         @Override
         public void close() {
-            this.geometryBinding.unbind();
+            geometryBinding.unbind();
 
             RenderSystem.enableCull();
             RenderSystem.disableBlend();
             RenderSystem.disableDepthTest();
 
-            this.geometryBinding = null;
-            this.target = null;
+            geometryBinding = null;
+            target = null;
         }
     }
 }

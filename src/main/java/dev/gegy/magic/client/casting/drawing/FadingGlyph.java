@@ -13,26 +13,26 @@ public final class FadingGlyph {
 
     private final AnimationTimer timer;
 
-    public FadingGlyph(SpellSource source, GlyphPlane plane, GlyphForm form, AnimationTimer timer) {
+    public FadingGlyph(final SpellSource source, final GlyphPlane plane, final GlyphForm form, final AnimationTimer timer) {
         this.source = source;
         this.plane = plane;
         this.form = form;
         this.timer = timer;
     }
 
-    public float getOpacity(float tickDelta) {
-        return 1.0F - Easings.easeOutCirc(this.timer.getProgress(tickDelta));
+    public float getOpacity(final float tickDelta) {
+        return 1.0f - Easings.easeOutCirc(timer.getProgress(tickDelta));
     }
 
     public SpellSource source() {
-        return this.source;
+        return source;
     }
 
     public GlyphPlane plane() {
-        return this.plane;
+        return plane;
     }
 
     public GlyphForm form() {
-        return this.form;
+        return form;
     }
 }

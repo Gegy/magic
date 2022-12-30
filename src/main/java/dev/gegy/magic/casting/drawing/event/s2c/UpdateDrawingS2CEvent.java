@@ -8,7 +8,7 @@ import dev.gegy.magic.network.codec.PacketCodec;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 
-public final record UpdateDrawingS2CEvent(
+public record UpdateDrawingS2CEvent(
         int shape,
         @Nullable GlyphNode stroke,
         @Nullable GlyphType formedGlyphType
@@ -16,16 +16,16 @@ public final record UpdateDrawingS2CEvent(
     public static final PacketCodec<UpdateDrawingS2CEvent> CODEC = PacketCodec.of(UpdateDrawingS2CEvent::encode, UpdateDrawingS2CEvent::decode);
     public static final CastingEventSpec<UpdateDrawingS2CEvent> SPEC = CastingEventSpec.of(Magic.identifier("update_drawing"), CODEC);
 
-    private void encode(FriendlyByteBuf buf) {
-        buf.writeShort(this.shape);
-        GlyphNode.PACKET_CODEC.encode(this.stroke, buf);
-        GlyphType.PACKET_CODEC.encode(this.formedGlyphType, buf);
+    private void encode(final FriendlyByteBuf buf) {
+        buf.writeShort(shape);
+        GlyphNode.PACKET_CODEC.encode(stroke, buf);
+        GlyphType.PACKET_CODEC.encode(formedGlyphType, buf);
     }
 
-    private static UpdateDrawingS2CEvent decode(FriendlyByteBuf buf) {
-        int shape = buf.readShort();
-        var stroke = GlyphNode.PACKET_CODEC.decode(buf);
-        var formedGlyphType = GlyphType.PACKET_CODEC.decode(buf);
+    private static UpdateDrawingS2CEvent decode(final FriendlyByteBuf buf) {
+        final int shape = buf.readShort();
+        final GlyphNode stroke = GlyphNode.PACKET_CODEC.decode(buf);
+        final GlyphType formedGlyphType = GlyphType.PACKET_CODEC.decode(buf);
         return new UpdateDrawingS2CEvent(shape, stroke, formedGlyphType);
     }
 }

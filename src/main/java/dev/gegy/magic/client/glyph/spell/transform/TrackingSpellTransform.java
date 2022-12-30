@@ -3,6 +3,7 @@ package dev.gegy.magic.client.glyph.spell.transform;
 import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.SpellGlyphs;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
 public final class TrackingSpellTransform implements SpellTransform {
@@ -15,46 +16,46 @@ public final class TrackingSpellTransform implements SpellTransform {
 
     private final float castingDistance;
 
-    public TrackingSpellTransform(SpellSource source, float castingDistance) {
+    public TrackingSpellTransform(final SpellSource source, final float castingDistance) {
         this.source = source;
 
-        this.direction = source.getLookVector(1.0F).toVector3f();
-        this.prevDirection = new Vector3f(this.direction);
+        direction = source.getLookVector(1.0f).toVector3f();
+        prevDirection = new Vector3f(direction);
 
         this.castingDistance = castingDistance;
     }
 
     @Override
     public void tick() {
-        var target = this.source.getLookVector(1.0F);
+        final Vec3 target = source.getLookVector(1.0f);
 
-        var direction = this.direction;
-        this.prevDirection.set(direction);
+        final Vector3f direction = this.direction;
+        prevDirection.set(direction);
 
         direction.add(
-                (float) (target.x - direction.x()) * 0.5F,
-                (float) (target.y - direction.y()) * 0.5F,
-                (float) (target.z - direction.z()) * 0.5F
+                (float) (target.x - direction.x()) * 0.5f,
+                (float) (target.y - direction.y()) * 0.5f,
+                (float) (target.z - direction.z()) * 0.5f
         );
     }
 
     @Override
-    public Vector3f getDirection(float tickDelta) {
-        return this.prevDirection.lerp(this.direction, tickDelta, this.resultDirection);
+    public Vector3f getDirection(final float tickDelta) {
+        return prevDirection.lerp(direction, tickDelta, resultDirection);
     }
 
     @Override
     public float getDistance(final float tickDelta) {
-        return this.castingDistance;
+        return castingDistance;
     }
 
     @Override
-    public GlyphTransform getTransformForGlyph(int index) {
-        float distance = SpellGlyphs.getDistanceForGlyph(index);
+    public GlyphTransform getTransformForGlyph(final int index) {
+        final float distance = SpellGlyphs.getDistanceForGlyph(index);
 
         return new GlyphTransform() {
             @Override
-            public Vector3f getDirection(float tickDelta) {
+            public Vector3f getDirection(final float tickDelta) {
                 return TrackingSpellTransform.this.getDirection(tickDelta);
             }
 

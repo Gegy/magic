@@ -6,12 +6,12 @@ import dev.gegy.magic.client.effect.Effect;
 import dev.gegy.magic.client.effect.EffectType;
 import org.jetbrains.annotations.Nullable;
 
-public final record DrawingEffect(ClientCastingDrawing casting) implements Effect {
+public record DrawingEffect(ClientCastingDrawing casting) implements Effect {
     public static final EffectType<DrawingEffect> TYPE = EffectType.create();
 
     @Nullable
     public ClientDrawingGlyph getGlyph() {
-        return this.casting.getDrawing();
+        return casting.getDrawing();
     }
 
     @Override

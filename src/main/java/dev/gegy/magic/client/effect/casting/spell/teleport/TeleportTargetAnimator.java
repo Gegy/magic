@@ -6,10 +6,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec2;
 
 public final class TeleportTargetAnimator {
-    private static final float ANIMATE_IN_DELAY = 3.0F;
-    private static final float ANIMATE_IN_LENGTH = 8.0F;
+    private static final float ANIMATE_IN_DELAY = 3.0f;
+    private static final float ANIMATE_IN_LENGTH = 8.0f;
 
-    private static final float SPIN_SPEED = 0.025F;
+    private static final float SPIN_SPEED = 0.025f;
 
     private final float innerRadius;
 
@@ -17,29 +17,29 @@ public final class TeleportTargetAnimator {
 
     private final float animateInEnd;
 
-    public TeleportTargetAnimator(float innerRadius, int targetCount) {
+    public TeleportTargetAnimator(final float innerRadius, final int targetCount) {
         this.innerRadius = innerRadius;
 
-        this.ringsByIndex = this.computeRings(targetCount);
+        ringsByIndex = computeRings(targetCount);
 
-        this.animateInEnd = targetCount * ANIMATE_IN_DELAY + ANIMATE_IN_LENGTH;
+        animateInEnd = targetCount * ANIMATE_IN_DELAY + ANIMATE_IN_LENGTH;
     }
 
-    private Ring[] computeRings(int totalCount) {
-        var rings = new Ring[totalCount];
+    private Ring[] computeRings(final int totalCount) {
+        final Ring[] rings = new Ring[totalCount];
 
         int ringIndex = 0;
         int index = 0;
 
         while (index < totalCount) {
-            float radius = this.computeRingRadius(ringIndex);
-            float spin = this.computeRingDirection(ringIndex);
-            int count = this.computeMaxCountInRing(radius);
+            final float radius = computeRingRadius(ringIndex);
+            final float spin = computeRingDirection(ringIndex);
+            final int count = computeMaxCountInRing(radius);
 
-            int start = index;
-            int end = Math.min(index + count, totalCount);
+            final int start = index;
+            final int end = Math.min(index + count, totalCount);
 
-            var ring = new Ring(start, radius, spin, end - start);
+            final Ring ring = new Ring(start, radius, spin, end - start);
             for (int i = start; i < end; i++) {
                 rings[i] = ring;
             }
@@ -51,22 +51,22 @@ public final class TeleportTargetAnimator {
         return rings;
     }
 
-    public Vec2 getPosition(int index, float time) {
-        var position = this.getTargetPosition(index, time);
+    public Vec2 getPosition(final int index, final float time) {
+        Vec2 position = getTargetPosition(index, time);
 
-        float animateIn = this.getAnimateInProgress(index, time);
-        if (animateIn < 1.0F) {
+        final float animateIn = getAnimateInProgress(index, time);
+        if (animateIn < 1.0f) {
             position = position.scale(animateIn);
         }
 
         return position;
     }
 
-    private Vec2 getTargetPosition(int index, float time) {
-        var ring = this.ringsByIndex[index];
+    private Vec2 getTargetPosition(final int index, final float time) {
+        final Ring ring = ringsByIndex[index];
 
-        float angle = ring.getAngleFor(index, time);
-        float radius = ring.radius();
+        final float angle = ring.getAngleFor(index, time);
+        final float radius = ring.radius();
 
         return new Vec2(
                 Mth.cos(angle) * radius,
@@ -74,54 +74,54 @@ public final class TeleportTargetAnimator {
         );
     }
 
-    public float getOpacity(int index, float time) {
-        return this.getAnimateInProgress(index, time);
+    public float getOpacity(final int index, final float time) {
+        return getAnimateInProgress(index, time);
     }
 
-    private float getAnimateInProgress(int index, float time) {
-        if (time >= this.animateInEnd) {
-            return 1.0F;
+    private float getAnimateInProgress(final int index, final float time) {
+        if (time >= animateInEnd) {
+            return 1.0f;
         }
 
-        float start = index * ANIMATE_IN_DELAY;
+        final float start = index * ANIMATE_IN_DELAY;
         if (time <= start) {
-            return 0.0F;
+            return 0.0f;
         } else if (time - start >= ANIMATE_IN_LENGTH) {
-            return 1.0F;
+            return 1.0f;
         }
 
-        float progress = (time - start) / ANIMATE_IN_LENGTH;
+        final float progress = (time - start) / ANIMATE_IN_LENGTH;
         return Easings.easeOutCirc(progress);
     }
 
-    private float computeRingRadius(int index) {
-        return this.innerRadius + index * TeleportEffect.SYMBOL_SIZE;
+    private float computeRingRadius(final int index) {
+        return innerRadius + index * TeleportEffect.SYMBOL_SIZE;
     }
 
-    private float computeRingDirection(int index) {
-        return (index & 1) == 0 ? 1.0F : -1.0F;
+    private float computeRingDirection(final int index) {
+        return (index & 1) == 0 ? 1.0f : -1.0f;
     }
 
-    private int computeMaxCountInRing(float radius) {
-        float circumference = 2 * Constants.PI * radius;
+    private int computeMaxCountInRing(final float radius) {
+        final float circumference = 2 * Constants.PI * radius;
         return Mth.floor(circumference / TeleportEffect.SYMBOL_SIZE);
     }
 
-    private static final record Ring(
+    private record Ring(
             int startIndex,
             float radius,
             float direction,
             int count
     ) {
-        public float getAngleFor(int index, float time) {
-            int localIndex = this.localIndex(index);
-            float angle = ((float) localIndex / this.count) * (2.0F * Constants.PI);
+        public float getAngleFor(final int index, final float time) {
+            final int localIndex = localIndex(index);
+            float angle = ((float) localIndex / count) * (2.0f * Constants.PI);
             angle += time * SPIN_SPEED;
-            return angle * this.direction;
+            return angle * direction;
         }
 
-        private int localIndex(int index) {
-            return index - this.startIndex;
+        private int localIndex(final int index) {
+            return index - startIndex;
         }
     }
 }

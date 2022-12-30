@@ -23,7 +23,7 @@ public final class Magic implements ModInitializer {
         GlyphType.onInitialize();
     }
 
-    public static ResourceLocation identifier(String id) {
+    public static ResourceLocation identifier(final String id) {
         return new ResourceLocation(ID, id);
     }
 }

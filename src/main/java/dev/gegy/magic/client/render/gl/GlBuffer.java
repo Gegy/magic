@@ -14,40 +14,40 @@ public final class GlBuffer implements GlBindableObject {
 
     private final Binding binding = new Binding();
 
-    private GlBuffer(int id, int target, int usage) {
+    private GlBuffer(final int id, final int target, final int usage) {
         this.id = id;
         this.target = target;
         this.usage = usage;
     }
 
-    public static GlBuffer generate(Target target, Usage usage) {
-        int id = GL15.glGenBuffers();
+    public static GlBuffer generate(final Target target, final Usage usage) {
+        final int id = GL15.glGenBuffers();
         return new GlBuffer(id, target.id, usage.id);
     }
 
     @Override
     public Binding bind() {
         BufferUploader.invalidate();
-        GL15.glBindBuffer(this.target, this.id);
-        return this.binding;
+        GL15.glBindBuffer(target, id);
+        return binding;
     }
 
     @Override
     public void delete() {
-        GlStateManager._glDeleteBuffers(this.id);
+        GlStateManager._glDeleteBuffers(id);
     }
 
     public final class Binding implements GlBinding {
         private Binding() {
         }
 
-        public void put(ByteBuffer data) {
-            GL15.glBufferData(GlBuffer.this.target, data, GlBuffer.this.usage);
+        public void put(final ByteBuffer data) {
+            GL15.glBufferData(target, data, usage);
         }
 
         @Override
         public void unbind() {
-            GL15.glBindBuffer(GlBuffer.this.target, 0);
+            GL15.glBindBuffer(target, 0);
         }
     }
 
@@ -57,7 +57,7 @@ public final class GlBuffer implements GlBindableObject {
 
         private final int id;
 
-        Target(int id) {
+        Target(final int id) {
             this.id = id;
         }
     }
@@ -75,7 +75,7 @@ public final class GlBuffer implements GlBindableObject {
 
         private final int id;
 
-        Usage(int id) {
+        Usage(final int id) {
             this.id = id;
         }
     }

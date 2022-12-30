@@ -19,7 +19,7 @@ import org.joml.Vector3f;
 
 public final class ClientDrawingGlyph {
     public static final int FORM_TICKS = 5;
-    private static final float COLOR_LERP_SPEED = 0.15F;
+    private static final float COLOR_LERP_SPEED = 0.15f;
 
     private final SpellSource source;
     private final GlyphPlane plane;
@@ -38,45 +38,45 @@ public final class ClientDrawingGlyph {
 
     private int formTicks;
 
-    public ClientDrawingGlyph(SpellSource source, GlyphPlane plane, float radius) {
+    public ClientDrawingGlyph(final SpellSource source, final GlyphPlane plane, final float radius) {
         this.source = source;
         this.plane = plane;
         this.radius = radius;
     }
 
     public void tick() {
-        if (this.formTicks < FORM_TICKS) {
-            this.formTicks++;
+        if (formTicks < FORM_TICKS) {
+            formTicks++;
         }
 
-        this.primaryColor.tick(COLOR_LERP_SPEED);
-        this.secondaryColor.tick(COLOR_LERP_SPEED);
+        primaryColor.tick(COLOR_LERP_SPEED);
+        secondaryColor.tick(COLOR_LERP_SPEED);
 
-        Vec3 look = this.source.getLookVector(1.0F);
-        if (!look.equals(this.lastLook)) {
-            this.drawPointer = this.computeDrawPointer(look);
-            this.lastLook = look;
+        final Vec3 look = source.getLookVector(1.0f);
+        if (!look.equals(lastLook)) {
+            drawPointer = computeDrawPointer(look);
+            lastLook = look;
         }
 
-        GlyphStrokeTracker stroke = this.stroke;
+        final GlyphStrokeTracker stroke = this.stroke;
         if (stroke != null) {
-            var pointer = this.drawPointer;
+            final Vector3f pointer = drawPointer;
             if (pointer != null) {
-                this.tickStroke(pointer, stroke);
+                tickStroke(pointer, stroke);
             } else {
                 this.stroke = null;
             }
         }
     }
 
-    private void tickStroke(Vector3f pointer, GlyphStrokeTracker stroke) {
-        float radius = this.radius;
+    private void tickStroke(final Vector3f pointer, final GlyphStrokeTracker stroke) {
+        final float radius = this.radius;
         float x = Math.abs(pointer.x() / radius);
         float y = pointer.y() / radius;
 
-        float distance2 = x * x + y * y;
-        if (distance2 >= 1.0F) {
-            float factor = Mth.fastInvSqrt(distance2);
+        final float distance2 = x * x + y * y;
+        if (distance2 >= 1.0f) {
+            final float factor = Mth.fastInvSqrt(distance2);
             x *= factor;
             y *= factor;
         }
@@ -85,98 +85,98 @@ public final class ClientDrawingGlyph {
     }
 
     @Nullable
-    private Vector3f computeDrawPointer(Vec3 look) {
-        var intersection = this.plane.raycast(new Vector3f(0.0f, 0.0f, 0.0f), look.toVector3f());
+    private Vector3f computeDrawPointer(final Vec3 look) {
+        final Vector3f intersection = plane.raycast(new Vector3f(0.0f, 0.0f, 0.0f), look.toVector3f());
         if (intersection != null) {
-            this.plane.projectFromWorld(intersection);
+            plane.projectFromWorld(intersection);
             return intersection;
         } else {
             return null;
         }
     }
 
-    public void setShape(int shape) {
+    public void setShape(final int shape) {
         this.shape = shape;
     }
 
-    public boolean putEdge(GlyphEdge edge) {
-        int newShape = this.shape | edge.asBit();
-        if (this.shape != newShape) {
-            this.shape = newShape;
+    public boolean putEdge(final GlyphEdge edge) {
+        final int newShape = shape | edge.asBit();
+        if (shape != newShape) {
+            shape = newShape;
             return true;
         } else {
             return false;
         }
     }
 
-    public float getOpacity(float tickDelta) {
-        float formTicks = Math.min(this.formTicks + tickDelta, FORM_TICKS);
+    public float getOpacity(final float tickDelta) {
+        final float formTicks = Math.min(this.formTicks + tickDelta, FORM_TICKS);
         return Easings.easeInCirc(formTicks / FORM_TICKS);
     }
 
-    public void startStroke(GlyphNode node) {
-        Vec2 point = node.getPoint();
-        this.stroke = new GlyphStrokeTracker(point.x, point.y);
+    public void startStroke(final GlyphNode node) {
+        final Vec2 point = node.getPoint();
+        stroke = new GlyphStrokeTracker(point.x, point.y);
     }
 
     public void stopStroke() {
-        this.stroke = null;
+        stroke = null;
     }
 
-    public void applyFormedType(GlyphType type) {
-        this.primaryColor.set(type.style().primaryColor());
-        this.secondaryColor.set(type.style().secondaryColor());
-        this.stroke = null;
+    public void applyFormedType(final GlyphType type) {
+        primaryColor.set(type.style().primaryColor());
+        secondaryColor.set(type.style().secondaryColor());
+        stroke = null;
     }
 
-    public void applyStroke(@Nullable GlyphNode node) {
+    public void applyStroke(@Nullable final GlyphNode node) {
         if (node != null) {
-            this.startStroke(node);
+            startStroke(node);
         } else {
-            this.stopStroke();
+            stopStroke();
         }
     }
 
     public SpellSource source() {
-        return this.source;
+        return source;
     }
 
     public GlyphPlane plane() {
-        return this.plane;
+        return plane;
     }
 
     public float radius() {
-        return this.radius;
+        return radius;
     }
 
     public int shape() {
-        return this.shape;
+        return shape;
     }
 
     public AnimatedColor primaryColor() {
-        return this.primaryColor;
+        return primaryColor;
     }
 
     public AnimatedColor secondaryColor() {
-        return this.secondaryColor;
+        return secondaryColor;
     }
 
     public GlyphForm asForm() {
-        var style = new GlyphStyle(this.primaryColor.target(), this.secondaryColor.target());
-        return new GlyphForm(this.radius, this.shape, style);
+        final GlyphStyle style = new GlyphStyle(primaryColor.target(), secondaryColor.target());
+        return new GlyphForm(radius, shape, style);
     }
 
     @Nullable
     public Vector3f drawPointer() {
-        return this.drawPointer;
+        return drawPointer;
     }
 
     @Nullable
-    public GlyphStroke getStroke(float tickDelta) {
-        return this.stroke != null ? this.stroke.resolve(tickDelta) : null;
+    public GlyphStroke getStroke(final float tickDelta) {
+        return stroke != null ? stroke.resolve(tickDelta) : null;
     }
 
-    public FadingGlyph toFading(AnimationTimer timer) {
-        return new FadingGlyph(this.source, this.plane, this.asForm(), timer);
+    public FadingGlyph toFading(final AnimationTimer timer) {
+        return new FadingGlyph(source, plane, asForm(), timer);
     }
 }

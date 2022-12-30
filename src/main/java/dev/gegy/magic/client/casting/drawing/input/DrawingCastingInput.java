@@ -11,8 +11,8 @@ public final class DrawingCastingInput {
     private DrawingInputState state;
 
     @Nullable
-    public ClientDrawingGlyph tick(ClientCastingDrawing casting, Player player) {
-        var state = this.getStateOrInit();
+    public ClientDrawingGlyph tick(final ClientCastingDrawing casting, final Player player) {
+        DrawingInputState state = getStateOrInit();
         this.state = state = state.tick(casting, player);
 
         return state != null ? state.getDrawingGlyph() : null;
@@ -20,22 +20,22 @@ public final class DrawingCastingInput {
 
     @NotNull
     private DrawingInputState getStateOrInit() {
-        var state = this.state;
+        DrawingInputState state = this.state;
         if (state == null) {
             this.state = state = new BeginDraw();
         }
         return state;
     }
 
-    public void finishDrawing(GlyphType matchedType) {
-        var state = this.state;
+    public void finishDrawing(final GlyphType matchedType) {
+        final DrawingInputState state = this.state;
         if (state != null) {
             this.state = state.finishDrawingGlyph(matchedType);
         }
     }
 
     public void cancelDrawing() {
-        var state = this.state;
+        final DrawingInputState state = this.state;
         if (state != null) {
             this.state = state.cancelDrawingGlyph();
         }

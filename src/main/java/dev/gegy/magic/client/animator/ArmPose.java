@@ -13,44 +13,44 @@ public final class ArmPose {
     private final Vector3f prevTarget = new Vector3f();
 
     public void resetInterpolation() {
-        this.prevTarget.set(this.target);
+        prevTarget.set(target);
     }
 
-    public void pointTo(LivingEntity entity, Vector3f newTarget) {
-        this.prevTarget.set(this.target);
+    public void pointTo(final LivingEntity entity, final Vector3f newTarget) {
+        prevTarget.set(target);
 
-        var target = this.target.set(newTarget)
+        final Vector3f target = this.target.set(newTarget)
                 .rotateY(entity.yBodyRot * Mth.DEG_TO_RAD)
-                .add(0.0F, entity.getEyeHeight(), 0.0F);
+                .add(0.0f, entity.getEyeHeight(), 0.0f);
 
         target.set(
-                target.x() * 16.0F,
-                24.0F - target.y() * 16.0F,
-                target.z() * 16.0F
+                target.x() * 16.0f,
+                24.0f - target.y() * 16.0f,
+                target.z() * 16.0f
         );
     }
 
-    public void pointToPointOnPlane(LivingEntity entity, GlyphPlane plane, Vector3f target) {
-        this.pointTo(entity, plane.projectToWorld(target));
+    public void pointToPointOnPlane(final LivingEntity entity, final GlyphPlane plane, final Vector3f target) {
+        pointTo(entity, plane.projectToWorld(target));
     }
 
-    public void apply(ModelPart part, float tickDelta, float weight) {
-        Vector3f prevTarget = this.prevTarget;
-        Vector3f target = this.target;
+    public void apply(final ModelPart part, final float tickDelta, final float weight) {
+        final Vector3f prevTarget = this.prevTarget;
+        final Vector3f target = this.target;
 
-        float targetX = Mth.lerp(tickDelta, prevTarget.x(), target.x());
-        float targetY = Mth.lerp(tickDelta, prevTarget.y(), target.y());
-        float targetZ = Mth.lerp(tickDelta, prevTarget.z(), target.z());
+        final float targetX = Mth.lerp(tickDelta, prevTarget.x(), target.x());
+        final float targetY = Mth.lerp(tickDelta, prevTarget.y(), target.y());
+        final float targetZ = Mth.lerp(tickDelta, prevTarget.z(), target.z());
 
-        float deltaX = targetX - part.x;
-        float deltaY = targetY - part.y;
-        float deltaZ = targetZ - part.z;
-        double deltaXZ = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+        final float deltaX = targetX - part.x;
+        final float deltaY = targetY - part.y;
+        final float deltaZ = targetZ - part.z;
+        final double deltaXZ = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
-        float targetYaw = (float) -Math.atan2(deltaX, deltaZ);
-        float targetPitch = (float) (Math.atan2(deltaY, deltaXZ) - HALF_PI);
+        final float targetYaw = (float) -Math.atan2(deltaX, deltaZ);
+        final float targetPitch = (float) (Math.atan2(deltaY, deltaXZ) - HALF_PI);
 
-        float invWeight = 1.0F - weight;
+        final float invWeight = 1.0f - weight;
         part.yRot = weight * targetYaw + part.yRot * invWeight;
         part.xRot = weight * targetPitch + part.xRot * invWeight;
     }

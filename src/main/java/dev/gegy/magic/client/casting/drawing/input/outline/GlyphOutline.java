@@ -6,7 +6,7 @@ import dev.gegy.magic.client.glyph.SpellSource;
 import net.minecraft.world.entity.player.Player;
 
 public record GlyphOutline(GlyphPlane plane, float radius) {
-    public ClientDrawingGlyph createGlyph(Player source) {
-        return new ClientDrawingGlyph(SpellSource.of(source), this.plane, this.radius);
+    public ClientDrawingGlyph createGlyph(final Player source) {
+        return new ClientDrawingGlyph(SpellSource.of(source), plane, radius);
     }
 }

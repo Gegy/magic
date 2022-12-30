@@ -27,11 +27,11 @@ final class BeamEndWorldShader implements EffectShader<BeamRenderParameters> {
     private final FloatBuffer modelViewProjectData = MemoryUtil.memAllocFloat(4 * 4);
 
     private BeamEndWorldShader(
-            EffectShaderProgram program,
-            int uniformModelViewProject,
-            int uniformSampler,
-            int uniformScale,
-            Function<BeamRenderParameters, Matrix4f> modelViewProject
+            final EffectShaderProgram program,
+            final int uniformModelViewProject,
+            final int uniformSampler,
+            final int uniformScale,
+            final Function<BeamRenderParameters, Matrix4f> modelViewProject
     ) {
         this.program = program;
         this.uniformModelViewProject = uniformModelViewProject;
@@ -40,17 +40,17 @@ final class BeamEndWorldShader implements EffectShader<BeamRenderParameters> {
         this.modelViewProject = modelViewProject;
     }
 
-    public static BeamEndWorldShader create(ResourceManager resources, Function<BeamRenderParameters, Matrix4f> modelViewProject) throws IOException {
-        EffectShaderProgram program = EffectShaderProgram.compile(
+    public static BeamEndWorldShader create(final ResourceManager resources, final Function<BeamRenderParameters, Matrix4f> modelViewProject) throws IOException {
+        final EffectShaderProgram program = EffectShaderProgram.compile(
                 resources,
                 Magic.identifier("beam/end_world"),
                 Magic.identifier("effect_world"),
                 GeometryBuilder.POSITION_2F
         );
 
-        int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
-        int uniformSampler = program.getUniformLocation("Sampler");
-        int uniformScale = program.getUniformLocation("Scale");
+        final int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
+        final int uniformSampler = program.getUniformLocation("Sampler");
+        final int uniformScale = program.getUniformLocation("Scale");
 
         return new BeamEndWorldShader(
                 program,
@@ -62,24 +62,24 @@ final class BeamEndWorldShader implements EffectShader<BeamRenderParameters> {
     }
 
     @Override
-    public GlBinding bind(BeamRenderParameters parameters) {
-        var binding = this.program.bind();
+    public GlBinding bind(final BeamRenderParameters parameters) {
+        final EffectShaderProgram.Binding binding = program.bind();
 
-        RenderSystem.glUniform1i(this.uniformSampler, 0);
+        RenderSystem.glUniform1i(uniformSampler, 0);
 
-        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false,
-                this.modelViewProject.apply(parameters).get(this.modelViewProjectData)
+        RenderSystem.glUniformMatrix4(uniformModelViewProject, false,
+                modelViewProject.apply(parameters).get(modelViewProjectData)
         );
 
-        GL20.glUniform1f(this.uniformScale, BeamTexture.END_SCALE);
+        GL20.glUniform1f(uniformScale, BeamTexture.END_SCALE);
 
         return binding;
     }
 
     @Override
     public void delete() {
-        this.program.delete();
+        program.delete();
 
-        MemoryUtil.memFree(this.modelViewProjectData);
+        MemoryUtil.memFree(modelViewProjectData);
     }
 }

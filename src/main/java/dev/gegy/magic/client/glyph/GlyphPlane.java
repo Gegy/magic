@@ -6,7 +6,7 @@ import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 public final class GlyphPlane {
-    private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
+    private static final Vector3f UP = new Vector3f(0.0f, 1.0f, 0.0f);
 
     private final Vector3f origin = new Vector3f();
     private final Vector3f direction = new Vector3f();
@@ -20,75 +20,75 @@ public final class GlyphPlane {
     public GlyphPlane() {
     }
 
-    public GlyphPlane(Vector3f direction, float distance) {
-        this.set(direction, distance);
+    public GlyphPlane(final Vector3f direction, final float distance) {
+        set(direction, distance);
     }
 
-    public void set(Vector3f direction, float distance) {
-        this.origin.set(direction).mul(distance);
+    public void set(final Vector3f direction, final float distance) {
+        origin.set(direction).mul(distance);
         this.direction.set(direction);
         this.distance = distance;
 
-        this.planeToWorld.rotationTowards(direction, UP).translate(0.0F, 0.0F, distance);
-        this.worldToPlane.set(this.planeToWorld).invert();
+        planeToWorld.rotationTowards(direction, UP).translate(0.0f, 0.0f, distance);
+        worldToPlane.set(planeToWorld).invert();
     }
 
-    public void set(GlyphTransform transform, float tickDelta) {
-        this.set(transform.getDirection(tickDelta), transform.getDistance(tickDelta));
+    public void set(final GlyphTransform transform, final float tickDelta) {
+        set(transform.getDirection(tickDelta), transform.getDistance(tickDelta));
     }
 
-    public void set(GlyphTransform transform) {
-        this.set(transform, 1.0F);
+    public void set(final GlyphTransform transform) {
+        set(transform, 1.0f);
     }
 
     @Nullable
-    public Vector3f raycast(Vector3f origin, Vector3f direction) {
-        float denominator = direction.dot(this.direction);
-        if (denominator > 1e-3F) {
-            var delta = this.origin.sub(origin, this.vec3);
+    public Vector3f raycast(final Vector3f origin, final Vector3f direction) {
+        final float denominator = direction.dot(this.direction);
+        if (denominator > 1e-3f) {
+            final Vector3f delta = this.origin.sub(origin, vec3);
 
-            float distance = delta.dot(this.direction) / denominator;
-            if (distance >= 0.0F) {
-                return direction.mul(distance, this.vec3).add(origin);
+            final float distance = delta.dot(this.direction) / denominator;
+            if (distance >= 0.0f) {
+                return direction.mul(distance, vec3).add(origin);
             }
         }
 
         return null;
     }
 
-    public Vector3f projectToWorld(Vector3f point) {
-        return point.mulPosition(this.planeToWorld);
+    public Vector3f projectToWorld(final Vector3f point) {
+        return point.mulPosition(planeToWorld);
     }
 
-    public Vector3f projectToWorld(float x, float y, float z) {
-        return this.projectToWorld(new Vector3f(x, y, z));
+    public Vector3f projectToWorld(final float x, final float y, final float z) {
+        return projectToWorld(new Vector3f(x, y, z));
     }
 
-    public Vector3f projectToWorld(float x, float y) {
-        return this.projectToWorld(x, y, 0.0F);
+    public Vector3f projectToWorld(final float x, final float y) {
+        return projectToWorld(x, y, 0.0f);
     }
 
-    public Vector3f projectFromWorld(Vector3f point) {
-        return point.mulPosition(this.worldToPlane);
+    public Vector3f projectFromWorld(final Vector3f point) {
+        return point.mulPosition(worldToPlane);
     }
 
     public Matrix4f planeToWorld() {
-        return this.planeToWorld;
+        return planeToWorld;
     }
 
     public Vector3f origin() {
-        return this.origin;
+        return origin;
     }
 
     public Vector3f direction() {
-        return this.direction;
+        return direction;
     }
 
     public float distance() {
-        return this.distance;
+        return distance;
     }
 
     public GlyphTransform asTransform() {
-        return GlyphTransform.of(this.direction, this.distance);
+        return GlyphTransform.of(direction, distance);
     }
 }

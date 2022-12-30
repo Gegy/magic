@@ -26,18 +26,18 @@ public final class GlyphDebugRenderer {
 
     private static final int RENDER_PER_SIZE = 10;
 
-    public static void main(String[] args) throws IOException {
-        GlyphShapeGenerator generator = new GlyphShapeGenerator(MIN_SIZE, MAX_SIZE);
-        List<GlyphShape> all = generator.generateAll();
+    public static void main(final String[] args) throws IOException {
+        final GlyphShapeGenerator generator = new GlyphShapeGenerator(MIN_SIZE, MAX_SIZE);
+        final List<GlyphShape> all = generator.generateAll();
 
-        Byte2ObjectMap<List<GlyphShape>> bySize = new Byte2ObjectOpenHashMap<>();
-        for (GlyphShape glyph : all) {
+        final Byte2ObjectMap<List<GlyphShape>> bySize = new Byte2ObjectOpenHashMap<>();
+        for (final GlyphShape glyph : all) {
             bySize.computeIfAbsent((byte) glyph.size, s -> new ArrayList<>()).add(glyph);
         }
 
-        Random random = new Random();
+        final Random random = new Random();
         for (int size = MIN_SIZE; size <= MAX_SIZE; size++) {
-            List<GlyphShape> glyphsBySize = bySize.get((byte) size);
+            final List<GlyphShape> glyphsBySize = bySize.get((byte) size);
             if (glyphsBySize == null || glyphsBySize.isEmpty()) {
                 continue;
             }
@@ -47,25 +47,25 @@ public final class GlyphDebugRenderer {
                     break;
                 }
 
-                GlyphShape glyph = glyphsBySize.remove(random.nextInt(glyphsBySize.size()));
+                final GlyphShape glyph = glyphsBySize.remove(random.nextInt(glyphsBySize.size()));
 
-                BufferedImage image = render(glyph);
+                final BufferedImage image = render(glyph);
                 ImageIO.write(image, "png", new File("glyph_" + size + "_" + i + ".png"));
             }
         }
     }
 
-    public static BufferedImage render(GlyphShape glyph) {
-        BufferedImage image = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
-        Graphics2D graphics = image.createGraphics();
+    public static BufferedImage render(final GlyphShape glyph) {
+        final BufferedImage image = new BufferedImage(IMAGE_SIZE, IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
+        final Graphics2D graphics = image.createGraphics();
 
         graphics.setColor(Color.RED);
         graphics.drawOval(IMAGE_PADDING, IMAGE_PADDING, GLYPH_DIAMETER, GLYPH_DIAMETER);
 
         graphics.setColor(Color.BLUE);
-        for (GlyphEdge edge : glyph.edges) {
-            Vec2 from = edge.from.getPoint();
-            Vec2 to = edge.to.getPoint();
+        for (final GlyphEdge edge : glyph.edges) {
+            final Vec2 from = edge.from.getPoint();
+            final Vec2 to = edge.to.getPoint();
 
             graphics.drawLine(
                     transformCoordinate(from.x), transformCoordinate(-from.y),
@@ -83,7 +83,7 @@ public final class GlyphDebugRenderer {
         return image;
     }
 
-    private static int transformCoordinate(float coordinate) {
-        return Math.round((coordinate + 1.0F) * GLYPH_RADIUS) + IMAGE_PADDING;
+    private static int transformCoordinate(final float coordinate) {
+        return Math.round((coordinate + 1.0f) * GLYPH_RADIUS) + IMAGE_PADDING;
     }
 }

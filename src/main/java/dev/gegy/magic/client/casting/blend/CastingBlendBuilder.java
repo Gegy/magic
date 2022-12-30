@@ -14,32 +14,32 @@ public final class CastingBlendBuilder {
     private final EffectMap effects = new EffectMap();
     private final List<Ticker> tickers = new ArrayList<>();
 
-    public <E extends Effect> E attachEffect(E effect) {
-        this.effects.add(effect);
+    public <E extends Effect> E attachEffect(final E effect) {
+        effects.add(effect);
         return effect;
     }
 
-    public void registerTicker(Ticker ticker) {
-        this.tickers.add(ticker);
+    public void registerTicker(final Ticker ticker) {
+        tickers.add(ticker);
     }
 
-    public void registerTicker(Runnable ticker) {
-        this.registerTicker(() -> {
+    public void registerTicker(final Runnable ticker) {
+        registerTicker(() -> {
             ticker.run();
             return false;
         });
     }
 
-    public ClientCasting build(ClientCasting target) {
-        if (!this.isEmpty()) {
-            return new BlendingCasting(target, this.effects, this.tickers);
+    public ClientCasting build(final ClientCasting target) {
+        if (!isEmpty()) {
+            return new BlendingCasting(target, effects, tickers);
         } else {
             return target;
         }
     }
 
     public boolean isEmpty() {
-        return this.effects.isEmpty() && this.tickers.isEmpty();
+        return effects.isEmpty() && tickers.isEmpty();
     }
 
     public interface Ticker {
@@ -51,31 +51,31 @@ public final class CastingBlendBuilder {
         private final EffectMap effects;
         private final List<Ticker> tickers;
 
-        BlendingCasting(ClientCasting target, EffectMap effects, List<Ticker> tickers) {
+        BlendingCasting(final ClientCasting target, final EffectMap effects, final List<Ticker> tickers) {
             this.target = target;
             this.effects = effects;
             this.tickers = tickers;
         }
 
         @Override
-        public ClientCasting handleServerCast(ClientCasting casting) {
-            this.target = casting;
+        public ClientCasting handleServerCast(final ClientCasting casting) {
+            target = casting;
             return this;
         }
 
         @Override
         public ClientCasting tick() {
-            for (var ticker : this.tickers) {
+            for (final Ticker ticker : tickers) {
                 if (ticker.tick()) {
-                    return this.target;
+                    return target;
                 }
             }
             return this;
         }
 
         @Override
-        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
-            var target = this.target;
+        public void handleEvent(final ResourceLocation id, final FriendlyByteBuf buf) {
+            final ClientCasting target = this.target;
             if (target != null) {
                 target.handleEvent(id, buf);
             }
@@ -83,7 +83,7 @@ public final class CastingBlendBuilder {
 
         @Override
         public EffectSelector getEffects() {
-            return this.effects;
+            return effects;
         }
     }
 }

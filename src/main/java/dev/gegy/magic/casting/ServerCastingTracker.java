@@ -36,54 +36,54 @@ public final class ServerCastingTracker {
         EntityTrackingEvents.STOP_TRACKING.register(INSTANCE::onPlayerStopTracking);
     }
 
-    private void onPlayerJoin(ServerPlayer player) {
-        var source = new ServerCastingSource(player);
+    private void onPlayerJoin(final ServerPlayer player) {
+        final ServerCastingSource source = new ServerCastingSource(player);
         source.setCasting(ServerCastingDrawing::build);
 
-        this.sources.put(player.getUUID(), source);
+        sources.put(player.getUUID(), source);
     }
 
-    private void onPlayerLeave(ServerPlayer player) {
-        var source = this.sources.remove(player.getUUID());
+    private void onPlayerLeave(final ServerPlayer player) {
+        final ServerCastingSource source = sources.remove(player.getUUID());
         if (source != null) {
             source.close();
         }
     }
 
-    public void handleEvent(ServerPlayer player, ResourceLocation id, FriendlyByteBuf buf) {
-        var source = this.getSource(player);
+    public void handleEvent(final ServerPlayer player, final ResourceLocation id, final FriendlyByteBuf buf) {
+        final ServerCastingSource source = getSource(player);
         if (source != null) {
             source.handleEvent(id, buf);
         }
     }
 
     @Nullable
-    private ServerCastingSource getSource(Entity entity) {
-        return entity instanceof ServerPlayer ? this.sources.get(entity.getUUID()) : null;
+    private ServerCastingSource getSource(final Entity entity) {
+        return entity instanceof ServerPlayer ? sources.get(entity.getUUID()) : null;
     }
 
-    private void onServerStop(MinecraftServer server) {
-        for (var source : this.sources.values()) {
+    private void onServerStop(final MinecraftServer server) {
+        for (final ServerCastingSource source : sources.values()) {
             source.close();
         }
-        this.sources.clear();
+        sources.clear();
     }
 
-    private void onServerTick(MinecraftServer server) {
-        for (var source : this.sources.values()) {
+    private void onServerTick(final MinecraftServer server) {
+        for (final ServerCastingSource source : sources.values()) {
             source.tick();
         }
     }
 
-    private void onPlayerStartTracking(Entity trackedEntity, ServerPlayer player) {
-        var source = this.getSource(trackedEntity);
+    private void onPlayerStartTracking(final Entity trackedEntity, final ServerPlayer player) {
+        final ServerCastingSource source = getSource(trackedEntity);
         if (source != null) {
             source.onStartTracking(player);
         }
     }
 
-    private void onPlayerStopTracking(Entity trackedEntity, ServerPlayer player) {
-        var source = this.getSource(trackedEntity);
+    private void onPlayerStopTracking(final Entity trackedEntity, final ServerPlayer player) {
+        final ServerCastingSource source = getSource(trackedEntity);
         if (source != null) {
             source.onStopTracking(player);
         }

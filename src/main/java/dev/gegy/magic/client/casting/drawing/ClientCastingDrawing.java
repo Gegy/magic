@@ -10,6 +10,7 @@ import dev.gegy.magic.client.casting.ClientCasting;
 import dev.gegy.magic.client.casting.ClientCastingBuilder;
 import dev.gegy.magic.client.casting.blend.CastingBlendBuilder;
 import dev.gegy.magic.client.casting.blend.CastingBlendType;
+import dev.gegy.magic.client.casting.blend.CastingBlender;
 import dev.gegy.magic.client.casting.drawing.input.DrawingCastingInput;
 import dev.gegy.magic.client.effect.casting.drawing.DrawingEffect;
 import dev.gegy.magic.client.effect.glyph.GlyphRenderParameters;
@@ -18,12 +19,15 @@ import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.Spell;
 import dev.gegy.magic.client.glyph.spell.SpellPrepareBlender;
+import dev.gegy.magic.client.glyph.spell.transform.SpellTransform;
 import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
+import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.math.AnimationTimer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,16 +46,16 @@ public final class ClientCastingDrawing {
 
     private final GlyphsEffect glyphsEffect = new DrawingGlyphsEffect();
 
-    private ClientCastingDrawing(Player player, ClientDrawingEventSenders senders) {
+    private ClientCastingDrawing(final Player player, final ClientDrawingEventSenders senders) {
         this.player = player;
         this.senders = senders;
     }
 
-    public static ClientCasting build(Player player, DrawingParameters parameters, ClientCastingBuilder casting) {
-        var senders = ClientDrawingEventSenders.registerTo(casting);
+    public static ClientCasting build(final Player player, final DrawingParameters parameters, final ClientCastingBuilder casting) {
+        final ClientDrawingEventSenders senders = ClientDrawingEventSenders.registerTo(casting);
 
-        var drawing = new ClientCastingDrawing(player, senders);
-        for (var glyph : parameters.glyphs()) {
+        final ClientCastingDrawing drawing = new ClientCastingDrawing(player, senders);
+        for (final DrawingGlyphParameters glyph : parameters.glyphs()) {
             drawing.drawGlyph(glyph);
         }
 
@@ -68,18 +72,18 @@ public final class ClientCastingDrawing {
             drawing.bindInput(player, casting);
         }
 
-        var blendingSpell = casting.blendTo(CastingBlendType.SPELL);
+        final CastingBlender.Entry<Spell, SpellTransformType> blendingSpell = casting.blendTo(CastingBlendType.SPELL);
         blendingSpell.blendInto(drawing::blendIntoPrepared);
         blendingSpell.blendOut(drawing::blendOut);
 
         return casting.build();
     }
 
-    private void bindInput(Player player, ClientCastingBuilder casting) {
-        var input = new DrawingCastingInput();
+    private void bindInput(final Player player, final ClientCastingBuilder casting) {
+        final DrawingCastingInput input = new DrawingCastingInput();
 
         casting.bindInboundEvent(UpdateDrawingS2CEvent.SPEC, event -> {
-            var matchedType = event.formedGlyphType();
+            final GlyphType matchedType = event.formedGlyphType();
             if (matchedType != null) {
                 input.finishDrawing(matchedType);
             }
@@ -88,54 +92,54 @@ public final class ClientCastingDrawing {
         casting.bindInboundEvent(CancelDrawingS2CEvent.SPEC, event -> input.cancelDrawing());
 
         casting.registerTicker(() -> {
-            var newDrawing = input.tick(this, player);
-            this.updateOwnDrawing(newDrawing);
+            final ClientDrawingGlyph newDrawing = input.tick(this, player);
+            updateOwnDrawing(newDrawing);
         });
     }
 
-    private void updateOwnDrawing(ClientDrawingGlyph drawing) {
-        var lastDrawing = this.drawing;
+    private void updateOwnDrawing(final ClientDrawingGlyph drawing) {
+        final ClientDrawingGlyph lastDrawing = this.drawing;
         this.drawing = drawing;
 
         if (lastDrawing != null && drawing == null) {
-            this.fadeGlyph(lastDrawing);
+            fadeGlyph(lastDrawing);
         }
     }
 
-    private void fadeGlyph(ClientDrawingGlyph glyph) {
-        var timer = new AnimationTimer(FADE_LENGTH);
-        this.fading.add(new Fading(glyph.toFading(timer), timer));
+    private void fadeGlyph(final ClientDrawingGlyph glyph) {
+        final AnimationTimer timer = new AnimationTimer(FADE_LENGTH);
+        fading.add(new Fading(glyph.toFading(timer), timer));
     }
 
-    private void drawGlyph(DrawGlyphS2CEvent event) {
-        this.drawGlyph(event.glyph());
+    private void drawGlyph(final DrawGlyphS2CEvent event) {
+        drawGlyph(event.glyph());
     }
 
-    private void drawGlyph(DrawingGlyphParameters parameters) {
-        var glyph = this.createGlyph(parameters);
+    private void drawGlyph(final DrawingGlyphParameters parameters) {
+        final ClientDrawingGlyph glyph = createGlyph(parameters);
         if (parameters.isFormed()) {
-            this.glyphs.add(glyph);
+            glyphs.add(glyph);
         } else {
-            this.drawing = glyph;
+            drawing = glyph;
         }
     }
 
-    private void cancelDrawing(CancelDrawingS2CEvent event) {
-        var drawing = this.drawing;
+    private void cancelDrawing(final CancelDrawingS2CEvent event) {
+        final ClientDrawingGlyph drawing = this.drawing;
         if (drawing != null) {
             this.drawing = null;
-            this.fadeGlyph(drawing);
+            fadeGlyph(drawing);
         }
     }
 
-    private void updateDrawing(UpdateDrawingS2CEvent event) {
-        var glyph = this.drawing;
+    private void updateDrawing(final UpdateDrawingS2CEvent event) {
+        final ClientDrawingGlyph glyph = drawing;
         if (glyph != null) {
             glyph.setShape(event.shape());
             if (event.formedGlyphType() != null) {
                 glyph.applyFormedType(event.formedGlyphType());
-                this.glyphs.add(glyph);
-                this.drawing = null;
+                glyphs.add(glyph);
+                drawing = null;
             } else {
                 glyph.applyStroke(event.stroke());
             }
@@ -143,51 +147,51 @@ public final class ClientCastingDrawing {
     }
 
     private void tick() {
-        var drawing = this.drawing;
+        final ClientDrawingGlyph drawing = this.drawing;
         if (drawing != null) {
             drawing.tick();
         }
 
-        for (var glyph : this.glyphs) {
+        for (final ClientDrawingGlyph glyph : glyphs) {
             glyph.tick();
         }
 
-        this.fading.removeIf(Fading::tick);
+        fading.removeIf(Fading::tick);
     }
 
-    private ClientDrawingGlyph createGlyph(DrawingGlyphParameters parameters) {
-        var plane = new GlyphPlane(parameters.direction(), GlyphTransform.DRAW_DISTANCE);
-        var glyph = this.createGlyph(plane, parameters.radius(), parameters.shape());
+    private ClientDrawingGlyph createGlyph(final DrawingGlyphParameters parameters) {
+        final GlyphPlane plane = new GlyphPlane(parameters.direction(), GlyphTransform.DRAW_DISTANCE);
+        final ClientDrawingGlyph glyph = createGlyph(plane, parameters.radius(), parameters.shape());
         if (parameters.formedGlyphType() != null) {
             glyph.applyFormedType(parameters.formedGlyphType());
         }
         return glyph;
     }
 
-    private ClientDrawingGlyph createGlyph(GlyphPlane plane, float radius, int shape) {
-        var glyph = new ClientDrawingGlyph(SpellSource.of(this.player), plane, radius);
+    private ClientDrawingGlyph createGlyph(final GlyphPlane plane, final float radius, final int shape) {
+        final ClientDrawingGlyph glyph = new ClientDrawingGlyph(SpellSource.of(player), plane, radius);
         glyph.setShape(shape);
         return glyph;
     }
 
     @Nullable
     public ClientDrawingGlyph getDrawing() {
-        return this.drawing;
+        return drawing;
     }
 
     public ClientDrawingEventSenders senders() {
-        return this.senders;
+        return senders;
     }
 
-    private Spell blendIntoPrepared(CastingBlendBuilder blend, SpellTransformType transformType) {
-        this.glyphs.sort(Comparator.comparingDouble(ClientDrawingGlyph::radius));
+    private Spell blendIntoPrepared(final CastingBlendBuilder blend, final SpellTransformType transformType) {
+        glyphs.sort(Comparator.comparingDouble(ClientDrawingGlyph::radius));
 
-        var source = SpellSource.of(this.player);
-        var direction = source.getLookVector(1.0F).toVector3f();
+        final SpellSource source = SpellSource.of(player);
+        final Vector3f direction = source.getLookVector(1.0f).toVector3f();
 
-        var spellTransform = transformType.create(source, direction, this.glyphs.size());
-        var spell = Spell.prepare(source, spellTransform, this.glyphs);
-        var blender = SpellPrepareBlender.create(this.glyphs, spell);
+        final SpellTransform spellTransform = transformType.create(source, direction, glyphs.size());
+        final Spell spell = Spell.prepare(source, spellTransform, glyphs);
+        final SpellPrepareBlender blender = SpellPrepareBlender.create(glyphs, spell);
 
         blend.attachEffect(GlyphsEffect.fromSpell(blender.spell()));
         blend.registerTicker(blender::tick);
@@ -195,10 +199,10 @@ public final class ClientCastingDrawing {
         return spell;
     }
 
-    private void blendOut(CastingBlendBuilder blend) {
-        var fadeTimer = new AnimationTimer(FADE_LENGTH);
+    private void blendOut(final CastingBlendBuilder blend) {
+        final AnimationTimer fadeTimer = new AnimationTimer(FADE_LENGTH);
 
-        var fadingGlyphs = this.glyphs.stream()
+        final List<FadingGlyph> fadingGlyphs = glyphs.stream()
                 .map(glyph -> glyph.toFading(fadeTimer))
                 .toList();
 
@@ -206,27 +210,27 @@ public final class ClientCastingDrawing {
         blend.registerTicker(fadeTimer::tick);
     }
 
-    private static final record Fading(FadingGlyph glyph, AnimationTimer timer) {
+    private record Fading(FadingGlyph glyph, AnimationTimer timer) {
         public boolean tick() {
-            return this.timer.tick();
+            return timer.tick();
         }
     }
 
     private final class DrawingGlyphsEffect implements GlyphsEffect {
         @Override
-        public void render(GlyphRenderParameters parameters, WorldRenderContext context, RenderFunction render) {
-            var drawing = ClientCastingDrawing.this.drawing;
+        public void render(final GlyphRenderParameters parameters, final WorldRenderContext context, final RenderFunction render) {
+            final ClientDrawingGlyph drawing = ClientCastingDrawing.this.drawing;
             if (drawing != null) {
                 parameters.setDrawing(drawing, context);
                 render.accept(parameters);
             }
 
-            for (var glyph : ClientCastingDrawing.this.glyphs) {
+            for (final ClientDrawingGlyph glyph : glyphs) {
                 parameters.setDrawing(glyph, context);
                 render.accept(parameters);
             }
 
-            for (var fading : ClientCastingDrawing.this.fading) {
+            for (final Fading fading : fading) {
                 parameters.setFading(fading.glyph(), context);
                 render.accept(parameters);
             }

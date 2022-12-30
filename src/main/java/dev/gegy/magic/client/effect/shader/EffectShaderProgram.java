@@ -30,22 +30,22 @@ public final class EffectShaderProgram implements Shader, GlBindableObject {
     private final Program vertexShader;
     private final Program fragmentShader;
 
-    private EffectShaderProgram(int programRef, Program vertexShader, Program fragmentShader) {
+    private EffectShaderProgram(final int programRef, final Program vertexShader, final Program fragmentShader) {
         this.programRef = programRef;
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
     }
 
-    public static EffectShaderProgram compile(ResourceManager resources, ResourceLocation location, VertexFormat format) throws IOException {
+    public static EffectShaderProgram compile(final ResourceManager resources, final ResourceLocation location, final VertexFormat format) throws IOException {
         return compile(resources, location, location, format);
     }
 
-    public static EffectShaderProgram compile(ResourceManager resources, ResourceLocation vertexLocation, ResourceLocation fragmentLocation, VertexFormat format) throws IOException {
-        Program vertexShader = compileShader(resources, Program.Type.VERTEX, vertexLocation);
-        Program fragmentShader = compileShader(resources, Program.Type.FRAGMENT, fragmentLocation);
+    public static EffectShaderProgram compile(final ResourceManager resources, final ResourceLocation vertexLocation, final ResourceLocation fragmentLocation, final VertexFormat format) throws IOException {
+        final Program vertexShader = compileShader(resources, Program.Type.VERTEX, vertexLocation);
+        final Program fragmentShader = compileShader(resources, Program.Type.FRAGMENT, fragmentLocation);
 
-        int programRef = ProgramManager.createProgram();
-        EffectShaderProgram shader = new EffectShaderProgram(programRef, vertexShader, fragmentShader);
+        final int programRef = ProgramManager.createProgram();
+        final EffectShaderProgram shader = new EffectShaderProgram(programRef, vertexShader, fragmentShader);
         shader.bindAttributes(format);
 
         ProgramManager.linkShader(shader);
@@ -53,45 +53,45 @@ public final class EffectShaderProgram implements Shader, GlBindableObject {
         return shader;
     }
 
-    private static Program compileShader(ResourceManager resources, Program.Type type, ResourceLocation location) throws IOException {
-        ResourceLocation path = new ResourceLocation(location.getNamespace(), "shaders/" + location.getPath() + type.getExtension());
-        Resource resource = resources.getResourceOrThrow(path);
-        try (InputStream input = resource.open()) {
-            ImportProcessor importProcessor = new ImportProcessor(location.getNamespace(), resources);
+    private static Program compileShader(final ResourceManager resources, final Program.Type type, final ResourceLocation location) throws IOException {
+        final ResourceLocation path = new ResourceLocation(location.getNamespace(), "shaders/" + location.getPath() + type.getExtension());
+        final Resource resource = resources.getResourceOrThrow(path);
+        try (final InputStream input = resource.open()) {
+            final ImportProcessor importProcessor = new ImportProcessor(location.getNamespace(), resources);
             return Program.compileShader(type, location.toString(), input, resource.sourcePackId(), importProcessor);
         }
     }
 
-    private void bindAttributes(VertexFormat format) {
+    private void bindAttributes(final VertexFormat format) {
         int index = 0;
-        for (String attribute : format.getElementAttributeNames()) {
-            Uniform.glBindAttribLocation(this.programRef, index++, attribute);
+        for (final String attribute : format.getElementAttributeNames()) {
+            Uniform.glBindAttribLocation(programRef, index++, attribute);
         }
     }
 
-    public int getUniformLocation(String name) {
-        return Uniform.glGetUniformLocation(this.programRef, name);
+    public int getUniformLocation(final String name) {
+        return Uniform.glGetUniformLocation(programRef, name);
     }
 
     @Override
     public void attachToProgram() {
-        this.fragmentShader.attachToShader(this);
-        this.vertexShader.attachToShader(this);
+        fragmentShader.attachToShader(this);
+        vertexShader.attachToShader(this);
     }
 
     @Override
     public int getId() {
-        return this.programRef;
+        return programRef;
     }
 
     @Override
     public Program getVertexProgram() {
-        return this.vertexShader;
+        return vertexShader;
     }
 
     @Override
     public Program getFragmentProgram() {
-        return this.fragmentShader;
+        return fragmentShader;
     }
 
     @Override
@@ -100,7 +100,7 @@ public final class EffectShaderProgram implements Shader, GlBindableObject {
 
     @Override
     public Binding bind() {
-        ProgramManager.glUseProgram(this.programRef);
+        ProgramManager.glUseProgram(programRef);
         return BINDING;
     }
 
@@ -125,27 +125,27 @@ public final class EffectShaderProgram implements Shader, GlBindableObject {
 
         private final Set<ResourceLocation> visitedImports = new ObjectOpenHashSet<>();
 
-        public ImportProcessor(String namespace, ResourceProvider resources) {
+        public ImportProcessor(final String namespace, final ResourceProvider resources) {
             this.namespace = namespace;
             this.resources = resources;
         }
 
         @Nullable
         @Override
-        public String applyImport(boolean inline, String name) {
-            ResourceLocation importLocation = new ResourceLocation(this.namespace, "shaders/include/" + name);
-            if (!this.visitedImports.add(importLocation)) {
+        public String applyImport(final boolean inline, final String name) {
+            final ResourceLocation importLocation = new ResourceLocation(namespace, "shaders/include/" + name);
+            if (!visitedImports.add(importLocation)) {
                 return null;
             }
 
-            Optional<Resource> resource = this.resources.getResource(importLocation);
+            final Optional<Resource> resource = resources.getResource(importLocation);
             if (resource.isEmpty()) {
                 return "# Missing resource: " + importLocation;
             }
 
-            try (InputStream input = resource.get().open()) {
+            try (final InputStream input = resource.get().open()) {
                 return IOUtils.toString(input, StandardCharsets.UTF_8);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 Magic.LOGGER.error("Could not open GLSL import {}", name, e);
                 return "# Error: " + e.getMessage();
             }

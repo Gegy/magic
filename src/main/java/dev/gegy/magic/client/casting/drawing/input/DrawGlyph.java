@@ -13,57 +13,57 @@ import org.joml.Vector3f;
 
 abstract class DrawGlyph implements DrawingInputState {
     // 15% of circle radius
-    private static final float SELECT_DISTANCE = 0.15F;
+    private static final float SELECT_DISTANCE = 0.15f;
     private static final float SELECT_DISTANCE_2 = SELECT_DISTANCE * SELECT_DISTANCE;
 
-    private static final float DRAWING_RADIUS = 1.0F + SELECT_DISTANCE;
+    private static final float DRAWING_RADIUS = 1.0f + SELECT_DISTANCE;
     private static final float DRAWING_RADIUS_2 = DRAWING_RADIUS * DRAWING_RADIUS;
 
     protected final ClientDrawingGlyph glyph;
     protected final GlyphPlane plane;
 
-    DrawGlyph(ClientDrawingGlyph glyph, GlyphPlane plane) {
+    DrawGlyph(final ClientDrawingGlyph glyph, final GlyphPlane plane) {
         this.glyph = glyph;
         this.plane = plane;
     }
 
     @Override
-    public final DrawingInputState tick(ClientCastingDrawing casting, Player player) {
-        Vector3f drawPointer = this.glyph.drawPointer();
-        if (drawPointer == null || this.isPointerOutOfBounds(drawPointer)) {
-            return this.cancelGlyph(casting);
+    public final DrawingInputState tick(final ClientCastingDrawing casting, final Player player) {
+        final Vector3f drawPointer = glyph.drawPointer();
+        if (drawPointer == null || isPointerOutOfBounds(drawPointer)) {
+            return cancelGlyph(casting);
         }
 
-        float radius = this.glyph.radius();
-        return this.tickDraw(casting,
+        final float radius = glyph.radius();
+        return tickDraw(casting,
                 Math.abs(drawPointer.x() / radius),
                 drawPointer.y() / radius
         );
     }
 
-    private ContinueDraw cancelGlyph(ClientCastingDrawing casting) {
+    private ContinueDraw cancelGlyph(final ClientCastingDrawing casting) {
         casting.senders().cancelGlyph();
         return new ContinueDraw();
     }
 
-    private boolean isPointerOutOfBounds(Vector3f drawPointer) {
-        float radius = this.glyph.radius();
-        float x = drawPointer.x() / radius;
-        float y = drawPointer.y() / radius;
-        float distance2 = x * x + y * y;
+    private boolean isPointerOutOfBounds(final Vector3f drawPointer) {
+        final float radius = glyph.radius();
+        final float x = drawPointer.x() / radius;
+        final float y = drawPointer.y() / radius;
+        final float distance2 = x * x + y * y;
 
-        return distance2 >= 3.0F * 3.0F;
+        return distance2 >= 3.0f * 3.0f;
     }
 
     @Override
     @Nullable
     public final ClientDrawingGlyph getDrawingGlyph() {
-        return this.glyph;
+        return glyph;
     }
 
     @Override
-    public final DrawingInputState finishDrawingGlyph(GlyphType matchedType) {
-        this.glyph.applyFormedType(matchedType);
+    public final DrawingInputState finishDrawingGlyph(final GlyphType matchedType) {
+        glyph.applyFormedType(matchedType);
         return new ContinueDraw();
     }
 
@@ -74,34 +74,34 @@ abstract class DrawGlyph implements DrawingInputState {
 
     protected abstract DrawingInputState tickDraw(ClientCastingDrawing casting, float x, float y);
 
-    protected boolean putEdge(ClientCastingDrawing casting, GlyphEdge edge) {
-        if (this.glyph.putEdge(edge)) {
-            casting.senders().drawGlyphShape(this.glyph.shape());
+    protected boolean putEdge(final ClientCastingDrawing casting, final GlyphEdge edge) {
+        if (glyph.putEdge(edge)) {
+            casting.senders().drawGlyphShape(glyph.shape());
             return true;
         }
         return false;
     }
 
-    protected void startStroke(ClientCastingDrawing casting, GlyphNode node) {
-        this.glyph.startStroke(node);
+    protected void startStroke(final ClientCastingDrawing casting, final GlyphNode node) {
+        glyph.startStroke(node);
         casting.senders().startGlyphStroke(node);
     }
 
-    protected void stopStroke(ClientCastingDrawing casting) {
-        this.glyph.stopStroke();
+    protected void stopStroke(final ClientCastingDrawing casting) {
+        glyph.stopStroke();
         casting.senders().stopGlyphStroke();
     }
 
-    protected boolean isOutsideCircle(float x, float y) {
+    protected boolean isOutsideCircle(final float x, final float y) {
         return x * x + y * y > DRAWING_RADIUS_2;
     }
 
     @Nullable
-    protected GlyphNode selectNodeAt(GlyphNode[] nodes, float x, float y) {
-        for (GlyphNode node : nodes) {
-            Vec2 point = node.getPoint();
-            float deltaX = point.x - x;
-            float deltaY = point.y - y;
+    protected GlyphNode selectNodeAt(final GlyphNode[] nodes, final float x, final float y) {
+        for (final GlyphNode node : nodes) {
+            final Vec2 point = node.getPoint();
+            final float deltaX = point.x - x;
+            final float deltaY = point.y - y;
             if (deltaX * deltaX + deltaY * deltaY < SELECT_DISTANCE_2) {
                 return node;
             }
@@ -110,16 +110,16 @@ abstract class DrawGlyph implements DrawingInputState {
     }
 
     static final class OutsideCircle extends DrawGlyph {
-        OutsideCircle(ClientDrawingGlyph glyph, GlyphPlane plane) {
+        OutsideCircle(final ClientDrawingGlyph glyph, final GlyphPlane plane) {
             super(glyph, plane);
         }
 
         @Override
-        protected DrawingInputState tickDraw(ClientCastingDrawing casting, float x, float y) {
-            GlyphNode node = this.selectNodeAt(GlyphNode.CIRCUMFERENCE, x, y);
+        protected DrawingInputState tickDraw(final ClientCastingDrawing casting, final float x, final float y) {
+            final GlyphNode node = selectNodeAt(GlyphNode.CIRCUMFERENCE, x, y);
             if (node != null) {
-                this.startStroke(casting, node);
-                return new Line(this.glyph, this.plane, node);
+                startStroke(casting, node);
+                return new Line(glyph, plane, node);
             }
 
             return this;
@@ -130,41 +130,41 @@ abstract class DrawGlyph implements DrawingInputState {
         private final GlyphNode fromNode;
         private final GlyphNode[] connectedNodes;
 
-        Line(ClientDrawingGlyph glyph, GlyphPlane plane, GlyphNode fromNode) {
+        Line(final ClientDrawingGlyph glyph, final GlyphPlane plane, final GlyphNode fromNode) {
             super(glyph, plane);
             this.fromNode = fromNode;
-            this.connectedNodes = GlyphEdge.getConnectedNodesTo(fromNode);
+            connectedNodes = GlyphEdge.getConnectedNodesTo(fromNode);
         }
 
         @Override
-        protected DrawingInputState tickDraw(ClientCastingDrawing casting, float x, float y) {
-            if (this.isOutsideCircle(x, y)) {
-                this.stopStroke(casting);
-                return new OutsideCircle(this.glyph, this.plane);
+        protected DrawingInputState tickDraw(final ClientCastingDrawing casting, final float x, final float y) {
+            if (isOutsideCircle(x, y)) {
+                stopStroke(casting);
+                return new OutsideCircle(glyph, plane);
             }
 
-            GlyphNode toNode = this.selectNodeAt(this.connectedNodes, x, y);
+            final GlyphNode toNode = selectNodeAt(connectedNodes, x, y);
             if (toNode != null) {
-                this.stopStroke(casting);
-                return this.selectNode(casting, toNode);
+                stopStroke(casting);
+                return selectNode(casting, toNode);
             } else {
                 return this;
             }
         }
 
-        private DrawGlyph selectNode(ClientCastingDrawing casting, GlyphNode toNode) {
-            GlyphEdge edge = GlyphEdge.between(this.fromNode, toNode);
+        private DrawGlyph selectNode(final ClientCastingDrawing casting, final GlyphNode toNode) {
+            final GlyphEdge edge = GlyphEdge.between(fromNode, toNode);
             if (edge == null) {
-                throw new IllegalStateException("missing edge between " + this.fromNode + " to " + toNode);
+                throw new IllegalStateException("missing edge between " + fromNode + " to " + toNode);
             }
 
-            this.putEdge(casting, edge);
+            putEdge(casting, edge);
 
             if (toNode.isAtCircumference()) {
-                return new OutsideCircle(this.glyph, this.plane);
+                return new OutsideCircle(glyph, plane);
             } else {
-                this.startStroke(casting, toNode);
-                return new Line(this.glyph, this.plane, toNode);
+                startStroke(casting, toNode);
+                return new Line(glyph, plane, toNode);
             }
         }
     }

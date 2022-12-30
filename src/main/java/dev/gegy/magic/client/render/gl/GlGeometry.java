@@ -14,8 +14,8 @@ public final class GlGeometry implements GlBindableObject {
     private final Binding binding = new Binding();
 
     private GlGeometry(
-            GlBuffer vertexBuffer, RenderSystem.AutoStorageIndexBuffer indexBuffer, GlVertexArray vertexArray,
-            int drawMode, int vertexCount
+            final GlBuffer vertexBuffer, final RenderSystem.AutoStorageIndexBuffer indexBuffer, final GlVertexArray vertexArray,
+            final int drawMode, final int vertexCount
     ) {
         this.vertexBuffer = vertexBuffer;
         this.indexBuffer = indexBuffer;
@@ -24,18 +24,18 @@ public final class GlGeometry implements GlBindableObject {
         this.vertexCount = vertexCount;
     }
 
-    public static GlGeometry upload(BufferBuilder.RenderedBuffer buffer) {
-        var parameters = buffer.drawState();
+    public static GlGeometry upload(final BufferBuilder.RenderedBuffer buffer) {
+        final BufferBuilder.DrawState parameters = buffer.drawState();
 
-        int drawMode = parameters.mode().asGLMode;
-        int vertexCount = parameters.indexCount();
+        final int drawMode = parameters.mode().asGLMode;
+        final int vertexCount = parameters.indexCount();
 
-        var vertexArray = GlVertexArray.generate();
-        var vertexBuffer = GlBuffer.generate(GlBuffer.Target.VERTICES, GlBuffer.Usage.STATIC_DRAW);
-        var indexBuffer = RenderSystem.getSequentialBuffer(parameters.mode());
+        final GlVertexArray vertexArray = GlVertexArray.generate();
+        final GlBuffer vertexBuffer = GlBuffer.generate(GlBuffer.Target.VERTICES, GlBuffer.Usage.STATIC_DRAW);
+        final RenderSystem.AutoStorageIndexBuffer indexBuffer = RenderSystem.getSequentialBuffer(parameters.mode());
 
-        try (var vertexArrayBinding = vertexArray.bind()) {
-            var vertexBufferBinding = vertexBuffer.bind();
+        try (final GlVertexArray.Binding vertexArrayBinding = vertexArray.bind()) {
+            final GlBuffer.Binding vertexBufferBinding = vertexBuffer.bind();
             vertexBufferBinding.put(buffer.vertexBuffer());
             indexBuffer.bind(vertexCount);
 
@@ -47,15 +47,15 @@ public final class GlGeometry implements GlBindableObject {
 
     @Override
     public Binding bind() {
-        var binding = this.binding;
+        final Binding binding = this.binding;
         binding.bind();
         return binding;
     }
 
     @Override
     public void delete() {
-        this.vertexBuffer.delete();
-        this.vertexArray.delete();
+        vertexBuffer.delete();
+        vertexArray.delete();
     }
 
     public final class Binding implements GlBinding {
@@ -65,16 +65,16 @@ public final class GlGeometry implements GlBindableObject {
         }
 
         private void bind() {
-            this.vertexArrayBinding = GlGeometry.this.vertexArray.bind();
+            vertexArrayBinding = vertexArray.bind();
         }
 
         public void draw() {
-            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, GlGeometry.this.indexBuffer.type().asGLType);
+            RenderSystem.drawElements(drawMode, vertexCount, indexBuffer.type().asGLType);
         }
 
         @Override
         public void unbind() {
-            var vertexArrayBinding = this.vertexArrayBinding;
+            final GlVertexArray.Binding vertexArrayBinding = this.vertexArrayBinding;
             if (vertexArrayBinding == null) {
                 throw new IllegalStateException("cannot unbind geometry - it is already unbound!");
             }

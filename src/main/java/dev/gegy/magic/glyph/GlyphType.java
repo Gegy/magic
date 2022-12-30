@@ -34,7 +34,7 @@ public final class GlyphType {
     private final GlyphStyle style;
     private final CastFunction castFunction;
 
-    private GlyphType(GlyphStyle style, CastFunction castFunction) {
+    private GlyphType(final GlyphStyle style, final CastFunction castFunction) {
         this.style = style;
         this.castFunction = castFunction;
     }
@@ -46,16 +46,16 @@ public final class GlyphType {
         return new Builder();
     }
 
-    private static GlyphType register(String id, Builder glyph) {
+    private static GlyphType register(final String id, final Builder glyph) {
         return Registry.register(REGISTRY, Magic.identifier(id), glyph.build());
     }
 
     public GlyphStyle style() {
-        return this.style;
+        return style;
     }
 
     public CastFunction castFunction() {
-        return this.castFunction;
+        return castFunction;
     }
 
     public static final class Builder {
@@ -65,20 +65,20 @@ public final class GlyphType {
         private Builder() {
         }
 
-        public Builder style(GlyphStyle style) {
+        public Builder style(final GlyphStyle style) {
             this.style = style;
             return this;
         }
 
-        public Builder casts(CastFunction castFunction) {
+        public Builder casts(final CastFunction castFunction) {
             this.castFunction = castFunction;
             return this;
         }
 
         public GlyphType build() {
             return new GlyphType(
-                    Preconditions.checkNotNull(this.style, "style not set"),
-                    Preconditions.checkNotNull(this.castFunction, "casting build function not set")
+                    Preconditions.checkNotNull(style, "style not set"),
+                    Preconditions.checkNotNull(castFunction, "casting build function not set")
             );
         }
     }

@@ -4,7 +4,7 @@ import dev.gegy.magic.client.effect.Effect;
 import dev.gegy.magic.client.effect.EffectType;
 import dev.gegy.magic.client.glyph.spell.Spell;
 
-public final record PreparedSpellEffect(Spell spell) implements Effect {
+public record PreparedSpellEffect(Spell spell) implements Effect {
     public static final EffectType<PreparedSpellEffect> TYPE = EffectType.create();
 
     @Override

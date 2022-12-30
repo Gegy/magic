@@ -13,23 +13,23 @@ import java.io.IOException;
 public final class TeleportEffectSystem implements EffectSystem {
     private final TeleportEffectRenderer renderer = new TeleportEffectRenderer();
 
-    public static TeleportEffectSystem create(ResourceManager resources) throws IOException {
+    public static TeleportEffectSystem create(final ResourceManager resources) throws IOException {
         return new TeleportEffectSystem();
     }
 
     @Override
-    public void render(Minecraft client, WorldRenderContext context, RenderTarget targetFramebuffer, EffectSelector effects) {
+    public void render(final Minecraft client, final WorldRenderContext context, final RenderTarget targetFramebuffer, final EffectSelector effects) {
         RenderSystem.disableCull();
 
-        for (var effect : effects.select(TeleportEffect.TYPE)) {
-            this.renderer.render(client, context, effect);
+        for (final TeleportEffect effect : effects.select(TeleportEffect.TYPE)) {
+            renderer.render(client, context, effect);
         }
 
         RenderSystem.enableCull();
     }
 
     @Override
-    public void tick(Minecraft client, EffectSelector effects) {
+    public void tick(final Minecraft client, final EffectSelector effects) {
     }
 
     @Override

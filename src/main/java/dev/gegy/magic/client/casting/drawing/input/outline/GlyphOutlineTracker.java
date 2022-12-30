@@ -23,18 +23,18 @@ public final class GlyphOutlineTracker {
     private final Vector3f strokeDirection = new Vector3f();
     private final Vector3f segmentDirection = new Vector3f();
 
-    public GlyphOutlineTracker(int sampleBufferSize) {
-        this.samples = new Vector3f[sampleBufferSize];
+    public GlyphOutlineTracker(final int sampleBufferSize) {
+        samples = new Vector3f[sampleBufferSize];
     }
 
     @Nullable
-    public GlyphOutline pushSample(Vec3 look) {
-        Vector3f sample = look.toVector3f();
+    public GlyphOutline pushSample(final Vec3 look) {
+        final Vector3f sample = look.toVector3f();
 
-        Vector3f[] samples = this.samples;
-        int sampleBufferSize = samples.length;
+        final Vector3f[] samples = this.samples;
+        final int sampleBufferSize = samples.length;
 
-        Vector3f lastSample = samples[sampleBufferSize - 1];
+        final Vector3f lastSample = samples[sampleBufferSize - 1];
         if (lastSample == null) {
             samples[sampleBufferSize - 1] = sample;
             return null;
@@ -50,14 +50,14 @@ public final class GlyphOutlineTracker {
 
         // push the sample buffer back and test for potential loop closes
         Vector3f strokeDirection = null;
-        Vector3f segmentDirection = this.segmentDirection;
+        final Vector3f segmentDirection = this.segmentDirection;
 
         for (int i = 0; i < sampleBufferSize - 1; i++) {
-            Vector3f start = samples[i];
-            Vector3f end = samples[i + 1];
+            final Vector3f start = samples[i];
+            final Vector3f end = samples[i + 1];
 
-            boolean isSegment = start != null && end != null && start != end;
-            if (isSegment && this.canJoinLoopAt(sample, start)) {
+            final boolean isSegment = start != null && end != null && start != end;
+            if (isSegment && canJoinLoopAt(sample, start)) {
                 setSegmentDirection(segmentDirection, start, end);
 
                 // lazily compute the stroke direction
@@ -69,9 +69,9 @@ public final class GlyphOutlineTracker {
                 // ensure the stroke is going in somewhat similar direction to the compared segment
                 if (strokeDirection.dot(segmentDirection) >= 0.0) {
                     // we have a potential loop close! try solve an outline from here to the most recent sample
-                    GlyphOutline outline = this.trySolveOutlineFrom(i);
+                    final GlyphOutline outline = trySolveOutlineFrom(i);
                     if (outline != null) {
-                        this.clearSampleBuffer();
+                        clearSampleBuffer();
                         return outline;
                     }
                 }
@@ -88,35 +88,35 @@ public final class GlyphOutlineTracker {
     }
 
     private void clearSampleBuffer() {
-        Arrays.fill(this.samples, null);
+        Arrays.fill(samples, null);
     }
 
-    private boolean canJoinLoopAt(Vector3f point, Vector3f to) {
+    private boolean canJoinLoopAt(final Vector3f point, final Vector3f to) {
         return point.distanceSquared(to) < LOOP_CLOSE_DISTANCE_2;
     }
 
     @Nullable
-    private GlyphOutline trySolveOutlineFrom(int fromIdx) {
-        Vector3f[] samples = this.samples;
-        List<Vector3f> points = new ArrayList<>(samples.length - fromIdx);
+    private GlyphOutline trySolveOutlineFrom(final int fromIdx) {
+        final Vector3f[] samples = this.samples;
+        final List<Vector3f> points = new ArrayList<>(samples.length - fromIdx);
 
         Vector3f lastPoint = null;
         for (int i = fromIdx; i < samples.length; i++) {
-            Vector3f point = samples[i];
+            final Vector3f point = samples[i];
             if (point != lastPoint) {
                 points.add(point);
                 lastPoint = point;
             }
         }
 
-        return this.solver.trySolve(points);
+        return solver.trySolve(points);
     }
 
-    private static void setSegmentDirection(Vector3f result, Vector3f from, Vector3f to) {
+    private static void setSegmentDirection(final Vector3f result, final Vector3f from, final Vector3f to) {
         to.sub(from, result).normalize();
     }
 
-    private static boolean isValidSegment(Vector3f from, Vector3f to) {
+    private static boolean isValidSegment(final Vector3f from, final Vector3f to) {
         return to.distanceSquared(from) >= MIN_SEGMENT_LENGTH_2;
     }
 }

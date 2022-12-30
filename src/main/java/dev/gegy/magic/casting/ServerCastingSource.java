@@ -18,79 +18,79 @@ public final class ServerCastingSource implements AutoCloseable {
 
     private final NetworkAddressing<ServerPlayer> addressing;
 
-    public ServerCastingSource(ServerPlayer player) {
+    public ServerCastingSource(final ServerPlayer player) {
         this.player = player;
 
-        this.addressing = NetworkAddressing.trackingClients(player);
+        addressing = NetworkAddressing.trackingClients(player);
     }
 
     public ServerPlayer player() {
-        return this.player;
+        return player;
     }
 
-    public void setCasting(@Nullable ServerCasting.Factory factory) {
+    public void setCasting(@Nullable final ServerCasting.Factory factory) {
         if (factory != null) {
-            var casting = factory.build(this.player, this.createCastingBuilder());
+            final ServerCasting casting = factory.build(player, createCastingBuilder());
             this.casting = casting;
-            this.notifyClientCasting(casting.createClientCasting());
+            notifyClientCasting(casting.createClientCasting());
         } else {
-            this.casting = null;
-            this.notifyClientCasting(null);
+            casting = null;
+            notifyClientCasting(null);
         }
     }
 
     private ServerCastingBuilder createCastingBuilder() {
-        var addressing = this.addressing;
-        var player = this.player;
+        final NetworkAddressing<ServerPlayer> addressing = this.addressing;
+        final ServerPlayer player = this.player;
 
-        var eventSender = addressing.sender(CastingEventS2CPacket::sendTo);
+        final NetworkSender<FriendlyByteBuf> eventSender = addressing.sender(CastingEventS2CPacket::sendTo);
         return new ServerCastingBuilder(new EventSenderFactory() {
             @Override
-            public <T> NetworkSender<T> create(CastingEventSpec<T> spec) {
+            public <T> NetworkSender<T> create(final CastingEventSpec<T> spec) {
                 return eventSender.map(event -> CastingEventS2CPacket.create(player, spec, event));
             }
         });
     }
 
-    private void notifyClientCasting(@Nullable ConfiguredClientCasting<?> clientCasting) {
-        this.addressing.sender(SetCastingS2CPacket::sendTo)
-                .broadcastAndSend(SetCastingS2CPacket.create(this.player, clientCasting));
+    private void notifyClientCasting(@Nullable final ConfiguredClientCasting<?> clientCasting) {
+        addressing.sender(SetCastingS2CPacket::sendTo)
+                .broadcastAndSend(SetCastingS2CPacket.create(player, clientCasting));
     }
 
     public void tick() {
-        var casting = this.casting;
+        final ServerCasting casting = this.casting;
         if (casting != null) {
-            this.tickCasting(casting);
+            tickCasting(casting);
         }
     }
 
-    private void tickCasting(ServerCasting casting) {
-        var nextCasting = casting.tick();
+    private void tickCasting(final ServerCasting casting) {
+        final ServerCasting.Factory nextCasting = casting.tick();
         if (nextCasting != null) {
-            this.setCasting(nextCasting);
+            setCasting(nextCasting);
         }
     }
 
-    public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
-        var casting = this.casting;
+    public void handleEvent(final ResourceLocation id, final FriendlyByteBuf buf) {
+        final ServerCasting casting = this.casting;
         if (casting != null) {
             casting.handleEvent(id, buf);
         }
     }
 
-    public void onStartTracking(ServerPlayer player) {
-        var casting = this.casting;
+    public void onStartTracking(final ServerPlayer player) {
+        final ServerCasting casting = this.casting;
         if (casting != null) {
-            var packet = SetCastingS2CPacket.create(this.player, casting.createClientCasting());
+            final FriendlyByteBuf packet = SetCastingS2CPacket.create(this.player, casting.createClientCasting());
             SetCastingS2CPacket.sendTo(player, packet);
         }
     }
 
-    public void onStopTracking(ServerPlayer player) {
+    public void onStopTracking(final ServerPlayer player) {
     }
 
     @Override
     public void close() {
-        this.setCasting(null);
+        setCasting(null);
     }
 }

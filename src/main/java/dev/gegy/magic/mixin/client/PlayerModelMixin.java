@@ -1,10 +1,12 @@
 package dev.gegy.magic.mixin.client;
 
 import dev.gegy.magic.client.animator.CastingAnimatableEntity;
+import dev.gegy.magic.client.animator.CastingAnimator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(PlayerModel.class)
 public abstract class PlayerModelMixin<T extends LivingEntity> extends HumanoidModel<T> {
-    private PlayerModelMixin(ModelPart root) {
+    private PlayerModelMixin(final ModelPart root) {
         super(root);
     }
 
@@ -26,16 +28,16 @@ public abstract class PlayerModelMixin<T extends LivingEntity> extends HumanoidM
                     shift = At.Shift.AFTER
             )
     )
-    private void setAngles(T entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
-        var client = Minecraft.getInstance();
-        var cameraEntity = client.cameraEntity != null ? client.cameraEntity : client.player;
+    private void setAngles(final T entity, final float limbAngle, final float limbDistance, final float animationProgress, final float headYaw, final float headPitch, final CallbackInfo ci) {
+        final Minecraft client = Minecraft.getInstance();
+        final Entity cameraEntity = client.cameraEntity != null ? client.cameraEntity : client.player;
         if (cameraEntity == entity && client.options.getCameraType().isFirstPerson()) {
             return;
         }
 
         if (entity instanceof CastingAnimatableEntity animatable) {
-            var animator = animatable.getCastingAnimator();
-            animator.applyToModel((Player) entity, this.leftArm, this.rightArm, client.getFrameTime());
+            final CastingAnimator animator = animatable.getCastingAnimator();
+            animator.applyToModel((Player) entity, leftArm, rightArm, client.getFrameTime());
         }
     }
 }

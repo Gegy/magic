@@ -9,6 +9,8 @@ import dev.gegy.magic.client.casting.ClientCasting;
 import dev.gegy.magic.client.casting.ClientCastingBuilder;
 import dev.gegy.magic.client.effect.casting.spell.SpellEffects;
 import dev.gegy.magic.client.effect.casting.spell.teleport.TeleportEffect;
+import dev.gegy.magic.client.glyph.spell.Spell;
+import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.network.NetworkSender;
 import net.minecraft.world.entity.player.Player;
@@ -24,28 +26,28 @@ public final class ClientCastingTeleport {
 
     private final EventSenders eventSenders;
 
-    private ClientCastingTeleport(TeleportEffect effect, Map<UUID, TeleportTargetSymbol> targets, EventSenders eventSenders) {
+    private ClientCastingTeleport(final TeleportEffect effect, final Map<UUID, TeleportTargetSymbol> targets, final EventSenders eventSenders) {
         this.effect = effect;
         this.targets = targets;
         this.eventSenders = eventSenders;
     }
 
-    public static ClientCasting build(Player player, TeleportParameters parameters, ClientCastingBuilder casting) {
-        var spell = parameters.spell()
+    public static ClientCasting build(final Player player, final TeleportParameters parameters, final ClientCastingBuilder casting) {
+        final Spell spell = parameters.spell()
                 .blendOrCreate(player, casting, SpellTransformType.FIXED);
 
-        var sourceGlyph = spell.glyphs().get(0);
+        final SpellCastingGlyph sourceGlyph = spell.glyphs().get(0);
 
-        var effect = casting.attachEffect(TeleportEffect.create(
+        final TeleportEffect effect = casting.attachEffect(TeleportEffect.create(
                 sourceGlyph,
                 parameters.targets().values(),
                 player.level.getGameTime()
         ));
         SpellEffects.attach(spell, casting);
 
-        var eventSenders = EventSenders.register(casting);
+        final EventSenders eventSenders = EventSenders.register(casting);
 
-        var teleport = new ClientCastingTeleport(effect, parameters.targets(), eventSenders);
+        final ClientCastingTeleport teleport = new ClientCastingTeleport(effect, parameters.targets(), eventSenders);
 
         casting.registerTicker(teleport::tick);
 
@@ -56,12 +58,12 @@ public final class ClientCastingTeleport {
         return casting.build();
     }
 
-    private void bindInput(Player player, ClientCastingBuilder casting) {
-        var input = new TeleportInput();
+    private void bindInput(final Player player, final ClientCastingBuilder casting) {
+        final TeleportInput input = new TeleportInput();
         casting.registerTicker(() -> {
-            var target = input.tick(this, player);
+            final TeleportTarget target = input.tick(this, player);
             if (target != null) {
-                this.selectTarget(target);
+                selectTarget(target);
             }
         });
     }
@@ -70,20 +72,20 @@ public final class ClientCastingTeleport {
 
     }
 
-    private void selectTarget(TeleportTarget target) {
-        this.selectedTarget = target;
-        this.eventSenders.selectTarget(target);
+    private void selectTarget(final TeleportTarget target) {
+        selectedTarget = target;
+        eventSenders.selectTarget(target);
     }
 
-    private static record EventSenders(NetworkSender<SelectTeleportTarget> selectTarget) {
-        private static EventSenders register(ClientCastingBuilder casting) {
+    private record EventSenders(NetworkSender<SelectTeleportTarget> selectTarget) {
+        private static EventSenders register(final ClientCastingBuilder casting) {
             return new EventSenders(
                     casting.registerOutboundEvent(SelectTeleportTarget.SPEC)
             );
         }
 
-        public void selectTarget(TeleportTarget target) {
-            this.selectTarget.send(new SelectTeleportTarget(target.id()));
+        public void selectTarget(final TeleportTarget target) {
+            selectTarget.send(new SelectTeleportTarget(target.id()));
         }
     }
 }

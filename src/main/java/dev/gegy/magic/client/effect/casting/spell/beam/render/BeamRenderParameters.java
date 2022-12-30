@@ -25,54 +25,54 @@ public final class BeamRenderParameters {
 
     private final GlyphPlane plane = new GlyphPlane();
 
-    public void set(BeamEffect beam, WorldRenderContext context) {
-        float tickDelta = context.tickDelta();
+    public void set(final BeamEffect beam, final WorldRenderContext context) {
+        final float tickDelta = context.tickDelta();
 
-        var spell = beam.spell();
-        var plane = this.plane;
+        final Spell spell = beam.spell();
+        final GlyphPlane plane = this.plane;
         plane.set(spell.transform(), tickDelta);
 
-        float length = beam.getLength(context.tickDelta());
+        final float length = beam.getLength(context.tickDelta());
         this.length = length;
 
-        Matrix4f viewProject = this.computeViewProject(spell, context);
+        final Matrix4f viewProject = computeViewProject(spell, context);
 
-        Matrix4f glyphTransform = plane.planeToWorld();
+        final Matrix4f glyphTransform = plane.planeToWorld();
 
-        this.modelViewProject.set(viewProject).mul(glyphTransform);
+        modelViewProject.set(viewProject).mul(glyphTransform);
 
-        this.setCloudModelViewProject(viewProject, glyphTransform);
-        this.setImpactModelViewProject(context, viewProject, glyphTransform, length);
+        setCloudModelViewProject(viewProject, glyphTransform);
+        setImpactModelViewProject(context, viewProject, glyphTransform, length);
 
-        this.red = beam.color().red();
-        this.green = beam.color().green();
-        this.blue = beam.color().blue();
+        red = beam.color().red();
+        green = beam.color().green();
+        blue = beam.color().blue();
 
-        float glyphTime = context.world().getGameTime() % DAY_LENGTH;
-        this.time = (glyphTime + tickDelta) / 20.0F;
+        final float glyphTime = context.world().getGameTime() % DAY_LENGTH;
+        time = (glyphTime + tickDelta) / 20.0f;
     }
 
-    private void setCloudModelViewProject(Matrix4f viewProject, Matrix4f spellTransform) {
-        this.cloudModelViewProject.set(viewProject)
+    private void setCloudModelViewProject(final Matrix4f viewProject, final Matrix4f spellTransform) {
+        cloudModelViewProject.set(viewProject)
                 .mul(spellTransform)
-                .translate(0.0F, 0.0F, 0.8F);
+                .translate(0.0f, 0.0f, 0.8f);
     }
 
-    private void setImpactModelViewProject(WorldRenderContext context, Matrix4f viewProject, Matrix4f spellTransform, float length) {
-        Vector4f point = this.endPoint.set(0.0F, 0.0F, length, 1.0F).mul(spellTransform);
+    private void setImpactModelViewProject(final WorldRenderContext context, final Matrix4f viewProject, final Matrix4f spellTransform, final float length) {
+        final Vector4f point = endPoint.set(0.0f, 0.0f, length, 1.0f).mul(spellTransform);
 
-        this.impactModelViewProject.set(viewProject)
+        impactModelViewProject.set(viewProject)
                 .translate(point.x(), point.y(), point.z())
                 .rotate(context.camera().rotation());
     }
 
-    private Matrix4f computeViewProject(Spell spell, WorldRenderContext context) {
-        Matrix4f modelMatrix = context.matrixStack().last().pose();
-        Vec3 cameraPos = context.camera().getPosition();
+    private Matrix4f computeViewProject(final Spell spell, final WorldRenderContext context) {
+        final Matrix4f modelMatrix = context.matrixStack().last().pose();
+        final Vec3 cameraPos = context.camera().getPosition();
 
-        Vec3 sourcePos = spell.source().getPosition(context.tickDelta());
+        final Vec3 sourcePos = spell.source().getPosition(context.tickDelta());
 
-        return this.viewProject.set(context.projectionMatrix())
+        return viewProject.set(context.projectionMatrix())
                 .mul(modelMatrix)
                 .translate(
                         (float) (sourcePos.x - cameraPos.x),

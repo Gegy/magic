@@ -1,5 +1,6 @@
 package dev.gegy.magic.client.effect;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.effect.casting.spell.beam.BeamEffectSystem;
 import dev.gegy.magic.client.effect.casting.spell.teleport.TeleportEffectSystem;
@@ -32,7 +33,7 @@ public final class EffectManager {
             throw new IllegalStateException("effect render manager already initialized");
         }
 
-        EffectManager instance = new EffectManager();
+        final EffectManager instance = new EffectManager();
         EffectManager.instance = instance;
 
         ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
@@ -42,7 +43,7 @@ public final class EffectManager {
             }
 
             @Override
-            public void onResourceManagerReload(ResourceManager resources) {
+            public void onResourceManagerReload(final ResourceManager resources) {
                 instance.load(resources);
             }
         });
@@ -52,60 +53,60 @@ public final class EffectManager {
     }
 
     public static EffectManager get() {
-        EffectManager instance = EffectManager.instance;
+        final EffectManager instance = EffectManager.instance;
         if (instance == null) {
             throw new IllegalStateException("effect manager not yet initialized");
         }
         return instance;
     }
 
-    public void add(Effect effect) {
-        this.effects.add(effect);
+    public void add(final Effect effect) {
+        effects.add(effect);
     }
 
-    public boolean remove(Effect effect) {
-        return this.effects.remove(effect);
+    public boolean remove(final Effect effect) {
+        return effects.remove(effect);
     }
 
-    private void render(WorldRenderContext context) {
+    private void render(final WorldRenderContext context) {
         if (context.world() != null) {
             // TODO: handle fabulous framebuffer
-            var framebuffer = CLIENT.getMainRenderTarget();
-            for (var system : this.effectSystems) {
-                system.render(CLIENT, context, framebuffer, this.effects.selector());
+            final RenderTarget framebuffer = CLIENT.getMainRenderTarget();
+            for (final EffectSystem system : effectSystems) {
+                system.render(CLIENT, context, framebuffer, effects.selector());
             }
         }
     }
 
-    private void tick(Minecraft client) {
+    private void tick(final Minecraft client) {
         if (client.level != null) {
-            for (var system : this.effectSystems) {
-                system.tick(client, this.effects.selector());
+            for (final EffectSystem system : effectSystems) {
+                system.tick(client, effects.selector());
             }
         }
     }
 
-    private void load(ResourceManager resources) {
-        this.close();
+    private void load(final ResourceManager resources) {
+        close();
 
-        this.tryLoadSystem(resources, GlyphEffectSystem::create);
-        this.tryLoadSystem(resources, BeamEffectSystem::create);
-        this.tryLoadSystem(resources, TeleportEffectSystem::create);
+        tryLoadSystem(resources, GlyphEffectSystem::create);
+        tryLoadSystem(resources, BeamEffectSystem::create);
+        tryLoadSystem(resources, TeleportEffectSystem::create);
     }
 
-    private void tryLoadSystem(ResourceManager resources, EffectSystem.Factory<?> factory) {
+    private void tryLoadSystem(final ResourceManager resources, final EffectSystem.Factory<?> factory) {
         try {
-            var system = factory.create(resources);
-            this.effectSystems.add(system);
-        } catch (IOException e) {
+            final EffectSystem system = factory.create(resources);
+            effectSystems.add(system);
+        } catch (final IOException e) {
             Magic.LOGGER.error("Failed to create effect system with {}", factory, e);
         }
     }
 
     private void close() {
-        for (var system : this.effectSystems) {
+        for (final EffectSystem system : effectSystems) {
             system.close();
         }
-        this.effectSystems.clear();
+        effectSystems.clear();
     }
 }

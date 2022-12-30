@@ -6,7 +6,7 @@ import org.jetbrains.annotations.Nullable;
 
 public final class TeleportInput {
     @Nullable
-    public TeleportTarget tick(ClientCastingTeleport casting, Player player) {
+    public TeleportTarget tick(final ClientCastingTeleport casting, final Player player) {
         // TODO: implement teleportation input
         return null;
     }

@@ -11,21 +11,21 @@ final class GlyphStrokeTracker {
     private float prevToX;
     private float prevToY;
 
-    public GlyphStrokeTracker(float fromX, float fromY) {
-        this.fromX = this.toX = this.prevToX = fromX;
-        this.fromY = this.toY = this.prevToY = fromY;
+    public GlyphStrokeTracker(final float fromX, final float fromY) {
+        this.fromX = toX = prevToX = fromX;
+        this.fromY = toY = prevToY = fromY;
     }
 
-    public void tick(float x, float y) {
-        this.prevToX = this.toX;
-        this.prevToY = this.toY;
-        this.toX = x;
-        this.toY = y;
+    public void tick(final float x, final float y) {
+        prevToX = toX;
+        prevToY = toY;
+        toX = x;
+        toY = y;
     }
 
-    public GlyphStroke resolve(float tickDelta) {
-        float toX = Mth.lerp(tickDelta, this.prevToX, this.toX);
-        float toY = Mth.lerp(tickDelta, this.prevToY, this.toY);
-        return new GlyphStroke(this.fromX, this.fromY, toX, toY);
+    public GlyphStroke resolve(final float tickDelta) {
+        final float toX = Mth.lerp(tickDelta, prevToX, this.toX);
+        final float toY = Mth.lerp(tickDelta, prevToY, this.toY);
+        return new GlyphStroke(fromX, fromY, toX, toY);
     }
 }

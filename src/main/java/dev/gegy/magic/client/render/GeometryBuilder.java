@@ -15,7 +15,7 @@ public final class GeometryBuilder {
 
     public static final VertexFormat POSITION_2F = new VertexFormat(ImmutableMap.of("Position", POSITION_2F_ELEMENT));
 
-    public static GlGeometry uploadQuadPos2f(float min, float max) {
+    public static GlGeometry uploadQuadPos2f(final float min, final float max) {
         return upload(builder -> {
             builder.begin(VertexFormat.Mode.QUADS, GeometryBuilder.POSITION_2F);
             vertex2f(builder, min, min);
@@ -25,13 +25,13 @@ public final class GeometryBuilder {
         });
     }
 
-    public static GlGeometry upload(Consumer<BufferBuilder> builderFunction) {
-        var builder = new BufferBuilder(64);
+    public static GlGeometry upload(final Consumer<BufferBuilder> builderFunction) {
+        final BufferBuilder builder = new BufferBuilder(64);
         builderFunction.accept(builder);
         return GlGeometry.upload(builder.end());
     }
 
-    public static void vertex2f(BufferVertexConsumer builder, float x, float y) {
+    public static void vertex2f(final BufferVertexConsumer builder, final float x, final float y) {
         Preconditions.checkState(builder.currentElement() == POSITION_2F_ELEMENT, "invalid element");
         builder.putFloat(0, x);
         builder.putFloat(4, y);

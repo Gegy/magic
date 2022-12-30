@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.render.GeometryBuilder;
+import dev.gegy.magic.client.render.gl.GlBinding;
 import dev.gegy.magic.client.render.gl.GlGeometry;
 import net.minecraft.server.packs.resources.ResourceManager;
 
@@ -29,10 +30,10 @@ public final class BeamEffectRenderer implements AutoCloseable {
     private final Batch batch = new Batch();
 
     private BeamEffectRenderer(
-            BeamWorldShader worldShader, BeamEndWorldShader cloudWorldShader, BeamEndWorldShader impactWorldShader,
-            GlGeometry crossGeometry, GlGeometry endGeometry, GlGeometry textureGeometry,
-            EffectTexture<BeamRenderParameters> texture,
-            EffectTexture<BeamRenderParameters> cloudTexture, EffectTexture<BeamRenderParameters> impactTexture
+            final BeamWorldShader worldShader, final BeamEndWorldShader cloudWorldShader, final BeamEndWorldShader impactWorldShader,
+            final GlGeometry crossGeometry, final GlGeometry endGeometry, final GlGeometry textureGeometry,
+            final EffectTexture<BeamRenderParameters> texture,
+            final EffectTexture<BeamRenderParameters> cloudTexture, final EffectTexture<BeamRenderParameters> impactTexture
     ) {
         this.worldShader = worldShader;
         this.cloudWorldShader = cloudWorldShader;
@@ -45,22 +46,22 @@ public final class BeamEffectRenderer implements AutoCloseable {
         this.impactTexture = impactTexture;
     }
 
-    public static BeamEffectRenderer create(ResourceManager resources) throws IOException {
-        var worldShader = BeamWorldShader.create(resources);
-        var cloudWorldShader = BeamEndWorldShader.create(resources, parameters -> parameters.cloudModelViewProject);
-        var impactWorldShader = BeamEndWorldShader.create(resources, parameters -> parameters.impactModelViewProject);
+    public static BeamEffectRenderer create(final ResourceManager resources) throws IOException {
+        final BeamWorldShader worldShader = BeamWorldShader.create(resources);
+        final BeamEndWorldShader cloudWorldShader = BeamEndWorldShader.create(resources, parameters -> parameters.cloudModelViewProject);
+        final BeamEndWorldShader impactWorldShader = BeamEndWorldShader.create(resources, parameters -> parameters.impactModelViewProject);
 
-        var textureShader = BeamTextureShader.create(resources);
-        var cloudTextureShader = BeamTextureShader.createCloud(resources);
-        var impactTextureShader = BeamTextureShader.createImpact(resources);
+        final BeamTextureShader textureShader = BeamTextureShader.create(resources);
+        final BeamTextureShader cloudTextureShader = BeamTextureShader.createCloud(resources);
+        final BeamTextureShader impactTextureShader = BeamTextureShader.createImpact(resources);
 
-        var crossGeometry = uploadCrossGeometry();
-        var endGeometry = GeometryBuilder.uploadQuadPos2f(-1.0F, 1.0F);
-        var textureGeometry = GeometryBuilder.uploadQuadPos2f(0.0F, 1.0F);
+        final GlGeometry crossGeometry = uploadCrossGeometry();
+        final GlGeometry endGeometry = GeometryBuilder.uploadQuadPos2f(-1.0f, 1.0f);
+        final GlGeometry textureGeometry = GeometryBuilder.uploadQuadPos2f(0.0f, 1.0f);
 
-        var texture = EffectTexture.create(textureShader, BeamTexture.WIDTH, BeamTexture.HEIGHT);
-        var cloudTexture = EffectTexture.create(cloudTextureShader, BeamTexture.END_SIZE);
-        var impactTexture = EffectTexture.create(impactTextureShader, BeamTexture.END_SIZE);
+        final EffectTexture<BeamRenderParameters> texture = EffectTexture.create(textureShader, BeamTexture.WIDTH, BeamTexture.HEIGHT);
+        final EffectTexture<BeamRenderParameters> cloudTexture = EffectTexture.create(cloudTextureShader, BeamTexture.END_SIZE);
+        final EffectTexture<BeamRenderParameters> impactTexture = EffectTexture.create(impactTextureShader, BeamTexture.END_SIZE);
 
         return new BeamEffectRenderer(
                 worldShader, cloudWorldShader, impactWorldShader,
@@ -71,78 +72,78 @@ public final class BeamEffectRenderer implements AutoCloseable {
 
     private static GlGeometry uploadCrossGeometry() {
         return GeometryBuilder.upload(builder -> {
-            double radius = 0.5;
-            double corner = Math.sqrt((radius * radius) / 2.0);
+            final double radius = 0.5;
+            final double corner = Math.sqrt((radius * radius) / 2.0);
 
             builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-            builder.vertex(-corner, -corner, 0.0).uv(0.0F, 0.0F).endVertex();
-            builder.vertex(-corner, -corner, 1.0).uv(1.0F, 0.0F).endVertex();
-            builder.vertex(corner, corner, 1.0).uv(1.0F, 1.0F).endVertex();
-            builder.vertex(corner, corner, 0.0).uv(0.0F, 1.0F).endVertex();
-            builder.vertex(corner, -corner, 0.0).uv(0.0F, 0.0F).endVertex();
-            builder.vertex(corner, -corner, 1.0).uv(1.0F, 0.0F).endVertex();
-            builder.vertex(-corner, corner, 1.0).uv(1.0F, 1.0F).endVertex();
-            builder.vertex(-corner, corner, 0.0).uv(0.0F, 1.0F).endVertex();
+            builder.vertex(-corner, -corner, 0.0).uv(0.0f, 0.0f).endVertex();
+            builder.vertex(-corner, -corner, 1.0).uv(1.0f, 0.0f).endVertex();
+            builder.vertex(corner, corner, 1.0).uv(1.0f, 1.0f).endVertex();
+            builder.vertex(corner, corner, 0.0).uv(0.0f, 1.0f).endVertex();
+            builder.vertex(corner, -corner, 0.0).uv(0.0f, 0.0f).endVertex();
+            builder.vertex(corner, -corner, 1.0).uv(1.0f, 0.0f).endVertex();
+            builder.vertex(-corner, corner, 1.0).uv(1.0f, 1.0f).endVertex();
+            builder.vertex(-corner, corner, 0.0).uv(0.0f, 1.0f).endVertex();
         });
     }
 
-    public Batch startBatch(RenderTarget target) {
-        var batch = this.batch;
+    public Batch startBatch(final RenderTarget target) {
+        final Batch batch = this.batch;
         batch.start(target);
         return batch;
     }
 
     @Override
     public void close() {
-        this.worldShader.close();
-        this.cloudWorldShader.close();
-        this.impactWorldShader.close();
+        worldShader.close();
+        cloudWorldShader.close();
+        impactWorldShader.close();
 
-        this.crossGeometry.close();
-        this.endGeometry.close();
-        this.textureGeometry.close();
+        crossGeometry.close();
+        endGeometry.close();
+        textureGeometry.close();
 
-        this.texture.close();
-        this.cloudTexture.close();
-        this.impactTexture.close();
+        texture.close();
+        cloudTexture.close();
+        impactTexture.close();
     }
 
     public final class Batch implements AutoCloseable {
         private RenderTarget target;
 
-        void start(RenderTarget target) {
+        void start(final RenderTarget target) {
             this.target = target;
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
         }
 
-        public void render(BeamRenderParameters parameters) {
-            this.renderToTexture(parameters);
+        public void render(final BeamRenderParameters parameters) {
+            renderToTexture(parameters);
 
-            this.target.bindWrite(true);
+            target.bindWrite(true);
 
-            try (var geometry = BeamEffectRenderer.this.crossGeometry.bind()) {
-                this.renderToWorld(parameters, BeamEffectRenderer.this.texture, BeamEffectRenderer.this.worldShader, geometry);
+            try (final GlGeometry.Binding geometry = crossGeometry.bind()) {
+                renderToWorld(parameters, texture, worldShader, geometry);
             }
 
-            try (var geometry = BeamEffectRenderer.this.endGeometry.bind()) {
-                this.renderToWorld(parameters, BeamEffectRenderer.this.impactTexture, BeamEffectRenderer.this.impactWorldShader, geometry);
-                this.renderToWorld(parameters, BeamEffectRenderer.this.cloudTexture, BeamEffectRenderer.this.cloudWorldShader, geometry);
-            }
-        }
-
-        private void renderToTexture(BeamRenderParameters parameters) {
-            try (var geometry = BeamEffectRenderer.this.textureGeometry.bind()) {
-                BeamEffectRenderer.this.texture.renderWith(parameters, geometry);
-                BeamEffectRenderer.this.cloudTexture.renderWith(parameters, geometry);
-                BeamEffectRenderer.this.impactTexture.renderWith(parameters, geometry);
+            try (final GlGeometry.Binding geometry = endGeometry.bind()) {
+                renderToWorld(parameters, impactTexture, impactWorldShader, geometry);
+                renderToWorld(parameters, cloudTexture, cloudWorldShader, geometry);
             }
         }
 
-        private void renderToWorld(BeamRenderParameters parameters, EffectTexture<BeamRenderParameters> texture, EffectShader<BeamRenderParameters> shader, GlGeometry.Binding geometry) {
+        private void renderToTexture(final BeamRenderParameters parameters) {
+            try (final GlGeometry.Binding geometry = textureGeometry.bind()) {
+                texture.renderWith(parameters, geometry);
+                cloudTexture.renderWith(parameters, geometry);
+                impactTexture.renderWith(parameters, geometry);
+            }
+        }
+
+        private void renderToWorld(final BeamRenderParameters parameters, final EffectTexture<BeamRenderParameters> texture, final EffectShader<BeamRenderParameters> shader, final GlGeometry.Binding geometry) {
             try (
-                    var textureBinding = texture.bindRead();
-                    var shaderBinding = shader.bind(parameters)
+                    final EffectTexture.ReadBinding textureBinding = texture.bindRead();
+                    final GlBinding shaderBinding = shader.bind(parameters)
             ) {
                 geometry.draw();
             }
@@ -154,7 +155,7 @@ public final class BeamEffectRenderer implements AutoCloseable {
             RenderSystem.enableCull();
             RenderSystem.disableDepthTest();
 
-            this.target = null;
+            target = null;
         }
     }
 }

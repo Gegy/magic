@@ -5,6 +5,6 @@ public interface GlObject extends AutoCloseable {
 
     @Override
     default void close() {
-        this.delete();
+        delete();
     }
 }

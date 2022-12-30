@@ -32,66 +32,66 @@ public final class GlyphShapeStorage extends SavedData {
     private boolean generated;
 
     private GlyphShapeStorage() {
-        this.glyphToShape.defaultReturnValue(-1);
+        glyphToShape.defaultReturnValue(-1);
     }
 
-    public static GlyphShapeStorage get(MinecraftServer server) {
-        DimensionDataStorage persistent = server.overworld().getDataStorage();
+    public static GlyphShapeStorage get(final MinecraftServer server) {
+        final DimensionDataStorage persistent = server.overworld().getDataStorage();
         return persistent.computeIfAbsent(GlyphShapeStorage::loadNbt, GlyphShapeStorage::new, KEY);
     }
 
-    public int getShapeForGlyph(GlyphType glyph) {
-        this.generateGlyphShapes();
-        return this.glyphToShape.getInt(glyph);
+    public int getShapeForGlyph(final GlyphType glyph) {
+        generateGlyphShapes();
+        return glyphToShape.getInt(glyph);
     }
 
     @Nullable
-    public GlyphType getGlyphForShape(int shape) {
-        this.generateGlyphShapes();
-        return this.shapeToGlyph.get(shape);
+    public GlyphType getGlyphForShape(final int shape) {
+        generateGlyphShapes();
+        return shapeToGlyph.get(shape);
     }
 
     private void generateGlyphShapes() {
-        if (this.generated) {
+        if (generated) {
             return;
         }
 
-        this.generated = true;
+        generated = true;
 
-        Set<GlyphType> glyphsToGenerate = this.getGlyphsToGenerate();
+        final Set<GlyphType> glyphsToGenerate = getGlyphsToGenerate();
         if (glyphsToGenerate.isEmpty()) {
-            this.exportShapes();
+            exportShapes();
             return;
         }
 
-        GlyphShapeGenerator generator = new GlyphShapeGenerator(3, 3);
-        List<GlyphShape> glyphs = generator.generateAll();
+        final GlyphShapeGenerator generator = new GlyphShapeGenerator(3, 3);
+        final List<GlyphShape> glyphs = generator.generateAll();
 
-        SecureRandom random = new SecureRandom();
-        for (GlyphType glyph : glyphsToGenerate) {
+        final SecureRandom random = new SecureRandom();
+        for (final GlyphType glyph : glyphsToGenerate) {
             GlyphShape shape;
             do {
                 shape = glyphs.remove(random.nextInt(glyphs.size()));
-            } while (!this.registerGlyphShape(glyph, shape.asBits()));
+            } while (!registerGlyphShape(glyph, shape.asBits()));
         }
 
-        this.setDirty(true);
+        setDirty(true);
 
-        this.exportShapes();
+        exportShapes();
     }
 
-    private boolean registerGlyphShape(GlyphType glyph, int shape) {
-        return this.glyphToShape.putIfAbsent(glyph, shape) == -1
-                && this.shapeToGlyph.putIfAbsent(shape, glyph) == null;
+    private boolean registerGlyphShape(final GlyphType glyph, final int shape) {
+        return glyphToShape.putIfAbsent(glyph, shape) == -1
+                && shapeToGlyph.putIfAbsent(shape, glyph) == null;
     }
 
     @NotNull
     private Set<GlyphType> getGlyphsToGenerate() {
-        Set<GlyphType> glyphsToGenerate = new ReferenceOpenHashSet<>();
-        for (GlyphType glyphType : GlyphType.REGISTRY) {
+        final Set<GlyphType> glyphsToGenerate = new ReferenceOpenHashSet<>();
+        for (final GlyphType glyphType : GlyphType.REGISTRY) {
             glyphsToGenerate.add(glyphType);
         }
-        glyphsToGenerate.removeAll(this.shapeToGlyph.values());
+        glyphsToGenerate.removeAll(shapeToGlyph.values());
 
         return glyphsToGenerate;
     }
@@ -101,31 +101,31 @@ public final class GlyphShapeStorage extends SavedData {
             return;
         }
 
-        for (Int2ObjectMap.Entry<GlyphType> entry : this.shapeToGlyph.int2ObjectEntrySet()) {
-            GlyphType glyphType = entry.getValue();
-            ResourceLocation glyphId = GlyphType.REGISTRY.getKey(glyphType);
+        for (final Int2ObjectMap.Entry<GlyphType> entry : shapeToGlyph.int2ObjectEntrySet()) {
+            final GlyphType glyphType = entry.getValue();
+            final ResourceLocation glyphId = GlyphType.REGISTRY.getKey(glyphType);
             if (glyphId == null) {
                 continue;
             }
 
-            GlyphShape shape = new GlyphShape(entry.getIntKey());
-            BufferedImage image = GlyphDebugRenderer.render(shape);
+            final GlyphShape shape = new GlyphShape(entry.getIntKey());
+            final BufferedImage image = GlyphDebugRenderer.render(shape);
 
             try {
                 ImageIO.write(image, "png", new File(glyphId.getPath() + ".png"));
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 Magic.LOGGER.warn("Failed to export glyph shape", e);
             }
         }
     }
 
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        if (this.generated) {
-            CompoundTag glyphShapes = new CompoundTag();
+    public CompoundTag save(final CompoundTag tag) {
+        if (generated) {
+            final CompoundTag glyphShapes = new CompoundTag();
 
-            for (Int2ObjectMap.Entry<GlyphType> entry : this.shapeToGlyph.int2ObjectEntrySet()) {
-                ResourceLocation glyphId = GlyphType.REGISTRY.getKey(entry.getValue());
+            for (final Int2ObjectMap.Entry<GlyphType> entry : shapeToGlyph.int2ObjectEntrySet()) {
+                final ResourceLocation glyphId = GlyphType.REGISTRY.getKey(entry.getValue());
                 if (glyphId == null) {
                     continue;
                 }
@@ -139,14 +139,14 @@ public final class GlyphShapeStorage extends SavedData {
         return tag;
     }
 
-    private static GlyphShapeStorage loadNbt(CompoundTag tag) {
-        GlyphShapeStorage storage = new GlyphShapeStorage();
+    private static GlyphShapeStorage loadNbt(final CompoundTag tag) {
+        final GlyphShapeStorage storage = new GlyphShapeStorage();
 
-        CompoundTag glyphShapes = tag.getCompound("glyph_shapes");
+        final CompoundTag glyphShapes = tag.getCompound("glyph_shapes");
 
-        for (String glyphId : glyphShapes.getAllKeys()) {
-            GlyphType glyphType = GlyphType.REGISTRY.get(new ResourceLocation(glyphId));
-            int shape = glyphShapes.getInt(glyphId);
+        for (final String glyphId : glyphShapes.getAllKeys()) {
+            final GlyphType glyphType = GlyphType.REGISTRY.get(new ResourceLocation(glyphId));
+            final int shape = glyphShapes.getInt(glyphId);
             if (glyphType != null) {
                 storage.registerGlyphShape(glyphType, shape);
             } else {

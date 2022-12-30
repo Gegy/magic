@@ -8,7 +8,10 @@ import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.GlyphForm;
+import dev.gegy.magic.math.AnimatedColor;
+import dev.gegy.magic.math.ColorRgb;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -27,61 +30,61 @@ public final class GlyphRenderParameters {
 
     private final GlyphPlane plane = new GlyphPlane();
 
-    public void setDrawing(ClientDrawingGlyph glyph, WorldRenderContext context) {
-        float tickDelta = context.tickDelta();
+    public void setDrawing(final ClientDrawingGlyph glyph, final WorldRenderContext context) {
+        final float tickDelta = context.tickDelta();
 
-        this.setTransform(glyph.source(), glyph.plane(), context);
+        setTransform(glyph.source(), glyph.plane(), context);
 
-        this.radius = glyph.radius();
-        this.opacity = glyph.getOpacity(tickDelta);
+        radius = glyph.radius();
+        opacity = glyph.getOpacity(tickDelta);
 
-        var primaryColor = glyph.primaryColor();
-        this.primaryRed = primaryColor.getRed(tickDelta);
-        this.primaryGreen = primaryColor.getGreen(tickDelta);
-        this.primaryBlue = primaryColor.getBlue(tickDelta);
+        final AnimatedColor primaryColor = glyph.primaryColor();
+        primaryRed = primaryColor.getRed(tickDelta);
+        primaryGreen = primaryColor.getGreen(tickDelta);
+        primaryBlue = primaryColor.getBlue(tickDelta);
 
-        var secondaryColor = glyph.secondaryColor();
-        this.secondaryRed = secondaryColor.getRed(tickDelta);
-        this.secondaryGreen = secondaryColor.getGreen(tickDelta);
-        this.secondaryBlue = secondaryColor.getBlue(tickDelta);
+        final AnimatedColor secondaryColor = glyph.secondaryColor();
+        secondaryRed = secondaryColor.getRed(tickDelta);
+        secondaryGreen = secondaryColor.getGreen(tickDelta);
+        secondaryBlue = secondaryColor.getBlue(tickDelta);
 
-        this.shape = glyph.shape();
-        this.highlightNodes = glyph.source().matchesEntity(context.camera().getEntity());
-        this.stroke = glyph.getStroke(tickDelta);
+        shape = glyph.shape();
+        highlightNodes = glyph.source().matchesEntity(context.camera().getEntity());
+        stroke = glyph.getStroke(tickDelta);
     }
 
-    public void setSpell(SpellCastingGlyph glyph, WorldRenderContext context) {
-        this.setTransform(glyph.source(), glyph.transform(), context);
-        this.setForm(glyph.form());
+    public void setSpell(final SpellCastingGlyph glyph, final WorldRenderContext context) {
+        setTransform(glyph.source(), glyph.transform(), context);
+        setForm(glyph.form());
 
-        this.opacity = 1.0F;
-        this.highlightNodes = false;
-        this.stroke = null;
+        opacity = 1.0f;
+        highlightNodes = false;
+        stroke = null;
     }
 
-    public void setFading(FadingGlyph glyph, WorldRenderContext context) {
-        this.setTransform(glyph.source(), glyph.plane(), context);
-        this.setForm(glyph.form());
+    public void setFading(final FadingGlyph glyph, final WorldRenderContext context) {
+        setTransform(glyph.source(), glyph.plane(), context);
+        setForm(glyph.form());
 
-        this.opacity = glyph.getOpacity(context.tickDelta());
-        this.highlightNodes = false;
-        this.stroke = null;
+        opacity = glyph.getOpacity(context.tickDelta());
+        highlightNodes = false;
+        stroke = null;
     }
 
-    private void setTransform(SpellSource source, GlyphTransform transform, WorldRenderContext context) {
-        var plane = this.plane;
+    private void setTransform(final SpellSource source, final GlyphTransform transform, final WorldRenderContext context) {
+        final GlyphPlane plane = this.plane;
         plane.set(transform, context.tickDelta());
 
-        this.setTransform(source, plane, context);
+        setTransform(source, plane, context);
     }
 
-    private void setTransform(SpellSource source, GlyphPlane plane, WorldRenderContext context) {
-        var modelMatrix = context.matrixStack().last().pose();
+    private void setTransform(final SpellSource source, final GlyphPlane plane, final WorldRenderContext context) {
+        final Matrix4f modelMatrix = context.matrixStack().last().pose();
 
-        var cameraPos = context.camera().getPosition();
-        var sourcePos = source.getPosition(context.tickDelta());
+        final Vec3 cameraPos = context.camera().getPosition();
+        final Vec3 sourcePos = source.getPosition(context.tickDelta());
 
-        this.modelViewProject.set(context.projectionMatrix())
+        modelViewProject.set(context.projectionMatrix())
                 .mul(modelMatrix)
                 .translate(
                         (float) (sourcePos.x - cameraPos.x),
@@ -91,19 +94,19 @@ public final class GlyphRenderParameters {
                 .mul(plane.planeToWorld());
     }
 
-    private void setForm(GlyphForm form) {
-        this.radius = form.radius();
-        this.shape = form.shape();
+    private void setForm(final GlyphForm form) {
+        radius = form.radius();
+        shape = form.shape();
 
-        var primaryColor = form.style().primaryColor();
-        this.primaryRed = primaryColor.red();
-        this.primaryGreen = primaryColor.green();
-        this.primaryBlue = primaryColor.blue();
+        final ColorRgb primaryColor = form.style().primaryColor();
+        primaryRed = primaryColor.red();
+        primaryGreen = primaryColor.green();
+        primaryBlue = primaryColor.blue();
 
-        var secondaryColor = form.style().secondaryColor();
-        this.secondaryRed = secondaryColor.red();
-        this.secondaryGreen = secondaryColor.green();
-        this.secondaryBlue = secondaryColor.blue();
+        final ColorRgb secondaryColor = form.style().secondaryColor();
+        secondaryRed = secondaryColor.red();
+        secondaryGreen = secondaryColor.green();
+        secondaryBlue = secondaryColor.blue();
     }
 
     public interface Applicator<T> {

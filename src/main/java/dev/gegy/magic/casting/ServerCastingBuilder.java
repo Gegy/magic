@@ -27,40 +27,40 @@ public final class ServerCastingBuilder {
 
     private Supplier<@Nullable ConfiguredClientCasting<?>> clientCasting = () -> null;
 
-    public ServerCastingBuilder(EventSenderFactory senderFactory) {
+    public ServerCastingBuilder(final EventSenderFactory senderFactory) {
         this.senderFactory = senderFactory;
     }
 
-    public <T> void bindInboundEvent(CastingEventSpec<T> spec, Consumer<T> handler) {
-        this.getOrCreateInboundEvent(spec).addHandler(handler);
+    public <T> void bindInboundEvent(final CastingEventSpec<T> spec, final Consumer<T> handler) {
+        getOrCreateInboundEvent(spec).addHandler(handler);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> InboundCastingEvent<T> getOrCreateInboundEvent(CastingEventSpec<T> spec) {
-        return (InboundCastingEvent<T>) this.inboundEvents.computeIfAbsent(
+    private <T> InboundCastingEvent<T> getOrCreateInboundEvent(final CastingEventSpec<T> spec) {
+        return (InboundCastingEvent<T>) inboundEvents.computeIfAbsent(
                 spec.id(),
                 id -> new InboundCastingEvent<>(id, spec.codec())
         );
     }
 
-    public <T> NetworkSender<T> registerOutboundEvent(CastingEventSpec<T> spec) {
-        return this.senderFactory.create(spec);
+    public <T> NetworkSender<T> registerOutboundEvent(final CastingEventSpec<T> spec) {
+        return senderFactory.create(spec);
     }
 
-    public void registerTicker(Ticker ticker) {
-        this.tickers.add(ticker);
+    public void registerTicker(final Ticker ticker) {
+        tickers.add(ticker);
     }
 
-    public void registerClientCasting(Supplier<ConfiguredClientCasting<?>> casting) {
-        this.clientCasting = casting;
+    public void registerClientCasting(final Supplier<ConfiguredClientCasting<?>> casting) {
+        clientCasting = casting;
     }
 
-    public <P> void registerClientCasting(ClientCastingType<P> type, Supplier<P> parameters) {
-        this.registerClientCasting(() -> type.configure(parameters.get()));
+    public <P> void registerClientCasting(final ClientCastingType<P> type, final Supplier<P> parameters) {
+        registerClientCasting(() -> type.configure(parameters.get()));
     }
 
     public ServerCasting build() {
-        return new CastingImpl(this.inboundEvents, this.tickers, this.clientCasting);
+        return new CastingImpl(inboundEvents, tickers, clientCasting);
     }
 
     public interface Ticker {
@@ -73,7 +73,7 @@ public final class ServerCastingBuilder {
         private final List<Ticker> tickers;
         private final Supplier<ConfiguredClientCasting<?>> clientCasting;
 
-        private CastingImpl(Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents, List<Ticker> tickers, Supplier<ConfiguredClientCasting<?>> clientCasting) {
+        private CastingImpl(final Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents, final List<Ticker> tickers, final Supplier<ConfiguredClientCasting<?>> clientCasting) {
             this.inboundEvents = inboundEvents;
             this.tickers = tickers;
             this.clientCasting = clientCasting;
@@ -82,8 +82,8 @@ public final class ServerCastingBuilder {
         @Override
         @Nullable
         public ServerCasting.Factory tick() {
-            for (var ticker : this.tickers) {
-                var next = ticker.tick();
+            for (final Ticker ticker : tickers) {
+                final Factory next = ticker.tick();
                 if (next != null) {
                     return next;
                 }
@@ -92,8 +92,8 @@ public final class ServerCastingBuilder {
         }
 
         @Override
-        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
-            var event = this.inboundEvents.get(id);
+        public void handleEvent(final ResourceLocation id, final FriendlyByteBuf buf) {
+            final InboundCastingEvent<?> event = inboundEvents.get(id);
             if (event != null) {
                 event.acceptBytes(buf);
             } else {
@@ -104,7 +104,7 @@ public final class ServerCastingBuilder {
         @Override
         @Nullable
         public ConfiguredClientCasting<?> createClientCasting() {
-            return this.clientCasting.get();
+            return clientCasting.get();
         }
     }
 }

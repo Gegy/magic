@@ -33,11 +33,11 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
     private final FloatBuffer strokeData = MemoryUtil.memAllocFloat(4);
 
     private GlyphTextureShader(
-            EffectShaderProgram program,
-            int uniformTexelSize, int uniformRenderSize,
-            int uniformOpacity,
-            int uniformPrimaryColor, int uniformSecondaryColor,
-            int uniformFlags, int uniformStroke
+            final EffectShaderProgram program,
+            final int uniformTexelSize, final int uniformRenderSize,
+            final int uniformOpacity,
+            final int uniformPrimaryColor, final int uniformSecondaryColor,
+            final int uniformFlags, final int uniformStroke
     ) {
         this.program = program;
         this.uniformTexelSize = uniformTexelSize;
@@ -49,16 +49,16 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
         this.uniformStroke = uniformStroke;
     }
 
-    public static GlyphTextureShader create(ResourceManager resources) throws IOException {
-        EffectShaderProgram program = EffectShaderProgram.compile(resources, Magic.identifier("glyph/texture"), GeometryBuilder.POSITION_2F);
+    public static GlyphTextureShader create(final ResourceManager resources) throws IOException {
+        final EffectShaderProgram program = EffectShaderProgram.compile(resources, Magic.identifier("glyph/texture"), GeometryBuilder.POSITION_2F);
 
-        int uniformTexelSize = program.getUniformLocation("TexelSize");
-        int uniformRenderSize = program.getUniformLocation("RenderSize");
-        int uniformOpacity = program.getUniformLocation("Opacity");
-        int uniformPrimaryColor = program.getUniformLocation("PrimaryColor");
-        int uniformSecondaryColor = program.getUniformLocation("SecondaryColor");
-        int uniformFlags = program.getUniformLocation("Flags");
-        int uniformStroke = program.getUniformLocation("Stroke");
+        final int uniformTexelSize = program.getUniformLocation("TexelSize");
+        final int uniformRenderSize = program.getUniformLocation("RenderSize");
+        final int uniformOpacity = program.getUniformLocation("Opacity");
+        final int uniformPrimaryColor = program.getUniformLocation("PrimaryColor");
+        final int uniformSecondaryColor = program.getUniformLocation("SecondaryColor");
+        final int uniformFlags = program.getUniformLocation("Flags");
+        final int uniformStroke = program.getUniformLocation("Stroke");
 
         return new GlyphTextureShader(
                 program,
@@ -70,38 +70,38 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
     }
 
     @Override
-    public GlBinding bind(GlyphRenderParameters parameters) {
-        var binding = this.program.bind();
+    public GlBinding bind(final GlyphRenderParameters parameters) {
+        final EffectShaderProgram.Binding binding = program.bind();
 
-        GL20.glUniform1f(this.uniformTexelSize, GlyphTexture.TEXEL_SIZE);
-        GL20.glUniform1f(this.uniformRenderSize, GlyphTexture.RENDER_SIZE);
+        GL20.glUniform1f(uniformTexelSize, GlyphTexture.TEXEL_SIZE);
+        GL20.glUniform1f(uniformRenderSize, GlyphTexture.RENDER_SIZE);
 
-        GL20.glUniform1f(this.uniformOpacity, parameters.opacity);
+        GL20.glUniform1f(uniformOpacity, parameters.opacity);
 
-        FloatBuffer primaryColorData = this.primaryColorData;
+        final FloatBuffer primaryColorData = this.primaryColorData;
         primaryColorData.put(parameters.primaryRed).put(parameters.primaryGreen).put(parameters.primaryBlue);
         primaryColorData.clear();
-        RenderSystem.glUniform3(this.uniformPrimaryColor, primaryColorData);
+        RenderSystem.glUniform3(uniformPrimaryColor, primaryColorData);
 
-        FloatBuffer secondaryColorData = this.secondaryColorData;
+        final FloatBuffer secondaryColorData = this.secondaryColorData;
         secondaryColorData.put(parameters.secondaryRed).put(parameters.secondaryGreen).put(parameters.secondaryBlue);
         secondaryColorData.clear();
-        RenderSystem.glUniform3(this.uniformSecondaryColor, secondaryColorData);
+        RenderSystem.glUniform3(uniformSecondaryColor, secondaryColorData);
 
-        RenderSystem.glUniform1i(this.uniformFlags, this.getGlyphFlags(parameters));
+        RenderSystem.glUniform1i(uniformFlags, getGlyphFlags(parameters));
 
-        GlyphStroke stroke = parameters.stroke;
+        final GlyphStroke stroke = parameters.stroke;
         if (stroke != null) {
-            FloatBuffer strokeData = this.strokeData;
+            final FloatBuffer strokeData = this.strokeData;
             stroke.writeToBuffer(strokeData);
             strokeData.clear();
-            RenderSystem.glUniform4(this.uniformStroke, strokeData);
+            RenderSystem.glUniform4(uniformStroke, strokeData);
         }
 
         return binding;
     }
 
-    private int getGlyphFlags(GlyphRenderParameters parameters) {
+    private int getGlyphFlags(final GlyphRenderParameters parameters) {
         int flags = parameters.shape;
         if (parameters.stroke != null) flags |= STROKE_ACTIVE_BIT;
         if (parameters.highlightNodes) flags |= HIGHLIGHT_NODES_BIT;
@@ -111,10 +111,10 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
 
     @Override
     public void delete() {
-        this.program.delete();
+        program.delete();
 
-        MemoryUtil.memFree(this.primaryColorData);
-        MemoryUtil.memFree(this.secondaryColorData);
-        MemoryUtil.memFree(this.strokeData);
+        MemoryUtil.memFree(primaryColorData);
+        MemoryUtil.memFree(secondaryColorData);
+        MemoryUtil.memFree(strokeData);
     }
 }

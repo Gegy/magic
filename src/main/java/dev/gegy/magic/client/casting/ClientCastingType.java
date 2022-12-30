@@ -27,7 +27,7 @@ public final class ClientCastingType<P> {
     private final ClientCasting.Factory<P> factory;
     private final PacketCodec<P> parametersCodec;
 
-    public ClientCastingType(ClientCasting.Factory<P> factory, PacketCodec<P> parametersCodec) {
+    public ClientCastingType(final ClientCasting.Factory<P> factory, final PacketCodec<P> parametersCodec) {
         this.factory = factory;
         this.parametersCodec = parametersCodec;
     }
@@ -35,19 +35,19 @@ public final class ClientCastingType<P> {
     public static void onInitialize() {
     }
 
-    private static <P> ClientCastingType<P> register(String id, ClientCasting.Factory<P> factory, PacketCodec<P> parametersCodec) {
+    private static <P> ClientCastingType<P> register(final String id, final ClientCasting.Factory<P> factory, final PacketCodec<P> parametersCodec) {
         return Registry.register(REGISTRY, Magic.identifier(id), new ClientCastingType<>(factory, parametersCodec));
     }
 
     public ClientCasting.Factory<P> factory() {
-        return this.factory;
+        return factory;
     }
 
     public PacketCodec<P> parametersCodec() {
-        return this.parametersCodec;
+        return parametersCodec;
     }
 
-    public ConfiguredClientCasting<P> configure(P parameters) {
+    public ConfiguredClientCasting<P> configure(final P parameters) {
         return new ConfiguredClientCasting<>(this, parameters);
     }
 

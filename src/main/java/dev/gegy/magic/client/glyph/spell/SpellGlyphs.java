@@ -12,37 +12,37 @@ public final class SpellGlyphs extends AbstractList<SpellCastingGlyph> {
 
     private final List<SpellCastingGlyph> glyphs = new ArrayList<>();
 
-    public static float getDistanceForGlyph(int index) {
+    public static float getDistanceForGlyph(final int index) {
         return GlyphTransform.DRAW_DISTANCE + index * GLYPH_SPACING;
     }
 
     @Override
-    public boolean add(SpellCastingGlyph glyph) {
-        return this.glyphs.add(glyph);
+    public boolean add(final SpellCastingGlyph glyph) {
+        return glyphs.add(glyph);
     }
 
     @Override
-    public boolean remove(Object obj) {
-        return this.glyphs.remove(obj);
+    public boolean remove(final Object obj) {
+        return glyphs.remove(obj);
     }
 
     @Override
-    public SpellCastingGlyph remove(int index) {
-        return this.glyphs.remove(index);
+    public SpellCastingGlyph remove(final int index) {
+        return glyphs.remove(index);
     }
 
     @Override
-    public SpellCastingGlyph get(int index) {
-        return this.glyphs.get(index);
+    public SpellCastingGlyph get(final int index) {
+        return glyphs.get(index);
     }
 
     @Override
     public int size() {
-        return this.glyphs.size();
+        return glyphs.size();
     }
 
     @Override
     public Iterator<SpellCastingGlyph> iterator() {
-        return this.glyphs.iterator();
+        return glyphs.iterator();
     }
 }

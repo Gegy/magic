@@ -7,45 +7,45 @@ public final class AnimatedColor {
     private float prevRed, prevGreen, prevBlue;
     private float targetRed, targetGreen, targetBlue;
 
-    public AnimatedColor(ColorRgb color) {
-        this.red = this.targetRed = this.prevRed = color.red();
-        this.green = this.targetGreen = this.prevGreen = color.green();
-        this.blue = this.targetBlue = this.prevBlue = color.blue();
+    public AnimatedColor(final ColorRgb color) {
+        red = targetRed = prevRed = color.red();
+        green = targetGreen = prevGreen = color.green();
+        blue = targetBlue = prevBlue = color.blue();
     }
 
-    public void tick(float lerpSpeed) {
-        this.prevRed = this.red;
-        this.prevGreen = this.green;
-        this.prevBlue = this.blue;
+    public void tick(final float lerpSpeed) {
+        prevRed = red;
+        prevGreen = green;
+        prevBlue = blue;
 
-        this.red += (this.targetRed - this.red) * lerpSpeed;
-        this.green += (this.targetGreen - this.green) * lerpSpeed;
-        this.blue += (this.targetBlue - this.blue) * lerpSpeed;
+        red += (targetRed - red) * lerpSpeed;
+        green += (targetGreen - green) * lerpSpeed;
+        blue += (targetBlue - blue) * lerpSpeed;
     }
 
-    public void set(ColorRgb color) {
-        this.targetRed = color.red();
-        this.targetGreen = color.green();
-        this.targetBlue = color.blue();
+    public void set(final ColorRgb color) {
+        targetRed = color.red();
+        targetGreen = color.green();
+        targetBlue = color.blue();
     }
 
-    public float getRed(float tickDelta) {
-        return Mth.lerp(tickDelta, this.prevRed, this.red);
+    public float getRed(final float tickDelta) {
+        return Mth.lerp(tickDelta, prevRed, red);
     }
 
-    public float getGreen(float tickDelta) {
-        return Mth.lerp(tickDelta, this.prevGreen, this.green);
+    public float getGreen(final float tickDelta) {
+        return Mth.lerp(tickDelta, prevGreen, green);
     }
 
-    public float getBlue(float tickDelta) {
-        return Mth.lerp(tickDelta, this.prevBlue, this.blue);
+    public float getBlue(final float tickDelta) {
+        return Mth.lerp(tickDelta, prevBlue, blue);
     }
 
-    public ColorRgb get(float tickDelta) {
-        return ColorRgb.of(this.getRed(tickDelta), this.getGreen(tickDelta), this.getBlue(tickDelta));
+    public ColorRgb get(final float tickDelta) {
+        return ColorRgb.of(getRed(tickDelta), getGreen(tickDelta), getBlue(tickDelta));
     }
 
     public ColorRgb target() {
-        return ColorRgb.of(this.targetRed, this.targetGreen, this.targetBlue);
+        return ColorRgb.of(targetRed, targetGreen, targetBlue);
     }
 }

@@ -18,15 +18,15 @@ public final class ServerCastingBeam {
 
     private boolean active;
 
-    private ServerCastingBeam(ServerPlayer player, SpellParameters spell, EventSenders eventSenders) {
+    private ServerCastingBeam(final ServerPlayer player, final SpellParameters spell, final EventSenders eventSenders) {
         this.player = player;
         this.spell = spell;
         this.eventSenders = eventSenders;
     }
 
-    public static ServerCasting build(ServerPlayer player, SpellParameters spell, ServerCastingBuilder casting) {
-        var eventSenders = EventSenders.register(casting);
-        var beam = new ServerCastingBeam(player, spell, eventSenders);
+    public static ServerCasting build(final ServerPlayer player, final SpellParameters spell, final ServerCastingBuilder casting) {
+        final EventSenders eventSenders = EventSenders.register(casting);
+        final ServerCastingBeam beam = new ServerCastingBeam(player, spell, eventSenders);
 
         casting.registerClientCasting(ClientCastingType.BEAM, beam::buildParameters);
         casting.registerTicker(beam::tick);
@@ -36,33 +36,33 @@ public final class ServerCastingBeam {
         return casting.build();
     }
 
-    private void handleSetActive(SetBeamActive event) {
-        this.active = event.active();
-        this.eventSenders.setActive(event.active());
+    private void handleSetActive(final SetBeamActive event) {
+        active = event.active();
+        eventSenders.setActive(event.active());
     }
 
     @Nullable
     private ServerCasting.Factory tick() {
         // TODO: proper cancel logic
-        if (this.player.isShiftKeyDown() && !this.active) {
+        if (player.isShiftKeyDown() && !active) {
             return ServerCastingDrawing::build;
         }
         return null;
     }
 
     private BeamParameters buildParameters() {
-        return new BeamParameters(this.spell, this.active);
+        return new BeamParameters(spell, active);
     }
 
-    private static record EventSenders(NetworkSender<SetBeamActive> setActive) {
-        public static EventSenders register(ServerCastingBuilder casting) {
+    private record EventSenders(NetworkSender<SetBeamActive> setActive) {
+        public static EventSenders register(final ServerCastingBuilder casting) {
             return new EventSenders(
                     casting.registerOutboundEvent(SetBeamActive.SPEC)
             );
         }
 
-        public void setActive(boolean active) {
-            this.setActive.broadcast(new SetBeamActive(active));
+        public void setActive(final boolean active) {
+            setActive.broadcast(new SetBeamActive(active));
         }
     }
 }

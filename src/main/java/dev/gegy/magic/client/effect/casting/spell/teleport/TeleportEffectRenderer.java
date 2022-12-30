@@ -1,26 +1,33 @@
 package dev.gegy.magic.client.effect.casting.spell.teleport;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
+import org.joml.Matrix4f;
+
+import java.util.List;
 
 public final class TeleportEffectRenderer {
-    public void render(Minecraft client, WorldRenderContext context, TeleportEffect effect) {
-        var textRenderer = client.font;
+    public void render(final Minecraft client, final WorldRenderContext context, final TeleportEffect effect) {
+        final Font textRenderer = client.font;
 
-        long worldTime = context.world().getGameTime();
-        float tickDelta = context.tickDelta();
+        final long worldTime = context.world().getGameTime();
+        final float tickDelta = context.tickDelta();
 
-        var sourcePos = effect.source().getPosition(tickDelta);
-        var cameraPos = context.camera().getPosition();
+        final Vec3 sourcePos = effect.source().getPosition(tickDelta);
+        final Vec3 cameraPos = context.camera().getPosition();
 
-        float time = (float) (worldTime - effect.createTime()) + tickDelta;
+        final float time = (float) (worldTime - effect.createTime()) + tickDelta;
 
-        var animator = effect.animator();
-        var targets = effect.symbols();
+        final TeleportTargetAnimator animator = effect.animator();
+        final List<TeleportEffect.Symbol> targets = effect.symbols();
 
-        var matrixStack = context.matrixStack();
+        final PoseStack matrixStack = context.matrixStack();
         matrixStack.pushPose();
         matrixStack.translate(
                 (float) (sourcePos.x - cameraPos.x),
@@ -29,25 +36,25 @@ public final class TeleportEffectRenderer {
         );
         matrixStack.mulPoseMatrix(effect.sourcePlane().planeToWorld());
 
-        float scale = 0.0625F * TeleportEffect.SYMBOL_SIZE;
+        final float scale = 0.0625f * TeleportEffect.SYMBOL_SIZE;
         matrixStack.scale(-scale, -scale, scale);
 
         for (int index = 0; index < targets.size(); index++) {
-            var target = targets.get(index);
-            var position = animator.getPosition(index, time);
-            float opacity = animator.getOpacity(index, time);
-            if (opacity <= 0.0F) {
+            final TeleportEffect.Symbol target = targets.get(index);
+            final Vec2 position = animator.getPosition(index, time);
+            final float opacity = animator.getOpacity(index, time);
+            if (opacity <= 0.0f) {
                 continue;
             }
 
-            var matrix = matrixStack.last().pose();
+            final Matrix4f matrix = matrixStack.last().pose();
 
-            float x = (position.x / scale) + target.offsetX();
-            float y = (position.y / scale) + target.offsetY();
+            final float x = (position.x / scale) + target.offsetX();
+            final float y = (position.y / scale) + target.offsetY();
 
-            int alpha = Mth.floor(opacity * 255.0F) << 24;
-            int innerColor = target.innerColor().packed() | alpha;
-            int outlineColor = target.outlineColor().packed() | alpha;
+            final int alpha = Mth.floor(opacity * 255.0f) << 24;
+            final int innerColor = target.innerColor().packed() | alpha;
+            final int outlineColor = target.outlineColor().packed() | alpha;
 
             textRenderer.drawInBatch8xOutline(
                     target.text(),

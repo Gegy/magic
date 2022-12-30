@@ -3,12 +3,12 @@ package dev.gegy.magic.client.glyph.transform;
 import org.joml.Vector3f;
 
 public interface GlyphTransform {
-    float DRAW_DISTANCE = 1.5F;
+    float DRAW_DISTANCE = 1.5f;
 
-    static GlyphTransform of(Vector3f direction, float distance) {
+    static GlyphTransform of(final Vector3f direction, final float distance) {
         return new GlyphTransform() {
             @Override
-            public Vector3f getDirection(float tickDelta) {
+            public Vector3f getDirection(final float tickDelta) {
                 return direction;
             }
 
@@ -23,7 +23,7 @@ public interface GlyphTransform {
 
     float getDistance(float tickDelta);
 
-    default Vector3f getOrigin(float tickDelta) {
-        return new Vector3f(this.getDirection(tickDelta)).mul(this.getDistance(tickDelta));
+    default Vector3f getOrigin(final float tickDelta) {
+        return new Vector3f(getDirection(tickDelta)).mul(getDistance(tickDelta));
     }
 }

@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,11 +18,11 @@ public final class SetCastingS2CPacket {
 
     static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
-            int sourceId = buf.readVarInt();
-            var casting = ConfiguredClientCasting.CODEC.nullable().decode(buf);
+            final int sourceId = buf.readVarInt();
+            final ConfiguredClientCasting<?> casting = ConfiguredClientCasting.CODEC.nullable().decode(buf);
             client.submit(() -> {
                 try {
-                    var source = client.level.getEntity(sourceId);
+                    final Entity source = client.level.getEntity(sourceId);
                     if (source instanceof Player player) {
                         ClientCastingTracker.INSTANCE.setCasting(player, casting);
                     }
@@ -32,14 +33,14 @@ public final class SetCastingS2CPacket {
         });
     }
 
-    public static <T> FriendlyByteBuf create(Player source, @Nullable ConfiguredClientCasting<?> casting) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
+    public static <T> FriendlyByteBuf create(final Player source, @Nullable final ConfiguredClientCasting<?> casting) {
+        final FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(source.getId());
         ConfiguredClientCasting.CODEC.nullable().encode(casting, buf);
         return buf;
     }
 
-    public static void sendTo(ServerPlayer player, FriendlyByteBuf buf) {
+    public static void sendTo(final ServerPlayer player, final FriendlyByteBuf buf) {
         ServerPlayNetworking.send(player, CHANNEL, buf);
     }
 }

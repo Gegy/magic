@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 
 public final class CastingEventS2CPacket {
@@ -16,13 +17,13 @@ public final class CastingEventS2CPacket {
 
     static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
-            int sourceId = buf.readVarInt();
-            var id = buf.readResourceLocation();
+            final int sourceId = buf.readVarInt();
+            final ResourceLocation id = buf.readResourceLocation();
             buf.retain();
 
             client.submit(() -> {
                 try {
-                    var source = client.level.getEntity(sourceId);
+                    final Entity source = client.level.getEntity(sourceId);
                     if (source instanceof Player player) {
                         ClientCastingTracker.INSTANCE.handleEvent(player, id, buf);
                     }
@@ -33,15 +34,15 @@ public final class CastingEventS2CPacket {
         });
     }
 
-    public static <T> FriendlyByteBuf create(Player source, CastingEventSpec<T> spec, T event) {
-        FriendlyByteBuf buf = PacketByteBufs.create();
+    public static <T> FriendlyByteBuf create(final Player source, final CastingEventSpec<T> spec, final T event) {
+        final FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(source.getId());
         buf.writeResourceLocation(spec.id());
         spec.codec().encode(event, buf);
         return buf;
     }
 
-    public static void sendTo(ServerPlayer player, FriendlyByteBuf buf) {
+    public static void sendTo(final ServerPlayer player, final FriendlyByteBuf buf) {
         ServerPlayNetworking.send(player, CHANNEL, buf);
     }
 }

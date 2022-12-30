@@ -13,32 +13,32 @@ public final class InboundCastingEvent<T> {
     private final PacketDecoder<T> decoder;
     private final List<Consumer<T>> handlers = new ArrayList<>();
 
-    public InboundCastingEvent(ResourceLocation id, PacketDecoder<T> decoder) {
+    public InboundCastingEvent(final ResourceLocation id, final PacketDecoder<T> decoder) {
         this.id = id;
         this.decoder = decoder;
     }
 
-    public InboundCastingEvent<T> addHandler(Consumer<T> handler) {
-        this.handlers.add(handler);
+    public InboundCastingEvent<T> addHandler(final Consumer<T> handler) {
+        handlers.add(handler);
         return this;
     }
 
     public ResourceLocation id() {
-        return this.id;
+        return id;
     }
 
-    public T decode(FriendlyByteBuf buf) {
-        return this.decoder.decode(buf);
+    public T decode(final FriendlyByteBuf buf) {
+        return decoder.decode(buf);
     }
 
-    public void accept(T event) {
-        for (var handler : this.handlers) {
+    public void accept(final T event) {
+        for (final Consumer<T> handler : handlers) {
             handler.accept(event);
         }
     }
 
-    public void acceptBytes(FriendlyByteBuf buf) {
-        var event = this.decoder.decode(buf);
-        this.accept(event);
+    public void acceptBytes(final FriendlyByteBuf buf) {
+        final T event = decoder.decode(buf);
+        accept(event);
     }
 }

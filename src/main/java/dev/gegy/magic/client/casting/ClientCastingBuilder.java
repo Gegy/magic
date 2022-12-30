@@ -35,60 +35,60 @@ public final class ClientCastingBuilder {
     private final List<Ticker> tickers = new ArrayList<>();
     private final EffectMap effects = new EffectMap();
 
-    public ClientCastingBuilder(EventSenderFactory senderFactory, CastingBlender blenderIn) {
+    public ClientCastingBuilder(final EventSenderFactory senderFactory, final CastingBlender blenderIn) {
         this.senderFactory = senderFactory;
         this.blenderIn = blenderIn;
     }
 
-    public <T> void bindInboundEvent(CastingEventSpec<T> spec, Consumer<T> handler) {
-        this.getOrCreateInboundEvent(spec).addHandler(handler);
+    public <T> void bindInboundEvent(final CastingEventSpec<T> spec, final Consumer<T> handler) {
+        getOrCreateInboundEvent(spec).addHandler(handler);
     }
 
     @SuppressWarnings("unchecked")
-    private <T> InboundCastingEvent<T> getOrCreateInboundEvent(CastingEventSpec<T> spec) {
-        return (InboundCastingEvent<T>) this.inboundEvents.computeIfAbsent(
+    private <T> InboundCastingEvent<T> getOrCreateInboundEvent(final CastingEventSpec<T> spec) {
+        return (InboundCastingEvent<T>) inboundEvents.computeIfAbsent(
                 spec.id(),
                 id -> new InboundCastingEvent<>(id, spec.codec())
         );
     }
 
-    public <T> NetworkSender<T> registerOutboundEvent(CastingEventSpec<T> spec) {
-        return this.senderFactory.create(spec);
+    public <T> NetworkSender<T> registerOutboundEvent(final CastingEventSpec<T> spec) {
+        return senderFactory.create(spec);
     }
 
-    public void registerTicker(Ticker ticker) {
-        this.tickers.add(ticker);
+    public void registerTicker(final Ticker ticker) {
+        tickers.add(ticker);
     }
 
-    public <E extends Effect> E attachEffect(E effect) {
-        this.effects.add(effect);
+    public <E extends Effect> E attachEffect(final E effect) {
+        effects.add(effect);
         return effect;
     }
 
-    public <T, P> CastingBlender.Entry<T, P> blendTo(CastingBlendType<T, P> type) {
-        return this.blenderOut.entry(type);
+    public <T, P> CastingBlender.Entry<T, P> blendTo(final CastingBlendType<T, P> type) {
+        return blenderOut.entry(type);
     }
 
     @Nullable
-    public <T> T blendFrom(CastingBlendType<T, Unit> type) {
-        return this.blendFrom(type, Unit.INSTANCE);
+    public <T> T blendFrom(final CastingBlendType<T, Unit> type) {
+        return blendFrom(type, Unit.INSTANCE);
     }
 
     @Nullable
-    public <T, P> T blendFrom(CastingBlendType<T, P> type, P parameter) {
-        var input = this.blenderIn.loadBlendInto(type);
+    public <T, P> T blendFrom(final CastingBlendType<T, P> type, final P parameter) {
+        final CastingBlender.Into<T, P> input = blenderIn.loadBlendInto(type);
         if (input != null) {
-            return input.apply(this.blendBuilder, parameter);
+            return input.apply(blendBuilder, parameter);
         } else {
             return null;
         }
     }
 
     public ClientCasting build() {
-        var targetCasting = new Casting(this.inboundEvents, this.tickers, this.effects, this.blenderOut);
+        final Casting targetCasting = new Casting(inboundEvents, tickers, effects, blenderOut);
 
-        this.blenderIn.loadBlendOut(this.blendBuilder);
-        return this.blendBuilder.build(targetCasting);
+        blenderIn.loadBlendOut(blendBuilder);
+        return blendBuilder.build(targetCasting);
     }
 
     public interface Ticker {
@@ -103,15 +103,15 @@ public final class ClientCastingBuilder {
     ) implements ClientCasting {
         @Override
         public ClientCasting tick() {
-            for (var ticker : this.tickers) {
+            for (final Ticker ticker : tickers) {
                 ticker.tick();
             }
             return this;
         }
 
         @Override
-        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
-            var event = this.inboundEvents.get(id);
+        public void handleEvent(final ResourceLocation id, final FriendlyByteBuf buf) {
+            final InboundCastingEvent<?> event = inboundEvents.get(id);
             if (event != null) {
                 event.acceptBytes(buf);
             } else {
@@ -121,12 +121,12 @@ public final class ClientCastingBuilder {
 
         @Override
         public EffectSelector getEffects() {
-            return this.effects;
+            return effects;
         }
 
         @Override
         public CastingBlender getBlender() {
-            return this.blenderOut;
+            return blenderOut;
         }
     }
 }

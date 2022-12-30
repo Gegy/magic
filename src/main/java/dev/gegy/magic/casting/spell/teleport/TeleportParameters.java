@@ -7,7 +7,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import java.util.Map;
 import java.util.UUID;
 
-public final record TeleportParameters(
+public record TeleportParameters(
         SpellParameters spell,
         Map<UUID, TeleportTargetSymbol> targets
 ) {
@@ -15,14 +15,14 @@ public final record TeleportParameters(
 
     private static final PacketCodec<Map<UUID, TeleportTargetSymbol>> SYMBOL_MAP_CODEC = PacketCodec.mapOf(PacketCodec.UUID, TeleportTargetSymbol.CODEC);
 
-    private void encode(FriendlyByteBuf buf) {
-        SpellParameters.CODEC.encode(this.spell, buf);
-        SYMBOL_MAP_CODEC.encode(this.targets, buf);
+    private void encode(final FriendlyByteBuf buf) {
+        SpellParameters.CODEC.encode(spell, buf);
+        SYMBOL_MAP_CODEC.encode(targets, buf);
     }
 
-    private static TeleportParameters decode(FriendlyByteBuf buf) {
-        var spell = SpellParameters.CODEC.decode(buf);
-        var symbols = SYMBOL_MAP_CODEC.decode(buf);
+    private static TeleportParameters decode(final FriendlyByteBuf buf) {
+        final SpellParameters spell = SpellParameters.CODEC.decode(buf);
+        final Map<UUID, TeleportTargetSymbol> symbols = SYMBOL_MAP_CODEC.decode(buf);
         return new TeleportParameters(spell, symbols);
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 
 public final class SpellCasting {
     @Nullable
-    public static GlyphType.CastFunction cast(List<GlyphType> glyphs) {
+    public static GlyphType.CastFunction cast(final List<GlyphType> glyphs) {
         // TODO: handle spellcasting of combined glyphs
         if (glyphs.size() == 1) {
             return glyphs.get(0).castFunction();

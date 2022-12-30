@@ -17,19 +17,19 @@ public abstract class PlayerMixin extends LivingEntity implements CastingAnimata
     @Unique
     private final CastingAnimator castingAnimator = new CastingAnimator();
 
-    private PlayerMixin(EntityType<? extends LivingEntity> type, Level level) {
+    private PlayerMixin(final EntityType<? extends LivingEntity> type, final Level level) {
         super(type, level);
     }
 
     @Override
     public CastingAnimator getCastingAnimator() {
-        return this.castingAnimator;
+        return castingAnimator;
     }
 
     @Inject(method = "tick", at = @At("TAIL"))
-    private void tick(CallbackInfo ci) {
-        if (this.level.isClientSide) {
-            this.castingAnimator.tick((Player) (Object) this);
+    private void tick(final CallbackInfo ci) {
+        if (level.isClientSide) {
+            castingAnimator.tick((Player) (Object) this);
         }
     }
 }

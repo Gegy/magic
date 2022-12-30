@@ -8,23 +8,23 @@ public final class StaticSpellTransform implements SpellTransform {
     private final Vector3f direction;
     private final float distance;
 
-    public StaticSpellTransform(Vector3f direction, float distance) {
+    public StaticSpellTransform(final Vector3f direction, final float distance) {
         this.direction = direction;
         this.distance = distance;
     }
 
     @Override
-    public Vector3f getDirection(float tickDelta) {
-        return this.direction;
+    public Vector3f getDirection(final float tickDelta) {
+        return direction;
     }
 
     @Override
     public float getDistance(final float tickDelta) {
-        return this.distance;
+        return distance;
     }
 
     @Override
-    public GlyphTransform getTransformForGlyph(int index) {
-        return GlyphTransform.of(this.direction, SpellGlyphs.getDistanceForGlyph(index));
+    public GlyphTransform getTransformForGlyph(final int index) {
+        return GlyphTransform.of(direction, SpellGlyphs.getDistanceForGlyph(index));
     }
 }

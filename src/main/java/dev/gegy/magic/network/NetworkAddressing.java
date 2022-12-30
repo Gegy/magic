@@ -11,26 +11,26 @@ public interface NetworkAddressing<T> {
     static NetworkAddressing<Unit> server() {
         return new NetworkAddressing<>() {
             @Override
-            public void send(Consumer<Unit> handler) {
+            public void send(final Consumer<Unit> handler) {
                 handler.accept(Unit.INSTANCE);
             }
 
             @Override
-            public void broadcast(Consumer<Unit> handler) {
+            public void broadcast(final Consumer<Unit> handler) {
             }
         };
     }
 
-    static NetworkAddressing<ServerPlayer> trackingClients(ServerPlayer player) {
+    static NetworkAddressing<ServerPlayer> trackingClients(final ServerPlayer player) {
         return new NetworkAddressing<>() {
             @Override
-            public void send(Consumer<ServerPlayer> handler) {
+            public void send(final Consumer<ServerPlayer> handler) {
                 handler.accept(player);
             }
 
             @Override
-            public void broadcast(Consumer<ServerPlayer> handler) {
-                for (var tracking : PlayerLookup.tracking(player)) {
+            public void broadcast(final Consumer<ServerPlayer> handler) {
+                for (final ServerPlayer tracking : PlayerLookup.tracking(player)) {
                     handler.accept(tracking);
                 }
             }
@@ -41,12 +41,12 @@ public interface NetworkAddressing<T> {
 
     void broadcast(Consumer<T> handler);
 
-    default void broadcastAndSend(Consumer<T> handler) {
-        this.broadcast(handler);
-        this.send(handler);
+    default void broadcastAndSend(final Consumer<T> handler) {
+        broadcast(handler);
+        send(handler);
     }
 
-    default <P> NetworkSender<P> sender(BiConsumer<T, P> sender) {
+    default <P> NetworkSender<P> sender(final BiConsumer<T, P> sender) {
         return NetworkSender.of(this, sender);
     }
 }

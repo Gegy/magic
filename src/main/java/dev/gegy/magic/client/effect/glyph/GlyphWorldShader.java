@@ -23,10 +23,10 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
     private final FloatBuffer modelViewProjectData = MemoryUtil.memAllocFloat(4 * 4);
 
     private GlyphWorldShader(
-            EffectShaderProgram program,
-            int uniformModelViewProject,
-            int uniformScale,
-            int uniformSampler
+            final EffectShaderProgram program,
+            final int uniformModelViewProject,
+            final int uniformScale,
+            final int uniformSampler
     ) {
         this.program = program;
         this.uniformModelViewProject = uniformModelViewProject;
@@ -34,12 +34,12 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
         this.uniformSampler = uniformSampler;
     }
 
-    public static GlyphWorldShader create(ResourceManager resources) throws IOException {
-        EffectShaderProgram program = EffectShaderProgram.compile(resources, Magic.identifier("glyph/world"), Magic.identifier("effect_world"), GeometryBuilder.POSITION_2F);
+    public static GlyphWorldShader create(final ResourceManager resources) throws IOException {
+        final EffectShaderProgram program = EffectShaderProgram.compile(resources, Magic.identifier("glyph/world"), Magic.identifier("effect_world"), GeometryBuilder.POSITION_2F);
 
-        int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
-        int uniformScale = program.getUniformLocation("Scale");
-        int uniformSampler = program.getUniformLocation("Sampler");
+        final int uniformModelViewProject = program.getUniformLocation("ModelViewProject");
+        final int uniformScale = program.getUniformLocation("Scale");
+        final int uniformSampler = program.getUniformLocation("Sampler");
 
         return new GlyphWorldShader(
                 program,
@@ -50,24 +50,24 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
     }
 
     @Override
-    public GlBinding bind(GlyphRenderParameters parameters) {
-        var binding = this.program.bind();
+    public GlBinding bind(final GlyphRenderParameters parameters) {
+        final EffectShaderProgram.Binding binding = program.bind();
 
-        RenderSystem.glUniform1i(this.uniformSampler, 0);
+        RenderSystem.glUniform1i(uniformSampler, 0);
 
-        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false,
-                parameters.modelViewProject.get(this.modelViewProjectData)
+        RenderSystem.glUniformMatrix4(uniformModelViewProject, false,
+                parameters.modelViewProject.get(modelViewProjectData)
         );
 
-        GL20.glUniform1f(this.uniformScale, parameters.radius * GlyphTexture.RENDER_SCALE);
+        GL20.glUniform1f(uniformScale, parameters.radius * GlyphTexture.RENDER_SCALE);
 
         return binding;
     }
 
     @Override
     public void delete() {
-        this.program.delete();
+        program.delete();
 
-        MemoryUtil.memFree(this.modelViewProjectData);
+        MemoryUtil.memFree(modelViewProjectData);
     }
 }

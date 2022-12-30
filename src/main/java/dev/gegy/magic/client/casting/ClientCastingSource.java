@@ -2,6 +2,7 @@ package dev.gegy.magic.client.casting;
 
 import dev.gegy.magic.casting.event.CastingEventSpec;
 import dev.gegy.magic.client.casting.blend.CastingBlender;
+import dev.gegy.magic.client.effect.Effect;
 import dev.gegy.magic.client.effect.EffectManager;
 import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.network.NetworkAddressing;
@@ -18,74 +19,74 @@ public final class ClientCastingSource implements AutoCloseable {
 
     private ClientCasting casting = ClientCasting.NONE;
 
-    public ClientCastingSource(Player player) {
+    public ClientCastingSource(final Player player) {
         this.player = player;
     }
 
-    public <P> void handleServerCast(@Nullable ConfiguredClientCasting<P> configuredCasting) {
-        var blender = this.casting.getBlender();
+    public <P> void handleServerCast(@Nullable final ConfiguredClientCasting<P> configuredCasting) {
+        final CastingBlender blender = casting.getBlender();
 
-        var builder = this.createCastingBuilder(blender);
+        final ClientCastingBuilder builder = createCastingBuilder(blender);
         if (configuredCasting != null) {
-            this.handleServerCast(configuredCasting.build(this.player, builder));
+            handleServerCast(configuredCasting.build(player, builder));
         } else {
-            this.handleServerCast(builder.build());
+            handleServerCast(builder.build());
         }
     }
 
-    private void handleServerCast(ClientCasting casting) {
-        this.setCasting(this.casting.handleServerCast(casting));
+    private void handleServerCast(final ClientCasting casting) {
+        setCasting(this.casting.handleServerCast(casting));
     }
 
     @NotNull
-    private ClientCastingBuilder createCastingBuilder(CastingBlender blender) {
+    private ClientCastingBuilder createCastingBuilder(final CastingBlender blender) {
         return new ClientCastingBuilder(ClientCastingSource::createEventSender, blender);
     }
 
-    private static <T> NetworkSender<T> createEventSender(CastingEventSpec<T> spec) {
+    private static <T> NetworkSender<T> createEventSender(final CastingEventSpec<T> spec) {
         return NetworkAddressing.server().sender(($, event) -> CastingEventC2SPacket.sendToServer(spec, event));
     }
 
-    private void setCasting(ClientCasting newCasting) {
-        var oldCasting = this.casting;
-        this.closeCasting(oldCasting);
-        this.setupCasting(newCasting);
+    private void setCasting(final ClientCasting newCasting) {
+        final ClientCasting oldCasting = casting;
+        closeCasting(oldCasting);
+        setupCasting(newCasting);
 
-        this.casting = newCasting;
+        casting = newCasting;
     }
 
-    private void setupCasting(ClientCasting casting) {
-        var effectManager = EffectManager.get();
-        for (var effect : casting.getEffects()) {
+    private void setupCasting(final ClientCasting casting) {
+        final EffectManager effectManager = EffectManager.get();
+        for (final Effect effect : casting.getEffects()) {
             effectManager.add(effect);
         }
     }
 
-    private void closeCasting(ClientCasting casting) {
-        var effectManager = EffectManager.get();
-        for (var effect : casting.getEffects()) {
+    private void closeCasting(final ClientCasting casting) {
+        final EffectManager effectManager = EffectManager.get();
+        for (final Effect effect : casting.getEffects()) {
             effectManager.remove(effect);
         }
     }
 
     public void tick() {
-        var casting = this.casting;
-        var nextCasting = casting.tick();
+        final ClientCasting casting = this.casting;
+        final ClientCasting nextCasting = casting.tick();
         if (nextCasting != casting) {
-            this.setCasting(nextCasting);
+            setCasting(nextCasting);
         }
     }
 
-    public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
-        this.casting.handleEvent(id, buf);
+    public void handleEvent(final ResourceLocation id, final FriendlyByteBuf buf) {
+        casting.handleEvent(id, buf);
     }
 
     public EffectSelector effectSelector() {
-        return this.casting.getEffects();
+        return casting.getEffects();
     }
 
     @Override
     public void close() {
-        this.setCasting(ClientCasting.NONE);
+        setCasting(ClientCasting.NONE);
     }
 }

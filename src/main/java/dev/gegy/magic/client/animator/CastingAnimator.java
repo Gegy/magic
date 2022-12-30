@@ -13,32 +13,32 @@ public final class CastingAnimator {
     private CastingPose prevPose;
     private int poseBlendingTicks;
 
-    public void applyToModel(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta) {
-        CastingPose pose = this.pose;
-        CastingPose prevPose = this.prevPose;
+    public void applyToModel(final Player entity, final ModelPart leftArm, final ModelPart rightArm, final float tickDelta) {
+        final CastingPose pose = this.pose;
+        final CastingPose prevPose = this.prevPose;
         if (pose == null && prevPose == null) {
             return;
         }
 
         if (pose == prevPose) {
-            this.applyToModelStable(entity, pose, leftArm, rightArm, tickDelta);
+            applyToModelStable(entity, pose, leftArm, rightArm, tickDelta);
         } else {
-            float blendTicks = this.poseBlendingTicks + tickDelta;
-            this.applyToModelBlended(entity, prevPose, pose, blendTicks, leftArm, rightArm, tickDelta);
+            final float blendTicks = poseBlendingTicks + tickDelta;
+            applyToModelBlended(entity, prevPose, pose, blendTicks, leftArm, rightArm, tickDelta);
         }
     }
 
-    private void applyToModelStable(Player entity, CastingPose pose, ModelPart leftArm, ModelPart rightArm, float tickDelta) {
-        pose.apply(entity, leftArm, rightArm, tickDelta, 1.0F);
+    private void applyToModelStable(final Player entity, final CastingPose pose, final ModelPart leftArm, final ModelPart rightArm, final float tickDelta) {
+        pose.apply(entity, leftArm, rightArm, tickDelta, 1.0f);
     }
 
     private void applyToModelBlended(
-            Player entity,
-            CastingPose prevPose, CastingPose pose, float transitionTicks,
-            ModelPart leftArm, ModelPart rightArm, float tickDelta
+            final Player entity,
+            final CastingPose prevPose, final CastingPose pose, final float transitionTicks,
+            final ModelPart leftArm, final ModelPart rightArm, final float tickDelta
     ) {
-        float weight = transitionTicks / POSE_BLEND_TICKS;
-        float prevWeight = 1.0F - weight;
+        final float weight = transitionTicks / POSE_BLEND_TICKS;
+        final float prevWeight = 1.0f - weight;
 
         if (prevPose != null) {
             prevPose.apply(entity, leftArm, rightArm, tickDelta, prevWeight);
@@ -49,22 +49,22 @@ public final class CastingAnimator {
         }
     }
 
-    public void tick(Player entity) {
-        if (this.pose == this.prevPose) {
-            this.tickStable(entity);
+    public void tick(final Player entity) {
+        if (pose == prevPose) {
+            tickStable(entity);
         } else {
-            this.tickBlending(entity);
+            tickBlending(entity);
         }
     }
 
-    private void tickStable(Player entity) {
-        if (this.tickPose(entity, this.drawing)) return;
-        if (this.tickPose(entity, this.prepared)) return;
+    private void tickStable(final Player entity) {
+        if (tickPose(entity, drawing)) return;
+        if (tickPose(entity, prepared)) return;
 
-        this.pose = null;
+        pose = null;
     }
 
-    private boolean tickPose(Player entity, CastingPose pose) {
+    private boolean tickPose(final Player entity, final CastingPose pose) {
         if (pose.tick(entity)) {
             if (this.pose != pose) {
                 this.pose = pose;
@@ -76,15 +76,15 @@ public final class CastingAnimator {
         }
     }
 
-    private void tickBlending(Player entity) {
-        if (++this.poseBlendingTicks >= POSE_BLEND_TICKS) {
-            this.poseBlendingTicks = 0;
-            this.prevPose = this.pose;
+    private void tickBlending(final Player entity) {
+        if (++poseBlendingTicks >= POSE_BLEND_TICKS) {
+            poseBlendingTicks = 0;
+            prevPose = pose;
         }
 
         // just tick our current pose: we don't want to change poses while blending
-        if (this.pose != null) {
-            this.pose.tick(entity);
+        if (pose != null) {
+            pose.tick(entity);
         }
     }
 }

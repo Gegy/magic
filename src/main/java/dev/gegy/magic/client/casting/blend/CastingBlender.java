@@ -12,19 +12,19 @@ public final class CastingBlender {
     private final Reference2ObjectMap<CastingBlendType<?, ?>, Entry<?, ?>> entries = new Reference2ObjectOpenHashMap<>();
 
     @SuppressWarnings("unchecked")
-    public <T, P> Entry<T, P> entry(CastingBlendType<T, P> type) {
-        return (Entry<T, P>) this.entries.computeIfAbsent(type, t -> new Entry<>());
+    public <T, P> Entry<T, P> entry(final CastingBlendType<T, P> type) {
+        return (Entry<T, P>) entries.computeIfAbsent(type, t -> new Entry<>());
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <T, P> Into<T, P> loadBlendInto(CastingBlendType<T, P> type) {
-        var entry = (Entry<T, P>) this.entries.remove(type);
+    public <T, P> Into<T, P> loadBlendInto(final CastingBlendType<T, P> type) {
+        final Entry<T, P> entry = (Entry<T, P>) entries.remove(type);
         return entry != null ? entry.blendInto : null;
     }
 
-    public void loadBlendOut(CastingBlendBuilder blendBuilder) {
-        for (var entry : this.entries.values()) {
+    public void loadBlendOut(final CastingBlendBuilder blendBuilder) {
+        for (final Entry<?, ?> entry : entries.values()) {
             if (entry.blendOut != null) {
                 entry.blendOut.accept(blendBuilder);
             }
@@ -35,17 +35,17 @@ public final class CastingBlender {
         private Into<T, P> blendInto;
         private Out blendOut;
 
-        public Entry<T, P> blendInto(Into<T, P> blend) {
-            this.blendInto = blend;
+        public Entry<T, P> blendInto(final Into<T, P> blend) {
+            blendInto = blend;
             return this;
         }
 
-        public Entry<T, P> blendInto(Function<CastingBlendBuilder, T> blend) {
-            return this.blendInto((builder, parameter) -> blend.apply(builder));
+        public Entry<T, P> blendInto(final Function<CastingBlendBuilder, T> blend) {
+            return blendInto((builder, parameter) -> blend.apply(builder));
         }
 
-        public Entry<T, P> blendOut(Out blend) {
-            this.blendOut = blend;
+        public Entry<T, P> blendOut(final Out blend) {
+            blendOut = blend;
             return this;
         }
     }

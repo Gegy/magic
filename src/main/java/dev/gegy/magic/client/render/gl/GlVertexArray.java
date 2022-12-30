@@ -12,36 +12,36 @@ public final class GlVertexArray implements GlBindableObject {
 
     private VertexFormat format;
 
-    private GlVertexArray(int id) {
+    private GlVertexArray(final int id) {
         this.id = id;
     }
 
     public static GlVertexArray generate() {
-        int id = GL30.glGenVertexArrays();
+        final int id = GL30.glGenVertexArrays();
         return new GlVertexArray(id);
     }
 
     @Override
     public Binding bind() {
         BufferUploader.invalidate();
-        GL30.glBindVertexArray(this.id);
-        return this.binding;
+        GL30.glBindVertexArray(id);
+        return binding;
     }
 
     @Override
     public void delete() {
-        GlStateManager._glDeleteBuffers(this.id);
+        GlStateManager._glDeleteBuffers(id);
     }
 
-    private void enableFormat(VertexFormat format) {
-        this.disableFormat();
+    private void enableFormat(final VertexFormat format) {
+        disableFormat();
 
         format.setupBufferState();
         this.format = format;
     }
 
     private void disableFormat() {
-        var format = this.format;
+        final VertexFormat format = this.format;
         if (format != null) {
             this.format = null;
             format.clearBufferState();
@@ -52,7 +52,7 @@ public final class GlVertexArray implements GlBindableObject {
         private Binding() {
         }
 
-        public void enableFormat(VertexFormat format) {
+        public void enableFormat(final VertexFormat format) {
             GlVertexArray.this.enableFormat(format);
         }
 

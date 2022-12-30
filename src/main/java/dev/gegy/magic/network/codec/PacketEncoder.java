@@ -6,9 +6,9 @@ import net.minecraft.network.FriendlyByteBuf;
 public interface PacketEncoder<T> {
     void encode(T value, FriendlyByteBuf buf);
 
-    default FriendlyByteBuf encodeStart(T value) {
-        var buf = PacketByteBufs.create();
-        this.encode(value, buf);
+    default FriendlyByteBuf encodeStart(final T value) {
+        final FriendlyByteBuf buf = PacketByteBufs.create();
+        encode(value, buf);
         return buf;
     }
 }

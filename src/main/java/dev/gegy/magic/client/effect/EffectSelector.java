@@ -9,7 +9,7 @@ import java.util.Iterator;
 public interface EffectSelector extends Iterable<Effect> {
     EffectSelector EMPTY = new EffectSelector() {
         @Override
-        public <E extends Effect> Selection<E> select(EffectType<E> type) {
+        public <E extends Effect> Selection<E> select(final EffectType<E> type) {
             return Selection.empty();
         }
 
@@ -22,21 +22,21 @@ public interface EffectSelector extends Iterable<Effect> {
     <E extends Effect> Selection<E> select(EffectType<E> type);
 
     @Nullable
-    default <E extends Effect> E selectAny(EffectType<E> type) {
-        var selection = this.select(type);
-        var iterator = selection.iterator();
+    default <E extends Effect> E selectAny(final EffectType<E> type) {
+        final Selection<E> selection = select(type);
+        final Iterator<E> iterator = selection.iterator();
         return iterator.hasNext() ? iterator.next() : null;
     }
 
-    default boolean has(EffectType<?> type) {
-        return !this.select(type).isEmpty();
+    default boolean has(final EffectType<?> type) {
+        return !select(type).isEmpty();
     }
 
     @Override
     Iterator<Effect> iterator();
 
     interface Selection<E extends Effect> extends Iterable<E> {
-        static <E extends Effect> Selection<E> singleton(E effect) {
+        static <E extends Effect> Selection<E> singleton(final E effect) {
             return new Selection<>() {
                 @Override
                 public boolean isEmpty() {
