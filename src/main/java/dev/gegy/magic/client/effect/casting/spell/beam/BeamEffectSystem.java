@@ -8,7 +8,7 @@ import dev.gegy.magic.client.effect.casting.spell.beam.render.BeamEffectRenderer
 import dev.gegy.magic.client.effect.casting.spell.beam.render.BeamRenderParameters;
 import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.spell.Spell;
-import dev.gegy.magic.client.particle.MagicParticles;
+import dev.gegy.magic.particle.MagicParticles;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleEngine;
