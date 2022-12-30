@@ -35,8 +35,7 @@ public final class ClientCastingBeam {
     }
 
     public static ClientCasting build(final Player player, final BeamParameters parameters, final ClientCastingBuilder casting) {
-        final Spell spell = parameters.spell()
-                .blendOrCreate(player, casting, SpellTransformType.TRACKING);
+        final Spell spell = Spell.blendOrCreate(player, casting, parameters.spell(), SpellTransformType.TRACKING);
 
         final BeamEffect beamEffect = casting.attachEffect(new BeamEffect(spell));
         beamEffect.setVisible(parameters.active());

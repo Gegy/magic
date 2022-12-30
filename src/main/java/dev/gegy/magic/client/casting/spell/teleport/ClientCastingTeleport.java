@@ -33,8 +33,7 @@ public final class ClientCastingTeleport {
     }
 
     public static ClientCasting build(final Player player, final TeleportParameters parameters, final ClientCastingBuilder casting) {
-        final Spell spell = parameters.spell()
-                .blendOrCreate(player, casting, SpellTransformType.FIXED);
+        final Spell spell = Spell.blendOrCreate(player, casting, parameters.spell(), SpellTransformType.FIXED);
 
         final SpellCastingGlyph sourceGlyph = spell.glyphs().get(0);
 
