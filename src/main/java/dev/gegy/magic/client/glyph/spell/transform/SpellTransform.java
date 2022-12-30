@@ -8,10 +8,10 @@ public interface SpellTransform extends GlyphTransform {
     }
 
     @Override
-    Vec3f getOrigin(float tickDelta);
+    Vec3f getDirection(float tickDelta);
 
     @Override
-    Vec3f getDirection(float tickDelta);
+    float getDistance(float tickDelta);
 
     GlyphTransform getTransformForGlyph(int index);
 }

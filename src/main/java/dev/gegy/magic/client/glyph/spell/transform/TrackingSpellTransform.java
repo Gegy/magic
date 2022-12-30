@@ -11,7 +11,6 @@ public final class TrackingSpellTransform implements SpellTransform {
     private final Vec3f direction;
     private final Vec3f prevDirection;
 
-    private final Vec3f resultOrigin = new Vec3f();
     private final Vec3f resultDirection = new Vec3f();
 
     private final float castingDistance;
@@ -40,18 +39,6 @@ public final class TrackingSpellTransform implements SpellTransform {
     }
 
     @Override
-    public Vec3f getOrigin(float tickDelta) {
-        return this.getOrigin(this.castingDistance, tickDelta);
-    }
-
-    private Vec3f getOrigin(float distance, float tickDelta) {
-        var result = this.resultOrigin;
-        result.set(this.getDirection(tickDelta));
-        result.scale(distance);
-        return result;
-    }
-
-    @Override
     public Vec3f getDirection(float tickDelta) {
         var result = this.resultDirection;
         result.set(this.prevDirection);
@@ -60,18 +47,23 @@ public final class TrackingSpellTransform implements SpellTransform {
     }
 
     @Override
+    public float getDistance(final float tickDelta) {
+        return this.castingDistance;
+    }
+
+    @Override
     public GlyphTransform getTransformForGlyph(int index) {
         float distance = SpellGlyphs.getDistanceForGlyph(index);
 
         return new GlyphTransform() {
             @Override
-            public Vec3f getOrigin(float tickDelta) {
-                return TrackingSpellTransform.this.getOrigin(distance, tickDelta);
+            public Vec3f getDirection(float tickDelta) {
+                return TrackingSpellTransform.this.getDirection(tickDelta);
             }
 
             @Override
-            public Vec3f getDirection(float tickDelta) {
-                return TrackingSpellTransform.this.getDirection(tickDelta);
+            public float getDistance(final float tickDelta) {
+                return distance;
             }
         };
     }

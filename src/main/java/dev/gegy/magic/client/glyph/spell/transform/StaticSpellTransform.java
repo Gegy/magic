@@ -5,18 +5,12 @@ import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import net.minecraft.util.math.Vec3f;
 
 public final class StaticSpellTransform implements SpellTransform {
-    private final Vec3f origin;
     private final Vec3f direction;
+    private final float distance;
 
-    public StaticSpellTransform(Vec3f direction, float castingDistance) {
-        this.origin = direction.copy();
-        this.origin.scale(castingDistance);
+    public StaticSpellTransform(Vec3f direction, float distance) {
         this.direction = direction;
-    }
-
-    @Override
-    public Vec3f getOrigin(float tickDelta) {
-        return this.origin;
+        this.distance = distance;
     }
 
     @Override
@@ -25,10 +19,12 @@ public final class StaticSpellTransform implements SpellTransform {
     }
 
     @Override
-    public GlyphTransform getTransformForGlyph(int index) {
-        var origin = this.direction.copy();
-        origin.scale(SpellGlyphs.getDistanceForGlyph(index));
+    public float getDistance(final float tickDelta) {
+        return this.distance;
+    }
 
-        return GlyphTransform.of(origin, this.direction);
+    @Override
+    public GlyphTransform getTransformForGlyph(int index) {
+        return GlyphTransform.of(this.direction, SpellGlyphs.getDistanceForGlyph(index));
     }
 }

@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 public final class GlyphPlane {
     private final Vec3f origin = new Vec3f();
     private final Vec3f direction = new Vec3f();
+    private float distance;
 
     private final Matrix4f lookAt = new Matrix4f();
 
@@ -25,10 +26,6 @@ public final class GlyphPlane {
     public GlyphPlane() {
     }
 
-    public GlyphPlane(Vec3f origin, Vec3f direction) {
-        this.set(origin, direction);
-    }
-
     public GlyphPlane(Vec3f direction, float distance) {
         this.set(direction, distance);
     }
@@ -37,19 +34,15 @@ public final class GlyphPlane {
         var origin = this.origin;
         origin.set(direction);
         origin.scale(distance);
-        this.set(origin, direction);
-    }
-
-    public void set(Vec3f origin, Vec3f direction) {
-        this.origin.set(origin);
         this.direction.set(direction);
+        this.distance = distance;
 
         var lookAt = this.computeLookAtMatrix(direction);
 
         var planeToWorld = this.planeToWorld;
         planeToWorld.loadIdentity();
-        planeToWorld.multiplyByTranslation(origin.getX(), origin.getY(), origin.getZ());
         planeToWorld.multiply(lookAt);
+        planeToWorld.multiplyByTranslation(0.0F, 0.0F, distance);
 
         var worldToPlane = this.worldToPlane;
         worldToPlane.load(planeToWorld);
@@ -74,7 +67,7 @@ public final class GlyphPlane {
     }
 
     public void set(GlyphTransform transform, float tickDelta) {
-        this.set(transform.getOrigin(tickDelta), transform.getDirection(tickDelta));
+        this.set(transform.getDirection(tickDelta), transform.getDistance(tickDelta));
     }
 
     public void set(GlyphTransform transform) {
@@ -145,7 +138,11 @@ public final class GlyphPlane {
         return this.direction;
     }
 
+    public float getDistance() {
+        return this.distance;
+    }
+
     public GlyphTransform asTransform() {
-        return GlyphTransform.of(this.origin, this.direction);
+        return GlyphTransform.of(this.direction, this.distance);
     }
 }
