@@ -41,14 +41,15 @@ public final class GlGeometry implements GlBindableObject {
 
         BufferRenderer.unbindAll();
 
-        try (
-                var vertexBufferBinding = vertexBuffer.bind();
-                var vertexArrayBinding = vertexArray.bind()
-        ) {
-            vertexArrayBinding.enableFormat(parameters.getVertexFormat());
+        try (var vertexArrayBinding = vertexArray.bind()) {
+            var vertexBufferBinding = vertexBuffer.bind();
 
             bytes.limit(parameters.getLimit());
             vertexBufferBinding.put(bytes);
+
+            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer.getId());
+
+            vertexArrayBinding.enableFormat(parameters.getVertexFormat());
 
             return new GlGeometry(vertexBuffer, indexBuffer, vertexArray, drawMode, vertexCount);
         }
@@ -69,8 +70,6 @@ public final class GlGeometry implements GlBindableObject {
 
     public final class Binding implements GlBinding {
         private GlVertexArray.Binding vertexArrayBinding;
-        private GlBuffer.Binding vertexBufferBinding;
-        private int indexFormat;
 
         private Binding() {
         }
@@ -78,30 +77,22 @@ public final class GlGeometry implements GlBindableObject {
         private void bind() {
             BufferRenderer.unbindAll();
             this.vertexArrayBinding = GlGeometry.this.vertexArray.bind();
-            this.vertexBufferBinding = GlGeometry.this.vertexBuffer.bind();
-
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, GlGeometry.this.indexBuffer.getId());
-            this.indexFormat = GlGeometry.this.indexBuffer.getElementFormat().count;
         }
 
         public void draw() {
-            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, this.indexFormat);
+            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, GlGeometry.this.indexBuffer.getElementFormat().count);
         }
 
         @Override
         public void unbind() {
             var vertexArrayBinding = this.vertexArrayBinding;
-            var vertexBufferBinding = this.vertexBufferBinding;
-            if (vertexArrayBinding == null || vertexBufferBinding == null) {
+            if (vertexArrayBinding == null) {
                 throw new IllegalStateException("cannot unbind geometry - it is already unbound!");
             }
 
             vertexArrayBinding.unbind();
-            vertexBufferBinding.unbind();
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, 0);
 
             this.vertexArrayBinding = null;
-            this.vertexBufferBinding = null;
         }
     }
 }
