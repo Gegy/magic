@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.render.gl;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import net.minecraft.client.render.BufferRenderer;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import org.lwjgl.opengl.GL15;
 
 import java.nio.ByteBuffer;
@@ -27,7 +27,7 @@ public final class GlBuffer implements GlBindableObject {
 
     @Override
     public Binding bind() {
-        BufferRenderer.resetCurrentVertexBuffer();
+        BufferUploader.invalidate();
         GL15.glBindBuffer(this.target, this.id);
         return this.binding;
     }

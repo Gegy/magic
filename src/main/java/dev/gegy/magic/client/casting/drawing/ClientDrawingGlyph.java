@@ -11,9 +11,9 @@ import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.math.AnimatedColor;
 import dev.gegy.magic.math.AnimationTimer;
 import dev.gegy.magic.math.Easings;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -34,7 +34,7 @@ public final class ClientDrawingGlyph {
     private GlyphStrokeTracker stroke;
 
     private Vector3f drawPointer;
-    private Vec3d lastLook;
+    private Vec3 lastLook;
 
     private int formTicks;
 
@@ -52,7 +52,7 @@ public final class ClientDrawingGlyph {
         this.primaryColor.tick(COLOR_LERP_SPEED);
         this.secondaryColor.tick(COLOR_LERP_SPEED);
 
-        Vec3d look = this.source.getLookVector(1.0F);
+        Vec3 look = this.source.getLookVector(1.0F);
         if (!look.equals(this.lastLook)) {
             this.drawPointer = this.computeDrawPointer(look);
             this.lastLook = look;
@@ -76,7 +76,7 @@ public final class ClientDrawingGlyph {
 
         float distance2 = x * x + y * y;
         if (distance2 >= 1.0F) {
-            float factor = MathHelper.fastInverseSqrt(distance2);
+            float factor = Mth.fastInvSqrt(distance2);
             x *= factor;
             y *= factor;
         }
@@ -85,7 +85,7 @@ public final class ClientDrawingGlyph {
     }
 
     @Nullable
-    private Vector3f computeDrawPointer(Vec3d look) {
+    private Vector3f computeDrawPointer(Vec3 look) {
         var intersection = this.plane.raycast(new Vector3f(0.0f, 0.0f, 0.0f), look.toVector3f());
         if (intersection != null) {
             this.plane.projectFromWorld(intersection);
@@ -115,7 +115,7 @@ public final class ClientDrawingGlyph {
     }
 
     public void startStroke(GlyphNode node) {
-        Vec2f point = node.getPoint();
+        Vec2 point = node.getPoint();
         this.stroke = new GlyphStrokeTracker(point.x, point.y);
     }
 

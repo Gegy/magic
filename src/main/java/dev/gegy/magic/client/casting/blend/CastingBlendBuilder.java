@@ -4,8 +4,8 @@ import dev.gegy.magic.client.casting.ClientCasting;
 import dev.gegy.magic.client.effect.Effect;
 import dev.gegy.magic.client.effect.EffectMap;
 import dev.gegy.magic.client.effect.EffectSelector;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -74,7 +74,7 @@ public final class CastingBlendBuilder {
         }
 
         @Override
-        public void handleEvent(Identifier id, PacketByteBuf buf) {
+        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
             var target = this.target;
             if (target != null) {
                 target.handleEvent(id, buf);

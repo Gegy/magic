@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.casting.drawing;
 
 import dev.gegy.magic.client.glyph.GlyphStroke;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 final class GlyphStrokeTracker {
     private final float fromX;
@@ -24,8 +24,8 @@ final class GlyphStrokeTracker {
     }
 
     public GlyphStroke resolve(float tickDelta) {
-        float toX = MathHelper.lerp(tickDelta, this.prevToX, this.toX);
-        float toY = MathHelper.lerp(tickDelta, this.prevToY, this.toY);
+        float toX = Mth.lerp(tickDelta, this.prevToX, this.toX);
+        float toY = Mth.lerp(tickDelta, this.prevToY, this.toY);
         return new GlyphStroke(this.fromX, this.fromY, toX, toY);
     }
 }

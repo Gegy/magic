@@ -1,9 +1,9 @@
 package dev.gegy.magic.client.animator;
 
 import dev.gegy.magic.client.glyph.GlyphPlane;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.LivingEntity;
 import org.joml.Vector3f;
 
 public final class ArmPose {
@@ -20,8 +20,8 @@ public final class ArmPose {
         this.prevTarget.set(this.target);
 
         var target = this.target.set(newTarget)
-                .rotateY(entity.bodyYaw * MathHelper.RADIANS_PER_DEGREE)
-                .add(0.0F, entity.getStandingEyeHeight(), 0.0F);
+                .rotateY(entity.yBodyRot * Mth.DEG_TO_RAD)
+                .add(0.0F, entity.getEyeHeight(), 0.0F);
 
         target.set(
                 target.x() * 16.0F,
@@ -38,20 +38,20 @@ public final class ArmPose {
         Vector3f prevTarget = this.prevTarget;
         Vector3f target = this.target;
 
-        float targetX = MathHelper.lerp(tickDelta, prevTarget.x(), target.x());
-        float targetY = MathHelper.lerp(tickDelta, prevTarget.y(), target.y());
-        float targetZ = MathHelper.lerp(tickDelta, prevTarget.z(), target.z());
+        float targetX = Mth.lerp(tickDelta, prevTarget.x(), target.x());
+        float targetY = Mth.lerp(tickDelta, prevTarget.y(), target.y());
+        float targetZ = Mth.lerp(tickDelta, prevTarget.z(), target.z());
 
-        float deltaX = targetX - part.pivotX;
-        float deltaY = targetY - part.pivotY;
-        float deltaZ = targetZ - part.pivotZ;
+        float deltaX = targetX - part.x;
+        float deltaY = targetY - part.y;
+        float deltaZ = targetZ - part.z;
         double deltaXZ = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
 
         float targetYaw = (float) -Math.atan2(deltaX, deltaZ);
         float targetPitch = (float) (Math.atan2(deltaY, deltaXZ) - HALF_PI);
 
         float invWeight = 1.0F - weight;
-        part.yaw = weight * targetYaw + part.yaw * invWeight;
-        part.pitch = weight * targetPitch + part.pitch * invWeight;
+        part.yRot = weight * targetYaw + part.yRot * invWeight;
+        part.xRot = weight * targetPitch + part.xRot * invWeight;
     }
 }

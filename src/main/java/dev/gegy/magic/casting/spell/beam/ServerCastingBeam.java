@@ -6,25 +6,25 @@ import dev.gegy.magic.casting.drawing.ServerCastingDrawing;
 import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.network.NetworkSender;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public final class ServerCastingBeam {
     public static final int MAXIMUM_LENGTH = 8;
 
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
     private final SpellParameters spell;
     private final EventSenders eventSenders;
 
     private boolean active;
 
-    private ServerCastingBeam(ServerPlayerEntity player, SpellParameters spell, EventSenders eventSenders) {
+    private ServerCastingBeam(ServerPlayer player, SpellParameters spell, EventSenders eventSenders) {
         this.player = player;
         this.spell = spell;
         this.eventSenders = eventSenders;
     }
 
-    public static ServerCasting build(ServerPlayerEntity player, SpellParameters spell, ServerCastingBuilder casting) {
+    public static ServerCasting build(ServerPlayer player, SpellParameters spell, ServerCastingBuilder casting) {
         var eventSenders = EventSenders.register(casting);
         var beam = new ServerCastingBeam(player, spell, eventSenders);
 
@@ -44,7 +44,7 @@ public final class ServerCastingBeam {
     @Nullable
     private ServerCasting.Factory tick() {
         // TODO: proper cancel logic
-        if (this.player.isSneaking() && !this.active) {
+        if (this.player.isShiftKeyDown() && !this.active) {
             return ServerCastingDrawing::build;
         }
         return null;

@@ -4,12 +4,12 @@
   "package": "dev.gegy.magic.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "EntityTrackerEntryMixin"
+    "ServerEntityMixin"
   ],
   "client": [
-    "client.ClientEntityHandlerMixin",
-    "client.PlayerEntityMixin",
-    "client.PlayerEntityModelMixin"
+    "client.ClientEntityCallbacksMixin",
+    "client.PlayerMixin",
+    "client.PlayerModelMixin"
   ],
   "injectors": {
     "defaultRequire": 1

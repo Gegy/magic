@@ -2,7 +2,7 @@ package dev.gegy.magic.casting.spell.beam;
 
 import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.network.codec.PacketCodec;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 public final record BeamParameters(
         SpellParameters spell,
@@ -10,12 +10,12 @@ public final record BeamParameters(
 ) {
     public static final PacketCodec<BeamParameters> CODEC = PacketCodec.of(BeamParameters::encode, BeamParameters::decode);
 
-    private void encode(PacketByteBuf buf) {
+    private void encode(FriendlyByteBuf buf) {
         SpellParameters.CODEC.encode(this.spell, buf);
         buf.writeBoolean(this.active);
     }
 
-    private static BeamParameters decode(PacketByteBuf buf) {
+    private static BeamParameters decode(FriendlyByteBuf buf) {
         var spell = SpellParameters.CODEC.decode(buf);
         boolean active = buf.readBoolean();
         return new BeamParameters(spell, active);

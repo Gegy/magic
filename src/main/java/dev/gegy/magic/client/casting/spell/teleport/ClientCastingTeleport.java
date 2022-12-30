@@ -11,7 +11,7 @@ import dev.gegy.magic.client.effect.casting.spell.SpellEffects;
 import dev.gegy.magic.client.effect.casting.spell.teleport.TeleportEffect;
 import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.network.NetworkSender;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 
 import java.util.Map;
 import java.util.UUID;
@@ -30,7 +30,7 @@ public final class ClientCastingTeleport {
         this.eventSenders = eventSenders;
     }
 
-    public static ClientCasting build(PlayerEntity player, TeleportParameters parameters, ClientCastingBuilder casting) {
+    public static ClientCasting build(Player player, TeleportParameters parameters, ClientCastingBuilder casting) {
         var spell = parameters.spell()
                 .blendOrCreate(player, casting, SpellTransformType.FIXED);
 
@@ -39,7 +39,7 @@ public final class ClientCastingTeleport {
         var effect = casting.attachEffect(TeleportEffect.create(
                 sourceGlyph,
                 parameters.targets().values(),
-                player.world.getTime()
+                player.level.getGameTime()
         ));
         SpellEffects.attach(spell, casting);
 
@@ -49,14 +49,14 @@ public final class ClientCastingTeleport {
 
         casting.registerTicker(teleport::tick);
 
-        if (player.isMainPlayer()) {
+        if (player.isLocalPlayer()) {
             teleport.bindInput(player, casting);
         }
 
         return casting.build();
     }
 
-    private void bindInput(PlayerEntity player, ClientCastingBuilder casting) {
+    private void bindInput(Player player, ClientCastingBuilder casting) {
         var input = new TeleportInput();
         casting.registerTicker(() -> {
             var target = input.tick(this, player);

@@ -2,8 +2,8 @@ package dev.gegy.magic.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.entity.Entity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 
 public interface LateTrackingEvent {
     Event<LateTrackingEvent> START = EventFactory.createArrayBacked(LateTrackingEvent.class, events -> (trackedEntity, player) -> {
@@ -12,5 +12,5 @@ public interface LateTrackingEvent {
         }
     });
 
-    void onStartTracking(Entity trackedEntity, ServerPlayerEntity player);
+    void onStartTracking(Entity trackedEntity, ServerPlayer player);
 }

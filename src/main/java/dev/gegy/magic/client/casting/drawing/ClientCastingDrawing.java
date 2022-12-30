@@ -22,7 +22,7 @@ import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.math.AnimationTimer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ import java.util.List;
 public final class ClientCastingDrawing {
     private static final int FADE_LENGTH = 10;
 
-    private final PlayerEntity player;
+    private final Player player;
     private final ClientDrawingEventSenders senders;
 
     private final List<ClientDrawingGlyph> glyphs = new ArrayList<>();
@@ -42,12 +42,12 @@ public final class ClientCastingDrawing {
 
     private final GlyphsEffect glyphsEffect = new DrawingGlyphsEffect();
 
-    private ClientCastingDrawing(PlayerEntity player, ClientDrawingEventSenders senders) {
+    private ClientCastingDrawing(Player player, ClientDrawingEventSenders senders) {
         this.player = player;
         this.senders = senders;
     }
 
-    public static ClientCasting build(PlayerEntity player, DrawingParameters parameters, ClientCastingBuilder casting) {
+    public static ClientCasting build(Player player, DrawingParameters parameters, ClientCastingBuilder casting) {
         var senders = ClientDrawingEventSenders.registerTo(casting);
 
         var drawing = new ClientCastingDrawing(player, senders);
@@ -64,7 +64,7 @@ public final class ClientCastingDrawing {
 
         casting.registerTicker(drawing::tick);
 
-        if (player.isMainPlayer()) {
+        if (player.isLocalPlayer()) {
             drawing.bindInput(player, casting);
         }
 
@@ -75,7 +75,7 @@ public final class ClientCastingDrawing {
         return casting.build();
     }
 
-    private void bindInput(PlayerEntity player, ClientCastingBuilder casting) {
+    private void bindInput(Player player, ClientCastingBuilder casting) {
         var input = new DrawingCastingInput();
 
         casting.bindInboundEvent(UpdateDrawingS2CEvent.SPEC, event -> {

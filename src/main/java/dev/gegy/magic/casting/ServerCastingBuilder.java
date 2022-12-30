@@ -8,8 +8,8 @@ import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.client.casting.ConfiguredClientCasting;
 import dev.gegy.magic.network.NetworkSender;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 public final class ServerCastingBuilder {
     private final EventSenderFactory senderFactory;
 
-    private final Map<Identifier, InboundCastingEvent<?>> inboundEvents = new Object2ObjectOpenHashMap<>();
+    private final Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents = new Object2ObjectOpenHashMap<>();
     private final List<Ticker> tickers = new ArrayList<>();
 
     private Supplier<@Nullable ConfiguredClientCasting<?>> clientCasting = () -> null;
@@ -69,11 +69,11 @@ public final class ServerCastingBuilder {
     }
 
     private static class CastingImpl implements ServerCasting {
-        private final Map<Identifier, InboundCastingEvent<?>> inboundEvents;
+        private final Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents;
         private final List<Ticker> tickers;
         private final Supplier<ConfiguredClientCasting<?>> clientCasting;
 
-        private CastingImpl(Map<Identifier, InboundCastingEvent<?>> inboundEvents, List<Ticker> tickers, Supplier<ConfiguredClientCasting<?>> clientCasting) {
+        private CastingImpl(Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents, List<Ticker> tickers, Supplier<ConfiguredClientCasting<?>> clientCasting) {
             this.inboundEvents = inboundEvents;
             this.tickers = tickers;
             this.clientCasting = clientCasting;
@@ -92,7 +92,7 @@ public final class ServerCastingBuilder {
         }
 
         @Override
-        public void handleEvent(Identifier id, PacketByteBuf buf) {
+        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
             var event = this.inboundEvents.get(id);
             if (event != null) {
                 event.acceptBytes(buf);

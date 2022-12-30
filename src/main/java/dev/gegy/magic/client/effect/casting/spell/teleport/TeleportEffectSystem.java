@@ -1,12 +1,12 @@
 package dev.gegy.magic.client.effect.casting.spell.teleport;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.client.effect.EffectSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ public final class TeleportEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void render(MinecraftClient client, WorldRenderContext context, Framebuffer targetFramebuffer, EffectSelector effects) {
+    public void render(Minecraft client, WorldRenderContext context, RenderTarget targetFramebuffer, EffectSelector effects) {
         RenderSystem.disableCull();
 
         for (var effect : effects.select(TeleportEffect.TYPE)) {
@@ -29,7 +29,7 @@ public final class TeleportEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void tick(MinecraftClient client, EffectSelector effects) {
+    public void tick(Minecraft client, EffectSelector effects) {
     }
 
     @Override

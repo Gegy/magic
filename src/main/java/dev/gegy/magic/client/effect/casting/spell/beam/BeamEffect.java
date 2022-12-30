@@ -4,7 +4,7 @@ import dev.gegy.magic.client.effect.Effect;
 import dev.gegy.magic.client.effect.EffectType;
 import dev.gegy.magic.client.glyph.spell.Spell;
 import dev.gegy.magic.math.ColorRgb;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 public final class BeamEffect implements Effect {
     public static final EffectType<BeamEffect> TYPE = EffectType.create();
@@ -39,7 +39,7 @@ public final class BeamEffect implements Effect {
     }
 
     public float getLength(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevLength, this.length);
+        return Mth.lerp(tickDelta, this.prevLength, this.length);
     }
 
     public boolean visible() {

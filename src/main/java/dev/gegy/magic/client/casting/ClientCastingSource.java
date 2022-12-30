@@ -7,18 +7,18 @@ import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.network.NetworkAddressing;
 import dev.gegy.magic.network.NetworkSender;
 import dev.gegy.magic.network.c2s.CastingEventC2SPacket;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public final class ClientCastingSource implements AutoCloseable {
-    private final PlayerEntity player;
+    private final Player player;
 
     private ClientCasting casting = ClientCasting.NONE;
 
-    public ClientCastingSource(PlayerEntity player) {
+    public ClientCastingSource(Player player) {
         this.player = player;
     }
 
@@ -76,7 +76,7 @@ public final class ClientCastingSource implements AutoCloseable {
         }
     }
 
-    public void handleEvent(Identifier id, PacketByteBuf buf) {
+    public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
         this.casting.handleEvent(id, buf);
     }
 

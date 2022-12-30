@@ -1,6 +1,6 @@
 package dev.gegy.magic.math;
 
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 
 public final class AnimatedColor {
     private float red, green, blue;
@@ -30,15 +30,15 @@ public final class AnimatedColor {
     }
 
     public float getRed(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevRed, this.red);
+        return Mth.lerp(tickDelta, this.prevRed, this.red);
     }
 
     public float getGreen(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevGreen, this.green);
+        return Mth.lerp(tickDelta, this.prevGreen, this.green);
     }
 
     public float getBlue(float tickDelta) {
-        return MathHelper.lerp(tickDelta, this.prevBlue, this.blue);
+        return Mth.lerp(tickDelta, this.prevBlue, this.blue);
     }
 
     public ColorRgb get(float tickDelta) {

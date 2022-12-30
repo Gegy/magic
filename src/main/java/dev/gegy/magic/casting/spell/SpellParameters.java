@@ -9,8 +9,8 @@ import dev.gegy.magic.client.glyph.spell.SpellGlyphs;
 import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.glyph.GlyphForm;
 import dev.gegy.magic.network.codec.PacketCodec;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3f;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public final record SpellParameters(
     public static final PacketCodec<SpellParameters> CODEC = PacketCodec.of(SpellParameters::encode, SpellParameters::decode);
 
     public Spell blendOrCreate(
-            PlayerEntity player, ClientCastingBuilder casting,
+            Player player, ClientCastingBuilder casting,
             SpellTransformType transform
     ) {
         var spell = casting.blendFrom(CastingBlendType.SPELL, transform);
@@ -33,7 +33,7 @@ public final record SpellParameters(
         }
     }
 
-    public Spell create(PlayerEntity player, SpellTransformType transformType) {
+    public Spell create(Player player, SpellTransformType transformType) {
         var source = SpellSource.of(player);
 
         var transform = transformType.create(source, this.direction, this.glyphs.size());
@@ -49,12 +49,12 @@ public final record SpellParameters(
         return new Spell(source, transform, glyphs);
     }
 
-    private void encode(PacketByteBuf buf) {
+    private void encode(FriendlyByteBuf buf) {
         GlyphForm.PACKET_CODEC.list().encode(this.glyphs, buf);
         PacketCodec.VEC3F.encode(this.direction, buf);
     }
 
-    private static SpellParameters decode(PacketByteBuf buf) {
+    private static SpellParameters decode(FriendlyByteBuf buf) {
         var glyphs = GlyphForm.PACKET_CODEC.list().decode(buf);
         var direction = PacketCodec.VEC3F.decode(buf);
         return new SpellParameters(glyphs, direction);

@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.animator;
 
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.world.entity.player.Player;
 
 public final class CastingAnimator {
     private static final int POSE_BLEND_TICKS = 5;
@@ -13,7 +13,7 @@ public final class CastingAnimator {
     private CastingPose prevPose;
     private int poseBlendingTicks;
 
-    public void applyToModel(PlayerEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta) {
+    public void applyToModel(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta) {
         CastingPose pose = this.pose;
         CastingPose prevPose = this.prevPose;
         if (pose == null && prevPose == null) {
@@ -28,12 +28,12 @@ public final class CastingAnimator {
         }
     }
 
-    private void applyToModelStable(PlayerEntity entity, CastingPose pose, ModelPart leftArm, ModelPart rightArm, float tickDelta) {
+    private void applyToModelStable(Player entity, CastingPose pose, ModelPart leftArm, ModelPart rightArm, float tickDelta) {
         pose.apply(entity, leftArm, rightArm, tickDelta, 1.0F);
     }
 
     private void applyToModelBlended(
-            PlayerEntity entity,
+            Player entity,
             CastingPose prevPose, CastingPose pose, float transitionTicks,
             ModelPart leftArm, ModelPart rightArm, float tickDelta
     ) {
@@ -49,7 +49,7 @@ public final class CastingAnimator {
         }
     }
 
-    public void tick(PlayerEntity entity) {
+    public void tick(Player entity) {
         if (this.pose == this.prevPose) {
             this.tickStable(entity);
         } else {
@@ -57,14 +57,14 @@ public final class CastingAnimator {
         }
     }
 
-    private void tickStable(PlayerEntity entity) {
+    private void tickStable(Player entity) {
         if (this.tickPose(entity, this.drawing)) return;
         if (this.tickPose(entity, this.prepared)) return;
 
         this.pose = null;
     }
 
-    private boolean tickPose(PlayerEntity entity, CastingPose pose) {
+    private boolean tickPose(Player entity, CastingPose pose) {
         if (pose.tick(entity)) {
             if (this.pose != pose) {
                 this.pose = pose;
@@ -76,7 +76,7 @@ public final class CastingAnimator {
         }
     }
 
-    private void tickBlending(PlayerEntity entity) {
+    private void tickBlending(Player entity) {
         if (++this.poseBlendingTicks >= POSE_BLEND_TICKS) {
             this.poseBlendingTicks = 0;
             this.prevPose = this.pose;

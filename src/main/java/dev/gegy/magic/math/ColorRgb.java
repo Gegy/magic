@@ -1,7 +1,7 @@
 package dev.gegy.magic.math;
 
 import dev.gegy.magic.network.codec.PacketCodec;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.hsluv.HUSLColorConverter;
 
 public final class ColorRgb {
@@ -25,9 +25,9 @@ public final class ColorRgb {
     }
 
     public static ColorRgb of(float red, float green, float blue) {
-        int redValue = MathHelper.floor(red * 255.0F) & 0xFF;
-        int greenValue = MathHelper.floor(green * 255.0F) & 0xFF;
-        int blueValue = MathHelper.floor(blue * 255.0F) & 0xFF;
+        int redValue = Mth.floor(red * 255.0F) & 0xFF;
+        int greenValue = Mth.floor(green * 255.0F) & 0xFF;
+        int blueValue = Mth.floor(blue * 255.0F) & 0xFF;
         int packed = redValue << 16 | greenValue << 8 | blueValue;
 
         return new ColorRgb(red, green, blue, packed);

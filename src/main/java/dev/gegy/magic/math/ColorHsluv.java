@@ -1,6 +1,6 @@
 package dev.gegy.magic.math;
 
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.hsluv.HUSLColorConverter;
 
 public final record ColorHsluv(float hue, float saturation, float light) {
@@ -21,12 +21,12 @@ public final record ColorHsluv(float hue, float saturation, float light) {
     }
 
     public ColorHsluv mulSaturation(float factor) {
-        float saturation = MathHelper.clamp(this.saturation * factor, 0.0F, 1.0F);
+        float saturation = Mth.clamp(this.saturation * factor, 0.0F, 1.0F);
         return this.withSaturation(saturation);
     }
 
     public ColorHsluv mulLight(float factor) {
-        float light = MathHelper.clamp(this.light * factor, 0.0F, 1.0F);
+        float light = Mth.clamp(this.light * factor, 0.0F, 1.0F);
         return this.withLight(light);
     }
 

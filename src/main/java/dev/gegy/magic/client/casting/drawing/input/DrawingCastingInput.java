@@ -3,7 +3,7 @@ package dev.gegy.magic.client.casting.drawing.input;
 import dev.gegy.magic.client.casting.drawing.ClientCastingDrawing;
 import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
 import dev.gegy.magic.glyph.GlyphType;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +11,7 @@ public final class DrawingCastingInput {
     private DrawingInputState state;
 
     @Nullable
-    public ClientDrawingGlyph tick(ClientCastingDrawing casting, PlayerEntity player) {
+    public ClientDrawingGlyph tick(ClientCastingDrawing casting, Player player) {
         var state = this.getStateOrInit();
         this.state = state = state.tick(casting, player);
 

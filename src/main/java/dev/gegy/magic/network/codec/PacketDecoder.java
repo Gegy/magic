@@ -1,7 +1,7 @@
 package dev.gegy.magic.network.codec;
 
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 public interface PacketDecoder<T> {
-    T decode(PacketByteBuf buf);
+    T decode(FriendlyByteBuf buf);
 }

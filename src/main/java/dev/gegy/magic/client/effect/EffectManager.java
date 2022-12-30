@@ -9,17 +9,17 @@ import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.resource.ResourceType;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class EffectManager {
-    private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
+    private static final Minecraft CLIENT = Minecraft.getInstance();
 
     private static EffectManager instance;
 
@@ -35,14 +35,14 @@ public final class EffectManager {
         EffectManager instance = new EffectManager();
         EffectManager.instance = instance;
 
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
+        ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
             @Override
-            public Identifier getFabricId() {
+            public ResourceLocation getFabricId() {
                 return Magic.identifier("effects");
             }
 
             @Override
-            public void reload(ResourceManager resources) {
+            public void onResourceManagerReload(ResourceManager resources) {
                 instance.load(resources);
             }
         });
@@ -70,15 +70,15 @@ public final class EffectManager {
     private void render(WorldRenderContext context) {
         if (context.world() != null) {
             // TODO: handle fabulous framebuffer
-            var framebuffer = CLIENT.getFramebuffer();
+            var framebuffer = CLIENT.getMainRenderTarget();
             for (var system : this.effectSystems) {
                 system.render(CLIENT, context, framebuffer, this.effects.selector());
             }
         }
     }
 
-    private void tick(MinecraftClient client) {
-        if (client.world != null) {
+    private void tick(Minecraft client) {
+        if (client.level != null) {
             for (var system : this.effectSystems) {
                 system.tick(client, this.effects.selector());
             }

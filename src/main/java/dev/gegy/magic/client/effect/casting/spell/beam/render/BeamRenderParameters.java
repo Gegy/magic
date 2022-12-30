@@ -4,7 +4,7 @@ import dev.gegy.magic.client.effect.casting.spell.beam.BeamEffect;
 import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.spell.Spell;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -48,7 +48,7 @@ public final class BeamRenderParameters {
         this.green = beam.color().green();
         this.blue = beam.color().blue();
 
-        float glyphTime = context.world().getTime() % DAY_LENGTH;
+        float glyphTime = context.world().getGameTime() % DAY_LENGTH;
         this.time = (glyphTime + tickDelta) / 20.0F;
     }
 
@@ -63,14 +63,14 @@ public final class BeamRenderParameters {
 
         this.impactModelViewProject.set(viewProject)
                 .translate(point.x(), point.y(), point.z())
-                .rotate(context.camera().getRotation());
+                .rotate(context.camera().rotation());
     }
 
     private Matrix4f computeViewProject(Spell spell, WorldRenderContext context) {
-        Matrix4f modelMatrix = context.matrixStack().peek().getPositionMatrix();
-        Vec3d cameraPos = context.camera().getPos();
+        Matrix4f modelMatrix = context.matrixStack().last().pose();
+        Vec3 cameraPos = context.camera().getPosition();
 
-        Vec3d sourcePos = spell.source().getPosition(context.tickDelta());
+        Vec3 sourcePos = spell.source().getPosition(context.tickDelta());
 
         return this.viewProject.set(context.projectionMatrix())
                 .mul(modelMatrix)

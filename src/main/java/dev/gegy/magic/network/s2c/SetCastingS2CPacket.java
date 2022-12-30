@@ -6,14 +6,14 @@ import dev.gegy.magic.client.casting.ConfiguredClientCasting;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 
 public final class SetCastingS2CPacket {
-    private static final Identifier CHANNEL = Magic.identifier("set_casting");
+    private static final ResourceLocation CHANNEL = Magic.identifier("set_casting");
 
     static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(CHANNEL, (client, handler, buf, responseSender) -> {
@@ -21,8 +21,8 @@ public final class SetCastingS2CPacket {
             var casting = ConfiguredClientCasting.CODEC.nullable().decode(buf);
             client.submit(() -> {
                 try {
-                    var source = client.world.getEntityById(sourceId);
-                    if (source instanceof PlayerEntity player) {
+                    var source = client.level.getEntity(sourceId);
+                    if (source instanceof Player player) {
                         ClientCastingTracker.INSTANCE.setCasting(player, casting);
                     }
                 } finally {
@@ -32,14 +32,14 @@ public final class SetCastingS2CPacket {
         });
     }
 
-    public static <T> PacketByteBuf create(PlayerEntity source, @Nullable ConfiguredClientCasting<?> casting) {
-        PacketByteBuf buf = PacketByteBufs.create();
+    public static <T> FriendlyByteBuf create(Player source, @Nullable ConfiguredClientCasting<?> casting) {
+        FriendlyByteBuf buf = PacketByteBufs.create();
         buf.writeVarInt(source.getId());
         ConfiguredClientCasting.CODEC.nullable().encode(casting, buf);
         return buf;
     }
 
-    public static void sendTo(ServerPlayerEntity player, PacketByteBuf buf) {
+    public static void sendTo(ServerPlayer player, FriendlyByteBuf buf) {
         ServerPlayNetworking.send(player, CHANNEL, buf);
     }
 }

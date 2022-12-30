@@ -3,7 +3,7 @@ package dev.gegy.magic.glyph;
 import dev.gegy.magic.math.ColorHsluv;
 import dev.gegy.magic.math.ColorRgb;
 import dev.gegy.magic.network.codec.PacketCodec;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 
 public final record GlyphStyle(ColorRgb primaryColor, ColorRgb secondaryColor) {
     public static final PacketCodec<GlyphStyle> PACKET_CODEC = PacketCodec.of(GlyphStyle::encode, GlyphStyle::decode);
@@ -19,12 +19,12 @@ public final record GlyphStyle(ColorRgb primaryColor, ColorRgb secondaryColor) {
         return new GlyphStyle(primary.toRgb(), secondary.toRgb());
     }
 
-    private void encode(PacketByteBuf buf) {
+    private void encode(FriendlyByteBuf buf) {
         ColorRgb.PACKET_CODEC.encode(this.primaryColor, buf);
         ColorRgb.PACKET_CODEC.encode(this.secondaryColor, buf);
     }
 
-    private static GlyphStyle decode(PacketByteBuf buf) {
+    private static GlyphStyle decode(FriendlyByteBuf buf) {
         var primaryColor = ColorRgb.PACKET_CODEC.decode(buf);
         var secondaryColor = ColorRgb.PACKET_CODEC.decode(buf);
         return new GlyphStyle(primaryColor, secondaryColor);

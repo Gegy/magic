@@ -1,12 +1,12 @@
 package dev.gegy.magic.client.effect.glyph;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.render.GeometryBuilder;
 import dev.gegy.magic.client.render.gl.GlGeometry;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ public final class GlyphEffectRenderer implements AutoCloseable {
         return new GlyphEffectRenderer(worldShader, geometry, texture);
     }
 
-    public Batch startBatch(Framebuffer target) {
+    public Batch startBatch(RenderTarget target) {
         var batch = this.batch;
         batch.start(target);
         return batch;
@@ -47,16 +47,16 @@ public final class GlyphEffectRenderer implements AutoCloseable {
     }
 
     public final class Batch implements AutoCloseable {
-        private Framebuffer target;
+        private RenderTarget target;
         private GlGeometry.Binding geometryBinding;
 
-        void start(Framebuffer target) {
+        void start(RenderTarget target) {
             this.target = target;
 
             RenderSystem.disableCull();
             RenderSystem.enableBlend();
             RenderSystem.enableDepthTest();
-            RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
+            RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
             this.geometryBinding = GlyphEffectRenderer.this.geometry.bind();
         }
@@ -64,7 +64,7 @@ public final class GlyphEffectRenderer implements AutoCloseable {
         public void render(GlyphRenderParameters parameters) {
             GlyphEffectRenderer.this.texture.renderWith(parameters, this.geometryBinding);
 
-            this.target.beginWrite(true);
+            this.target.bindWrite(true);
             this.renderToWorld(parameters);
         }
 

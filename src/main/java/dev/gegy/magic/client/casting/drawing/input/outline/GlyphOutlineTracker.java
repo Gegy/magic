@@ -1,8 +1,8 @@
 package dev.gegy.magic.client.casting.drawing.input.outline;
 
-import net.minecraft.util.math.Vec3d;
-import org.joml.Vector3f;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +28,7 @@ public final class GlyphOutlineTracker {
     }
 
     @Nullable
-    public GlyphOutline pushSample(Vec3d look) {
+    public GlyphOutline pushSample(Vec3 look) {
         Vector3f sample = look.toVector3f();
 
         Vector3f[] samples = this.samples;

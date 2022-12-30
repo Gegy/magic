@@ -10,28 +10,28 @@ import dev.gegy.magic.client.effect.casting.spell.beam.BeamEffect;
 import dev.gegy.magic.client.glyph.spell.Spell;
 import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.network.NetworkSender;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
+import net.minecraft.client.Minecraft;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public final class ClientCastingBeam {
-    private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
+    private static final Minecraft CLIENT = Minecraft.getInstance();
 
-    private final PlayerEntity player;
+    private final Player player;
     private final Spell spell;
     private final BeamEffect beam;
     private final EventSenders eventSenders;
 
-    private ClientCastingBeam(PlayerEntity player, Spell spell, BeamEffect beam, EventSenders eventSenders) {
+    private ClientCastingBeam(Player player, Spell spell, BeamEffect beam, EventSenders eventSenders) {
         this.player = player;
         this.spell = spell;
         this.beam = beam;
         this.eventSenders = eventSenders;
     }
 
-    public static ClientCasting build(PlayerEntity player, BeamParameters parameters, ClientCastingBuilder casting) {
+    public static ClientCasting build(Player player, BeamParameters parameters, ClientCastingBuilder casting) {
         var spell = parameters.spell()
                 .blendOrCreate(player, casting, SpellTransformType.TRACKING);
 
@@ -47,7 +47,7 @@ public final class ClientCastingBeam {
 
         casting.registerTicker(beam::tick);
 
-        if (player.isMainPlayer()) {
+        if (player.isLocalPlayer()) {
             beam.bindInput(casting);
         }
 
@@ -57,7 +57,7 @@ public final class ClientCastingBeam {
     private void bindInput(ClientCastingBuilder casting) {
         var active = new MutableBoolean();
         casting.registerTicker(() -> {
-            boolean holdingKey = CLIENT.options.attackKey.isPressed();
+            boolean holdingKey = CLIENT.options.keyAttack.isDown();
             if (active.booleanValue() != holdingKey) {
                 active.setValue(holdingKey);
                 this.eventSenders.setActive(holdingKey);
@@ -79,14 +79,14 @@ public final class ClientCastingBeam {
                 direction.z() * maximumLength
         );
 
-        var cast = this.player.world.raycast(new RaycastContext(
+        var cast = this.player.level.clip(new ClipContext(
                 beamSource, beamTarget,
-                RaycastContext.ShapeType.OUTLINE,
-                RaycastContext.FluidHandling.ANY,
+                ClipContext.Block.OUTLINE,
+                ClipContext.Fluid.ANY,
                 this.player
         ));
 
-        double length = cast.getPos().distanceTo(beamSource);
+        double length = cast.getLocation().distanceTo(beamSource);
         this.beam.tick((float) length);
     }
 
@@ -94,10 +94,10 @@ public final class ClientCastingBeam {
         this.beam.setVisible(event.active());
     }
 
-    private Vec3d getBeamSource() {
+    private Vec3 getBeamSource() {
         var transform = this.spell.transform();
 
-        var source = new Vec3d(transform.getOrigin(1.0F));
+        var source = new Vec3(transform.getOrigin(1.0F));
         source = source.add(this.spell.source().getPosition(1.0F));
 
         return source;

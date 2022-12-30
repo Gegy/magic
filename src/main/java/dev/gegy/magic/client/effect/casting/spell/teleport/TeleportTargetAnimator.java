@@ -1,9 +1,9 @@
 package dev.gegy.magic.client.effect.casting.spell.teleport;
 
+import com.mojang.math.Constants;
 import dev.gegy.magic.math.Easings;
-import net.minecraft.util.math.MathConstants;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 
 public final class TeleportTargetAnimator {
     private static final float ANIMATE_IN_DELAY = 3.0F;
@@ -51,26 +51,26 @@ public final class TeleportTargetAnimator {
         return rings;
     }
 
-    public Vec2f getPosition(int index, float time) {
+    public Vec2 getPosition(int index, float time) {
         var position = this.getTargetPosition(index, time);
 
         float animateIn = this.getAnimateInProgress(index, time);
         if (animateIn < 1.0F) {
-            position = position.multiply(animateIn);
+            position = position.scale(animateIn);
         }
 
         return position;
     }
 
-    private Vec2f getTargetPosition(int index, float time) {
+    private Vec2 getTargetPosition(int index, float time) {
         var ring = this.ringsByIndex[index];
 
         float angle = ring.getAngleFor(index, time);
         float radius = ring.radius();
 
-        return new Vec2f(
-                MathHelper.cos(angle) * radius,
-                MathHelper.sin(angle) * radius
+        return new Vec2(
+                Mth.cos(angle) * radius,
+                Mth.sin(angle) * radius
         );
     }
 
@@ -103,8 +103,8 @@ public final class TeleportTargetAnimator {
     }
 
     private int computeMaxCountInRing(float radius) {
-        float circumference = 2 * MathConstants.PI * radius;
-        return MathHelper.floor(circumference / TeleportEffect.SYMBOL_SIZE);
+        float circumference = 2 * Constants.PI * radius;
+        return Mth.floor(circumference / TeleportEffect.SYMBOL_SIZE);
     }
 
     private static final record Ring(
@@ -115,7 +115,7 @@ public final class TeleportTargetAnimator {
     ) {
         public float getAngleFor(int index, float time) {
             int localIndex = this.localIndex(index);
-            float angle = ((float) localIndex / this.count) * (2.0F * MathConstants.PI);
+            float angle = ((float) localIndex / this.count) * (2.0F * Constants.PI);
             angle += time * SPIN_SPEED;
             return angle * this.direction;
         }

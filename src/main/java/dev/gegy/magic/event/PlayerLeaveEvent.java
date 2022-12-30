@@ -2,7 +2,7 @@ package dev.gegy.magic.event;
 
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 public interface PlayerLeaveEvent {
     Event<PlayerLeaveEvent> EVENT = EventFactory.createArrayBacked(PlayerLeaveEvent.class, events -> (player) -> {
@@ -11,5 +11,5 @@ public interface PlayerLeaveEvent {
         }
     });
 
-    void onPlayerLeave(ServerPlayerEntity player);
+    void onPlayerLeave(ServerPlayer player);
 }

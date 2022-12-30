@@ -1,7 +1,7 @@
 package dev.gegy.magic.glyph.shape;
 
 import dev.gegy.magic.network.codec.PacketCodec;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -40,18 +40,18 @@ public enum GlyphNode {
     }
 
     private final boolean circumference;
-    private final Vec2f point;
+    private final Vec2 point;
 
     GlyphNode(boolean circumference, float x, float y) {
         this.circumference = circumference;
-        this.point = new Vec2f(x, y);
+        this.point = new Vec2(x, y);
     }
 
     public boolean isAtCircumference() {
         return this.circumference;
     }
 
-    public Vec2f getPoint() {
+    public Vec2 getPoint() {
         return this.point;
     }
 

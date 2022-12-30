@@ -7,7 +7,7 @@ import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.glyph.GlyphStroke;
 import dev.gegy.magic.client.render.GeometryBuilder;
 import dev.gegy.magic.client.render.gl.GlBinding;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 

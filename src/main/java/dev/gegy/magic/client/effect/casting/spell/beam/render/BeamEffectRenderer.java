@@ -1,15 +1,15 @@
 package dev.gegy.magic.client.effect.casting.spell.beam.render;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexBuffer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectTexture;
 import dev.gegy.magic.client.render.GeometryBuilder;
 import dev.gegy.magic.client.render.gl.GlGeometry;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.VertexBuffer;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
 
@@ -74,19 +74,19 @@ public final class BeamEffectRenderer implements AutoCloseable {
             double radius = 0.5;
             double corner = Math.sqrt((radius * radius) / 2.0);
 
-            builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE);
-            builder.vertex(-corner, -corner, 0.0).texture(0.0F, 0.0F).next();
-            builder.vertex(-corner, -corner, 1.0).texture(1.0F, 0.0F).next();
-            builder.vertex(corner, corner, 1.0).texture(1.0F, 1.0F).next();
-            builder.vertex(corner, corner, 0.0).texture(0.0F, 1.0F).next();
-            builder.vertex(corner, -corner, 0.0).texture(0.0F, 0.0F).next();
-            builder.vertex(corner, -corner, 1.0).texture(1.0F, 0.0F).next();
-            builder.vertex(-corner, corner, 1.0).texture(1.0F, 1.0F).next();
-            builder.vertex(-corner, corner, 0.0).texture(0.0F, 1.0F).next();
+            builder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+            builder.vertex(-corner, -corner, 0.0).uv(0.0F, 0.0F).endVertex();
+            builder.vertex(-corner, -corner, 1.0).uv(1.0F, 0.0F).endVertex();
+            builder.vertex(corner, corner, 1.0).uv(1.0F, 1.0F).endVertex();
+            builder.vertex(corner, corner, 0.0).uv(0.0F, 1.0F).endVertex();
+            builder.vertex(corner, -corner, 0.0).uv(0.0F, 0.0F).endVertex();
+            builder.vertex(corner, -corner, 1.0).uv(1.0F, 0.0F).endVertex();
+            builder.vertex(-corner, corner, 1.0).uv(1.0F, 1.0F).endVertex();
+            builder.vertex(-corner, corner, 0.0).uv(0.0F, 1.0F).endVertex();
         });
     }
 
-    public Batch startBatch(Framebuffer target) {
+    public Batch startBatch(RenderTarget target) {
         var batch = this.batch;
         batch.start(target);
         return batch;
@@ -108,9 +108,9 @@ public final class BeamEffectRenderer implements AutoCloseable {
     }
 
     public final class Batch implements AutoCloseable {
-        private Framebuffer target;
+        private RenderTarget target;
 
-        void start(Framebuffer target) {
+        void start(RenderTarget target) {
             this.target = target;
             RenderSystem.disableCull();
             RenderSystem.enableDepthTest();
@@ -119,7 +119,7 @@ public final class BeamEffectRenderer implements AutoCloseable {
         public void render(BeamRenderParameters parameters) {
             this.renderToTexture(parameters);
 
-            this.target.beginWrite(true);
+            this.target.bindWrite(true);
 
             try (var geometry = BeamEffectRenderer.this.crossGeometry.bind()) {
                 this.renderToWorld(parameters, BeamEffectRenderer.this.texture, BeamEffectRenderer.this.worldShader, geometry);

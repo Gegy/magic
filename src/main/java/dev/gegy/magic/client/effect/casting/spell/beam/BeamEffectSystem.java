@@ -1,5 +1,7 @@
 package dev.gegy.magic.client.effect.casting.spell.beam;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
+import com.mojang.math.Constants;
 import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.client.effect.EffectSystem;
 import dev.gegy.magic.client.effect.casting.spell.beam.render.BeamEffectRenderer;
@@ -7,13 +9,11 @@ import dev.gegy.magic.client.effect.casting.spell.beam.render.BeamRenderParamete
 import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.particle.MagicParticles;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.particle.ParticleManager;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.math.MathConstants;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.ParticleEngine;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,7 +40,7 @@ public final class BeamEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void render(MinecraftClient client, WorldRenderContext context, Framebuffer targetFramebuffer, EffectSelector effects) {
+    public void render(Minecraft client, WorldRenderContext context, RenderTarget targetFramebuffer, EffectSelector effects) {
         var visibleBeams = this.collectVisibleBeams(effects);
         if (visibleBeams.isEmpty()) {
             return;
@@ -68,15 +68,15 @@ public final class BeamEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void tick(MinecraftClient client, EffectSelector effects) {
+    public void tick(Minecraft client, EffectSelector effects) {
         for (var beam : effects.select(BeamEffect.TYPE)) {
             if (beam.visible()) {
-                this.spawnParticles(client.particleManager, beam);
+                this.spawnParticles(client.particleEngine, beam);
             }
         }
     }
 
-    private void spawnParticles(ParticleManager particleManager, BeamEffect beam) {
+    private void spawnParticles(ParticleEngine particleManager, BeamEffect beam) {
         var spell = beam.spell();
 
         var plane = this.plane;
@@ -88,13 +88,13 @@ public final class BeamEffectSystem implements EffectSystem {
         this.spawnImpactParticles(particleManager, beam, sourcePos, plane);
     }
 
-    private void spawnBeamParticles(ParticleManager particleManager, Vec3d sourcePos, GlyphPlane plane) {
+    private void spawnBeamParticles(ParticleEngine particleManager, Vec3 sourcePos, GlyphPlane plane) {
         float radius = 0.5F + this.random.nextFloat() * 0.25F;
-        float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
+        float theta = this.random.nextFloat() * 2.0F * Constants.PI;
 
         var origin = this.plane.projectToWorld(
-                MathHelper.sin(theta) * radius,
-                MathHelper.cos(theta) * radius
+                Mth.sin(theta) * radius,
+                Mth.cos(theta) * radius
         );
 
         var direction = plane.direction();
@@ -104,7 +104,7 @@ public final class BeamEffectSystem implements EffectSystem {
 
         // TODO: despawn based on distance from beam
 
-        particleManager.addParticle(
+        particleManager.createParticle(
                 MagicParticles.SPARK,
                 sourcePos.x + origin.x(),
                 sourcePos.y + origin.y(),
@@ -113,19 +113,19 @@ public final class BeamEffectSystem implements EffectSystem {
         );
     }
 
-    private void spawnImpactParticles(ParticleManager particleManager, BeamEffect beam, Vec3d sourcePos, GlyphPlane plane) {
+    private void spawnImpactParticles(ParticleEngine particleManager, BeamEffect beam, Vec3 sourcePos, GlyphPlane plane) {
         var length = beam.getLength(1.0F);
         var origin = plane.projectToWorld(0.0F, 0.0F, length);
 
-        float theta = this.random.nextFloat() * 2.0F * MathConstants.PI;
+        float theta = this.random.nextFloat() * 2.0F * Constants.PI;
 
         var ejectVelocity = plane.projectToWorld(
-                MathHelper.sin(theta) * 0.5F,
-                MathHelper.cos(theta) * 0.5F,
+                Mth.sin(theta) * 0.5F,
+                Mth.cos(theta) * 0.5F,
                 0.0F
         ).mul(0.2F);
 
-        particleManager.addParticle(
+        particleManager.createParticle(
                 MagicParticles.SPARK,
                 sourcePos.x + origin.x(),
                 sourcePos.y + origin.y(),

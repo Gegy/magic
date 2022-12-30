@@ -1,11 +1,11 @@
 package dev.gegy.magic.client.render.gl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferBuilder;
 
 public final class GlGeometry implements GlBindableObject {
     private final GlBuffer vertexBuffer;
-    private final RenderSystem.ShapeIndexBuffer indexBuffer;
+    private final RenderSystem.AutoStorageIndexBuffer indexBuffer;
     private final GlVertexArray vertexArray;
 
     private final int drawMode;
@@ -14,7 +14,7 @@ public final class GlGeometry implements GlBindableObject {
     private final Binding binding = new Binding();
 
     private GlGeometry(
-            GlBuffer vertexBuffer, RenderSystem.ShapeIndexBuffer indexBuffer, GlVertexArray vertexArray,
+            GlBuffer vertexBuffer, RenderSystem.AutoStorageIndexBuffer indexBuffer, GlVertexArray vertexArray,
             int drawMode, int vertexCount
     ) {
         this.vertexBuffer = vertexBuffer;
@@ -24,10 +24,10 @@ public final class GlGeometry implements GlBindableObject {
         this.vertexCount = vertexCount;
     }
 
-    public static GlGeometry upload(BufferBuilder.BuiltBuffer buffer) {
-        var parameters = buffer.getParameters();
+    public static GlGeometry upload(BufferBuilder.RenderedBuffer buffer) {
+        var parameters = buffer.drawState();
 
-        int drawMode = parameters.mode().glMode;
+        int drawMode = parameters.mode().asGLMode;
         int vertexCount = parameters.indexCount();
 
         var vertexArray = GlVertexArray.generate();
@@ -36,8 +36,8 @@ public final class GlGeometry implements GlBindableObject {
 
         try (var vertexArrayBinding = vertexArray.bind()) {
             var vertexBufferBinding = vertexBuffer.bind();
-            vertexBufferBinding.put(buffer.getVertexBuffer());
-            indexBuffer.bindAndGrow(vertexCount);
+            vertexBufferBinding.put(buffer.vertexBuffer());
+            indexBuffer.bind(vertexCount);
 
             vertexArrayBinding.enableFormat(parameters.format());
 
@@ -69,7 +69,7 @@ public final class GlGeometry implements GlBindableObject {
         }
 
         public void draw() {
-            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, GlGeometry.this.indexBuffer.getIndexType().glType);
+            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, GlGeometry.this.indexBuffer.type().asGLType);
         }
 
         @Override

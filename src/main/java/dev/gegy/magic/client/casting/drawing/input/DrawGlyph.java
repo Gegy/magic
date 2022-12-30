@@ -6,8 +6,8 @@ import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -28,7 +28,7 @@ abstract class DrawGlyph implements DrawingInputState {
     }
 
     @Override
-    public final DrawingInputState tick(ClientCastingDrawing casting, PlayerEntity player) {
+    public final DrawingInputState tick(ClientCastingDrawing casting, Player player) {
         Vector3f drawPointer = this.glyph.drawPointer();
         if (drawPointer == null || this.isPointerOutOfBounds(drawPointer)) {
             return this.cancelGlyph(casting);
@@ -99,7 +99,7 @@ abstract class DrawGlyph implements DrawingInputState {
     @Nullable
     protected GlyphNode selectNodeAt(GlyphNode[] nodes, float x, float y) {
         for (GlyphNode node : nodes) {
-            Vec2f point = node.getPoint();
+            Vec2 point = node.getPoint();
             float deltaX = point.x - x;
             float deltaY = point.y - y;
             if (deltaX * deltaX + deltaY * deltaY < SELECT_DISTANCE_2) {

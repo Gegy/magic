@@ -1,19 +1,19 @@
 package dev.gegy.magic.casting.event;
 
 import dev.gegy.magic.network.codec.PacketDecoder;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public final class InboundCastingEvent<T> {
-    private final Identifier id;
+    private final ResourceLocation id;
     private final PacketDecoder<T> decoder;
     private final List<Consumer<T>> handlers = new ArrayList<>();
 
-    public InboundCastingEvent(Identifier id, PacketDecoder<T> decoder) {
+    public InboundCastingEvent(ResourceLocation id, PacketDecoder<T> decoder) {
         this.id = id;
         this.decoder = decoder;
     }
@@ -23,11 +23,11 @@ public final class InboundCastingEvent<T> {
         return this;
     }
 
-    public Identifier id() {
+    public ResourceLocation id() {
         return this.id;
     }
 
-    public T decode(PacketByteBuf buf) {
+    public T decode(FriendlyByteBuf buf) {
         return this.decoder.decode(buf);
     }
 
@@ -37,7 +37,7 @@ public final class InboundCastingEvent<T> {
         }
     }
 
-    public void acceptBytes(PacketByteBuf buf) {
+    public void acceptBytes(FriendlyByteBuf buf) {
         var event = this.decoder.decode(buf);
         this.accept(event);
     }

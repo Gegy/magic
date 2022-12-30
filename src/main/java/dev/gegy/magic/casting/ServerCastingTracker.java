@@ -8,11 +8,11 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.EntityTrackingEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
@@ -36,21 +36,21 @@ public final class ServerCastingTracker {
         EntityTrackingEvents.STOP_TRACKING.register(INSTANCE::onPlayerStopTracking);
     }
 
-    private void onPlayerJoin(ServerPlayerEntity player) {
+    private void onPlayerJoin(ServerPlayer player) {
         var source = new ServerCastingSource(player);
         source.setCasting(ServerCastingDrawing::build);
 
-        this.sources.put(player.getUuid(), source);
+        this.sources.put(player.getUUID(), source);
     }
 
-    private void onPlayerLeave(ServerPlayerEntity player) {
-        var source = this.sources.remove(player.getUuid());
+    private void onPlayerLeave(ServerPlayer player) {
+        var source = this.sources.remove(player.getUUID());
         if (source != null) {
             source.close();
         }
     }
 
-    public void handleEvent(ServerPlayerEntity player, Identifier id, PacketByteBuf buf) {
+    public void handleEvent(ServerPlayer player, ResourceLocation id, FriendlyByteBuf buf) {
         var source = this.getSource(player);
         if (source != null) {
             source.handleEvent(id, buf);
@@ -59,7 +59,7 @@ public final class ServerCastingTracker {
 
     @Nullable
     private ServerCastingSource getSource(Entity entity) {
-        return entity instanceof ServerPlayerEntity ? this.sources.get(entity.getUuid()) : null;
+        return entity instanceof ServerPlayer ? this.sources.get(entity.getUUID()) : null;
     }
 
     private void onServerStop(MinecraftServer server) {
@@ -75,14 +75,14 @@ public final class ServerCastingTracker {
         }
     }
 
-    private void onPlayerStartTracking(Entity trackedEntity, ServerPlayerEntity player) {
+    private void onPlayerStartTracking(Entity trackedEntity, ServerPlayer player) {
         var source = this.getSource(trackedEntity);
         if (source != null) {
             source.onStartTracking(player);
         }
     }
 
-    private void onPlayerStopTracking(Entity trackedEntity, ServerPlayerEntity player) {
+    private void onPlayerStopTracking(Entity trackedEntity, ServerPlayer player) {
         var source = this.getSource(trackedEntity);
         if (source != null) {
             source.onStopTracking(player);

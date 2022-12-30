@@ -2,10 +2,10 @@ package dev.gegy.magic.client.casting.drawing.input.outline;
 
 import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
-import org.joml.Vector3f;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec2;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.List;
 
@@ -37,7 +37,7 @@ public class GlyphOutlineSolver {
         Vector3f forward = this.getForwardVectorFor(points);
         GlyphPlane plane = new GlyphPlane(forward, GlyphTransform.DRAW_DISTANCE);
 
-        Vec2f[] projectedPoints = projectPoints(points, plane);
+        Vec2[] projectedPoints = projectPoints(points, plane);
         if (projectedPoints == null) {
             return null;
         }
@@ -52,13 +52,13 @@ public class GlyphOutlineSolver {
         }
     }
 
-    private boolean trySolveFromPoints(Vec2f[] points) {
+    private boolean trySolveFromPoints(Vec2[] points) {
         // compute encompassing bounds of these points
         float minX = Float.MAX_VALUE;
         float minY = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE;
         float maxY = -Float.MAX_VALUE;
-        for (Vec2f point : points) {
+        for (Vec2 point : points) {
             float x = point.x;
             float y = point.y;
             if (x < minX) minX = x;
@@ -88,7 +88,7 @@ public class GlyphOutlineSolver {
 
         // compute apparent radii from each point and find mean
         for (int i = 0; i < points.length; i++) {
-            Vec2f point = points[i];
+            Vec2 point = points[i];
             float dx = point.x - centerX;
             float dy = point.y - centerY;
 
@@ -115,7 +115,7 @@ public class GlyphOutlineSolver {
             return false;
         }
 
-        int maxDeviations = MathHelper.ceil(radii.length * MAX_RADIUS_DEVIATION_PERCENT);
+        int maxDeviations = Mth.ceil(radii.length * MAX_RADIUS_DEVIATION_PERCENT);
         float radiusDeviationThreshold = meanRadius * RADIUS_DEVIATION_THRESHOLD;
 
         int deviations = 0;
@@ -132,20 +132,20 @@ public class GlyphOutlineSolver {
         return true;
     }
 
-    private boolean isDirectionConsistent(Vec2f[] points) {
+    private boolean isDirectionConsistent(Vec2[] points) {
         int segmentCount = points.length - 1;
-        int maxDeviations = MathHelper.ceil(segmentCount * MAX_DIRECTION_DEVIATION_PERCENT);
+        int maxDeviations = Mth.ceil(segmentCount * MAX_DIRECTION_DEVIATION_PERCENT);
 
         int deviations = 0;
 
-        Vec2f lastSegmentDirection = null;
+        Vec2 lastSegmentDirection = null;
 
         // check that all segments are vaguely going in the same direction
         for (int i = 0; i < points.length; i++) {
-            Vec2f start = points[i];
-            Vec2f end = points[(i + 1) % points.length];
+            Vec2 start = points[i];
+            Vec2 end = points[(i + 1) % points.length];
 
-            Vec2f segmentDirection = getSegmentDirection(start, end);
+            Vec2 segmentDirection = getSegmentDirection(start, end);
             if (lastSegmentDirection != null) {
                 if (segmentDirection.dot(lastSegmentDirection) < 0.0F) {
                     if (++deviations > maxDeviations) {
@@ -160,20 +160,20 @@ public class GlyphOutlineSolver {
         return true;
     }
 
-    private static Vec2f getSegmentDirection(Vec2f from, Vec2f to) {
+    private static Vec2 getSegmentDirection(Vec2 from, Vec2 to) {
         float directionX = to.x - from.x;
         float directionY = to.y - from.y;
 
-        float normalize = MathHelper.fastInverseSqrt(directionX * directionX + directionY * directionY);
+        float normalize = Mth.fastInvSqrt(directionX * directionX + directionY * directionY);
         directionX *= normalize;
         directionY *= normalize;
 
-        return new Vec2f(directionX, directionY);
+        return new Vec2(directionX, directionY);
     }
 
     @Nullable
-    private static Vec2f[] projectPoints(List<Vector3f> points, GlyphPlane plane) {
-        Vec2f[] projectedPoints = new Vec2f[points.size()];
+    private static Vec2[] projectPoints(List<Vector3f> points, GlyphPlane plane) {
+        Vec2[] projectedPoints = new Vec2[points.size()];
 
         Vector3f projected = new Vector3f();
 
@@ -186,7 +186,7 @@ public class GlyphOutlineSolver {
             }
 
             plane.projectFromWorld(projected.set(intersection));
-            projectedPoints[i] = new Vec2f(projected.x(), projected.y());
+            projectedPoints[i] = new Vec2(projected.x(), projected.y());
         }
 
         return projectedPoints;

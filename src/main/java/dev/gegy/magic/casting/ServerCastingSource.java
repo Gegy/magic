@@ -7,24 +7,24 @@ import dev.gegy.magic.network.NetworkAddressing;
 import dev.gegy.magic.network.NetworkSender;
 import dev.gegy.magic.network.s2c.CastingEventS2CPacket;
 import dev.gegy.magic.network.s2c.SetCastingS2CPacket;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public final class ServerCastingSource implements AutoCloseable {
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
     private ServerCasting casting;
 
-    private final NetworkAddressing<ServerPlayerEntity> addressing;
+    private final NetworkAddressing<ServerPlayer> addressing;
 
-    public ServerCastingSource(ServerPlayerEntity player) {
+    public ServerCastingSource(ServerPlayer player) {
         this.player = player;
 
         this.addressing = NetworkAddressing.trackingClients(player);
     }
 
-    public ServerPlayerEntity player() {
+    public ServerPlayer player() {
         return this.player;
     }
 
@@ -71,14 +71,14 @@ public final class ServerCastingSource implements AutoCloseable {
         }
     }
 
-    public void handleEvent(Identifier id, PacketByteBuf buf) {
+    public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
         var casting = this.casting;
         if (casting != null) {
             casting.handleEvent(id, buf);
         }
     }
 
-    public void onStartTracking(ServerPlayerEntity player) {
+    public void onStartTracking(ServerPlayer player) {
         var casting = this.casting;
         if (casting != null) {
             var packet = SetCastingS2CPacket.create(this.player, casting.createClientCasting());
@@ -86,7 +86,7 @@ public final class ServerCastingSource implements AutoCloseable {
         }
     }
 
-    public void onStopTracking(ServerPlayerEntity player) {
+    public void onStopTracking(ServerPlayer player) {
     }
 
     @Override

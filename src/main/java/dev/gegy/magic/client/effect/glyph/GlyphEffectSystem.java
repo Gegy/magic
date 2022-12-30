@@ -1,11 +1,11 @@
 package dev.gegy.magic.client.effect.glyph;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.client.effect.EffectSystem;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ public final class GlyphEffectSystem implements EffectSystem {
     }
 
     @Override
-    public void render(MinecraftClient client, WorldRenderContext context, Framebuffer targetFramebuffer, EffectSelector effects) {
+    public void render(Minecraft client, WorldRenderContext context, RenderTarget targetFramebuffer, EffectSelector effects) {
         // TODO: frustum culling
 
         try (var frame = this.frame.setup(targetFramebuffer)) {
@@ -45,14 +45,14 @@ public final class GlyphEffectSystem implements EffectSystem {
     private static final class Frame implements GlyphsEffect.RenderFunction, AutoCloseable {
         private final GlyphEffectRenderer renderer;
 
-        private Framebuffer target;
+        private RenderTarget target;
         private GlyphEffectRenderer.Batch batch;
 
         public Frame(GlyphEffectRenderer renderer) {
             this.renderer = renderer;
         }
 
-        public Frame setup(Framebuffer target) {
+        public Frame setup(RenderTarget target) {
             this.target = target;
             return this;
         }

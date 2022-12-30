@@ -5,11 +5,11 @@ import dev.gegy.magic.client.event.ClientRemoveEntityEvent;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -26,32 +26,32 @@ public final class ClientCastingTracker {
         ClientRemoveEntityEvent.EVENT.register(INSTANCE::removeSource);
     }
 
-    public EffectSelector effectSelectorFor(PlayerEntity player) {
+    public EffectSelector effectSelectorFor(Player player) {
         var source = this.getSource(player);
         return source != null ? source.effectSelector() : EffectSelector.EMPTY;
     }
 
-    public void handleEvent(PlayerEntity entity, Identifier id, PacketByteBuf buf) {
+    public void handleEvent(Player entity, ResourceLocation id, FriendlyByteBuf buf) {
         var source = this.getOrCreateSource(entity);
         source.handleEvent(id, buf);
     }
 
-    public void setCasting(PlayerEntity player, @Nullable ConfiguredClientCasting<?> casting) {
+    public void setCasting(Player player, @Nullable ConfiguredClientCasting<?> casting) {
         var source = this.getOrCreateSource(player);
         source.handleServerCast(casting);
     }
 
     @NotNull
-    private ClientCastingSource getOrCreateSource(PlayerEntity player) {
+    private ClientCastingSource getOrCreateSource(Player player) {
         return this.sources.computeIfAbsent(player.getId(), i -> new ClientCastingSource(player));
     }
 
     @Nullable
-    private ClientCastingSource getSource(PlayerEntity player) {
+    private ClientCastingSource getSource(Player player) {
         return this.sources.get(player.getId());
     }
 
-    private void tick(MinecraftClient client) {
+    private void tick(Minecraft client) {
         var player = client.player;
         if (player == null) {
             this.clearSources();

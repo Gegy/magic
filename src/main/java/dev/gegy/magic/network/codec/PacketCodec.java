@@ -1,10 +1,10 @@
 package dev.gegy.magic.network.codec;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.text.TextColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.collection.IndexedIterable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.IdMap;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.TextColor;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -18,12 +18,12 @@ import java.util.function.Supplier;
 public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
     PacketCodec<Boolean> BOOLEAN = PacketCodec.of(
             (value, buf) -> buf.writeBoolean(value),
-            PacketByteBuf::readBoolean
+            FriendlyByteBuf::readBoolean
     );
 
     PacketCodec<java.util.UUID> UUID = PacketCodec.of(
-            (uuid, buf) -> buf.writeUuid(uuid),
-            PacketByteBuf::readUuid
+            (uuid, buf) -> buf.writeUUID(uuid),
+            FriendlyByteBuf::readUUID
     );
 
     PacketCodec<Vector3f> VEC3F = PacketCodec.of(
@@ -35,10 +35,10 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
             buf -> new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
     );
 
-    PacketCodec<Formatting> FORMATTING = PacketCodec.ofEnum(Formatting.class);
+    PacketCodec<ChatFormatting> FORMATTING = PacketCodec.ofEnum(ChatFormatting.class);
 
     PacketCodec<TextColor> TEXT_COLOR = PacketCodec.of(
-            (color, buf) -> buf.writeInt(color.getRgb()),
+            (color, buf) -> buf.writeInt(color.getValue()),
             buf -> TextColor.fromRgb(buf.readInt())
     );
 
@@ -57,10 +57,10 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
         );
     }
 
-    static <T> PacketCodec<@Nullable T> ofRegistry(IndexedIterable<T> registry) {
+    static <T> PacketCodec<@Nullable T> ofRegistry(IdMap<T> registry) {
         return PacketCodec.of(
-                (value, buf) -> buf.writeRegistryValue(registry, value),
-                buf -> buf.readRegistryValue(registry)
+                (value, buf) -> buf.writeId(registry, value),
+                buf -> buf.readById(registry)
         );
     }
 
@@ -71,22 +71,22 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
     static <T> PacketCodec<T> of(PacketEncoder<T> encoder, PacketDecoder<T> decoder) {
         return new PacketCodec<>() {
             @Override
-            public void encode(T value, PacketByteBuf buf) {
+            public void encode(T value, FriendlyByteBuf buf) {
                 encoder.encode(value, buf);
             }
 
             @Override
-            public T decode(PacketByteBuf buf) {
+            public T decode(FriendlyByteBuf buf) {
                 return decoder.decode(buf);
             }
         };
     }
 
     @Override
-    void encode(T value, PacketByteBuf buf);
+    void encode(T value, FriendlyByteBuf buf);
 
     @Override
-    T decode(PacketByteBuf buf);
+    T decode(FriendlyByteBuf buf);
 
     default PacketCodec<List<T>> list() {
         return new ListOf<>(this);
@@ -109,12 +109,12 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
     ) {
         return new PacketCodec<>() {
             @Override
-            public void encode(R value, PacketByteBuf buf) {
+            public void encode(R value, FriendlyByteBuf buf) {
                 PacketCodec.this.encode(mapFrom.apply(value), buf);
             }
 
             @Override
-            public R decode(PacketByteBuf buf) {
+            public R decode(FriendlyByteBuf buf) {
                 return mapTo.apply(PacketCodec.this.decode(buf));
             }
         };
@@ -122,7 +122,7 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
 
     record MapOf<K, V>(PacketCodec<K> keyCodec, PacketCodec<V> valueCodec) implements PacketCodec<Map<K, V>> {
         @Override
-        public void encode(Map<K, V> map, PacketByteBuf buf) {
+        public void encode(Map<K, V> map, FriendlyByteBuf buf) {
             buf.writeVarInt(map.size());
             for (var entry : map.entrySet()) {
                 this.keyCodec.encode(entry.getKey(), buf);
@@ -131,7 +131,7 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
         }
 
         @Override
-        public Map<K, V> decode(PacketByteBuf buf) {
+        public Map<K, V> decode(FriendlyByteBuf buf) {
             int count = buf.readVarInt();
             var map = new Object2ObjectOpenHashMap<K, V>(count);
             for (int i = 0; i < count; i++) {
@@ -145,7 +145,7 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
 
     record ListOf<T>(PacketCodec<T> elementCodec) implements PacketCodec<List<T>> {
         @Override
-        public void encode(List<T> list, PacketByteBuf buf) {
+        public void encode(List<T> list, FriendlyByteBuf buf) {
             buf.writeVarInt(list.size());
             for (var element : list) {
                 this.elementCodec.encode(element, buf);
@@ -153,7 +153,7 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
         }
 
         @Override
-        public List<T> decode(PacketByteBuf buf) {
+        public List<T> decode(FriendlyByteBuf buf) {
             int size = buf.readVarInt();
             List<T> list = new ArrayList<>(size);
             for (int i = 0; i < size; i++) {
@@ -165,7 +165,7 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
 
     record NullableOf<T>(PacketCodec<T> valueCodec) implements PacketCodec<@Nullable T> {
         @Override
-        public void encode(T value, PacketByteBuf buf) {
+        public void encode(T value, FriendlyByteBuf buf) {
             buf.writeBoolean(value != null);
             if (value != null) {
                 this.valueCodec.encode(value, buf);
@@ -174,7 +174,7 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
 
         @Override
         @Nullable
-        public T decode(PacketByteBuf buf) {
+        public T decode(FriendlyByteBuf buf) {
             return buf.readBoolean() ? this.valueCodec.decode(buf) : null;
         }
     }

@@ -2,7 +2,7 @@ package dev.gegy.magic.glyph.shape;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
-import net.minecraft.util.math.Vec2f;
+import net.minecraft.world.phys.Vec2;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -64,8 +64,8 @@ public final class GlyphDebugRenderer {
 
         graphics.setColor(Color.BLUE);
         for (GlyphEdge edge : glyph.edges) {
-            Vec2f from = edge.from.getPoint();
-            Vec2f to = edge.to.getPoint();
+            Vec2 from = edge.from.getPoint();
+            Vec2 to = edge.to.getPoint();
 
             graphics.drawLine(
                     transformCoordinate(from.x), transformCoordinate(-from.y),

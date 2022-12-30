@@ -46,7 +46,7 @@ public final class GlyphRenderParameters {
         this.secondaryBlue = secondaryColor.getBlue(tickDelta);
 
         this.shape = glyph.shape();
-        this.highlightNodes = glyph.source().matchesEntity(context.camera().getFocusedEntity());
+        this.highlightNodes = glyph.source().matchesEntity(context.camera().getEntity());
         this.stroke = glyph.getStroke(tickDelta);
     }
 
@@ -76,9 +76,9 @@ public final class GlyphRenderParameters {
     }
 
     private void setTransform(SpellSource source, GlyphPlane plane, WorldRenderContext context) {
-        var modelMatrix = context.matrixStack().peek().getPositionMatrix();
+        var modelMatrix = context.matrixStack().last().pose();
 
-        var cameraPos = context.camera().getPos();
+        var cameraPos = context.camera().getPosition();
         var sourcePos = source.getPosition(context.tickDelta());
 
         this.modelViewProject.set(context.projectionMatrix())

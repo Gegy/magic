@@ -12,7 +12,7 @@ import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.client.glyph.spell.SpellCasting;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 
 public final class ServerCastingDrawing {
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
     private final ServerDrawingEventSenders senders;
 
     private final List<ServerDrawingGlyph> glyphs = new ArrayList<>();
@@ -28,12 +28,12 @@ public final class ServerCastingDrawing {
 
     private boolean preparingSpell;
 
-    private ServerCastingDrawing(ServerPlayerEntity player, ServerDrawingEventSenders senders) {
+    private ServerCastingDrawing(ServerPlayer player, ServerDrawingEventSenders senders) {
         this.player = player;
         this.senders = senders;
     }
 
-    public static ServerCasting build(ServerPlayerEntity player, ServerCastingBuilder casting) {
+    public static ServerCasting build(ServerPlayer player, ServerCastingBuilder casting) {
         var senders = ServerDrawingEventSenders.registerTo(casting);
         var drawing = new ServerCastingDrawing(player, senders);
 
@@ -115,7 +115,7 @@ public final class ServerCastingDrawing {
                 .map(ServerDrawingGlyph::asForm)
                 .filter(Objects::nonNull)
                 .toList();
-        var direction = this.player.getRotationVec(1.0F).toVector3f();
+        var direction = this.player.getViewVector(1.0F).toVector3f();
 
         return new SpellParameters(glyphs, direction);
     }

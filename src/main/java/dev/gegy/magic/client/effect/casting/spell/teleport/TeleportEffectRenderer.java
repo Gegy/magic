@@ -1,19 +1,19 @@
 package dev.gegy.magic.client.effect.casting.spell.teleport;
 
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.LightmapTextureManager;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.util.Mth;
 
 public final class TeleportEffectRenderer {
-    public void render(MinecraftClient client, WorldRenderContext context, TeleportEffect effect) {
-        var textRenderer = client.textRenderer;
+    public void render(Minecraft client, WorldRenderContext context, TeleportEffect effect) {
+        var textRenderer = client.font;
 
-        long worldTime = context.world().getTime();
+        long worldTime = context.world().getGameTime();
         float tickDelta = context.tickDelta();
 
         var sourcePos = effect.source().getPosition(tickDelta);
-        var cameraPos = context.camera().getPos();
+        var cameraPos = context.camera().getPosition();
 
         float time = (float) (worldTime - effect.createTime()) + tickDelta;
 
@@ -21,13 +21,13 @@ public final class TeleportEffectRenderer {
         var targets = effect.symbols();
 
         var matrixStack = context.matrixStack();
-        matrixStack.push();
+        matrixStack.pushPose();
         matrixStack.translate(
                 (float) (sourcePos.x - cameraPos.x),
                 (float) (sourcePos.y - cameraPos.y),
                 (float) (sourcePos.z - cameraPos.z)
         );
-        matrixStack.multiplyPositionMatrix(effect.sourcePlane().planeToWorld());
+        matrixStack.mulPoseMatrix(effect.sourcePlane().planeToWorld());
 
         float scale = 0.0625F * TeleportEffect.SYMBOL_SIZE;
         matrixStack.scale(-scale, -scale, scale);
@@ -40,24 +40,24 @@ public final class TeleportEffectRenderer {
                 continue;
             }
 
-            var matrix = matrixStack.peek().getPositionMatrix();
+            var matrix = matrixStack.last().pose();
 
             float x = (position.x / scale) + target.offsetX();
             float y = (position.y / scale) + target.offsetY();
 
-            int alpha = MathHelper.floor(opacity * 255.0F) << 24;
+            int alpha = Mth.floor(opacity * 255.0F) << 24;
             int innerColor = target.innerColor().packed() | alpha;
             int outlineColor = target.outlineColor().packed() | alpha;
 
-            textRenderer.drawWithOutline(
+            textRenderer.drawInBatch8xOutline(
                     target.text(),
                     x, y,
                     innerColor, outlineColor,
                     matrix, context.consumers(),
-                    LightmapTextureManager.MAX_LIGHT_COORDINATE
+                    LightTexture.FULL_BRIGHT
             );
         }
 
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 }

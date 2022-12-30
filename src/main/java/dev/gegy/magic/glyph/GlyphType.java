@@ -10,13 +10,13 @@ import dev.gegy.magic.casting.spell.teleport.ServerCastingTeleport;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.SimpleRegistry;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.Registry;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 public final class GlyphType {
-    public static final SimpleRegistry<GlyphType> REGISTRY = FabricRegistryBuilder.createSimple(GlyphType.class, Magic.identifier("glyph_type"))
+    public static final MappedRegistry<GlyphType> REGISTRY = FabricRegistryBuilder.createSimple(GlyphType.class, Magic.identifier("glyph_type"))
             .attribute(RegistryAttribute.SYNCED)
             .buildAndRegister();
 
@@ -84,6 +84,6 @@ public final class GlyphType {
     }
 
     public interface CastFunction {
-        ServerCasting build(ServerPlayerEntity player, SpellParameters spell, ServerCastingBuilder casting);
+        ServerCasting build(ServerPlayer player, SpellParameters spell, ServerCastingBuilder casting);
     }
 }

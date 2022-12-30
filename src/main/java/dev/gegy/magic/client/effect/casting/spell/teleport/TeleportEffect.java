@@ -7,9 +7,9 @@ import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 import dev.gegy.magic.math.ColorRgb;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.OrderedText;
-import net.minecraft.text.Style;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 
 import java.util.Collection;
 import java.util.List;
@@ -43,22 +43,22 @@ public record TeleportEffect(
     }
 
     public final record Symbol(
-            OrderedText text,
+            FormattedCharSequence text,
             ColorRgb innerColor, ColorRgb outlineColor,
             float offsetX, float offsetY
     ) {
-        private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
+        private static final Minecraft CLIENT = Minecraft.getInstance();
 
         static Symbol create(TeleportTargetSymbol symbol) {
-            var textRenderer = CLIENT.textRenderer;
+            var textRenderer = CLIENT.font;
 
-            var text = OrderedText.styled(symbol.character(), Style.EMPTY);
+            var text = FormattedCharSequence.codepoint(symbol.character(), Style.EMPTY);
 
             var innerColor = getInnerColor(symbol.color());
             var outerColor = getOuterColor(symbol.color());
 
-            float offsetX = -textRenderer.getWidth(text) / 2.0F;
-            float offsetY = -textRenderer.fontHeight / 2.0F;
+            float offsetX = -textRenderer.width(text) / 2.0F;
+            float offsetY = -textRenderer.lineHeight / 2.0F;
 
             return new Symbol(text, innerColor, outerColor, offsetX, offsetY);
         }

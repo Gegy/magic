@@ -7,11 +7,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateManager;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,7 +23,7 @@ import java.security.SecureRandom;
 import java.util.List;
 import java.util.Set;
 
-public final class GlyphShapeStorage extends PersistentState {
+public final class GlyphShapeStorage extends SavedData {
     private static final String KEY = Magic.ID + ":glyphs";
     private static final boolean EXPORT_SHAPES = "true".equals(System.getProperty(Magic.ID + ".debug.export_glyph_shapes"));
 
@@ -36,8 +36,8 @@ public final class GlyphShapeStorage extends PersistentState {
     }
 
     public static GlyphShapeStorage get(MinecraftServer server) {
-        PersistentStateManager persistent = server.getOverworld().getPersistentStateManager();
-        return persistent.getOrCreate(GlyphShapeStorage::loadNbt, GlyphShapeStorage::new, KEY);
+        DimensionDataStorage persistent = server.overworld().getDataStorage();
+        return persistent.computeIfAbsent(GlyphShapeStorage::loadNbt, GlyphShapeStorage::new, KEY);
     }
 
     public int getShapeForGlyph(GlyphType glyph) {
@@ -103,7 +103,7 @@ public final class GlyphShapeStorage extends PersistentState {
 
         for (Int2ObjectMap.Entry<GlyphType> entry : this.shapeToGlyph.int2ObjectEntrySet()) {
             GlyphType glyphType = entry.getValue();
-            Identifier glyphId = GlyphType.REGISTRY.getId(glyphType);
+            ResourceLocation glyphId = GlyphType.REGISTRY.getKey(glyphType);
             if (glyphId == null) {
                 continue;
             }
@@ -120,12 +120,12 @@ public final class GlyphShapeStorage extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound tag) {
+    public CompoundTag save(CompoundTag tag) {
         if (this.generated) {
-            NbtCompound glyphShapes = new NbtCompound();
+            CompoundTag glyphShapes = new CompoundTag();
 
             for (Int2ObjectMap.Entry<GlyphType> entry : this.shapeToGlyph.int2ObjectEntrySet()) {
-                Identifier glyphId = GlyphType.REGISTRY.getId(entry.getValue());
+                ResourceLocation glyphId = GlyphType.REGISTRY.getKey(entry.getValue());
                 if (glyphId == null) {
                     continue;
                 }
@@ -139,13 +139,13 @@ public final class GlyphShapeStorage extends PersistentState {
         return tag;
     }
 
-    private static GlyphShapeStorage loadNbt(NbtCompound tag) {
+    private static GlyphShapeStorage loadNbt(CompoundTag tag) {
         GlyphShapeStorage storage = new GlyphShapeStorage();
 
-        NbtCompound glyphShapes = tag.getCompound("glyph_shapes");
+        CompoundTag glyphShapes = tag.getCompound("glyph_shapes");
 
-        for (String glyphId : glyphShapes.getKeys()) {
-            GlyphType glyphType = GlyphType.REGISTRY.get(new Identifier(glyphId));
+        for (String glyphId : glyphShapes.getAllKeys()) {
+            GlyphType glyphType = GlyphType.REGISTRY.get(new ResourceLocation(glyphId));
             int shape = glyphShapes.getInt(glyphId);
             if (glyphType != null) {
                 storage.registerGlyphShape(glyphType, shape);

@@ -4,17 +4,17 @@ import dev.gegy.magic.client.casting.ClientCastingTracker;
 import dev.gegy.magic.client.casting.drawing.ClientDrawingGlyph;
 import dev.gegy.magic.client.effect.casting.drawing.DrawingEffect;
 import dev.gegy.magic.client.effect.casting.spell.PreparedSpellEffect;
-import net.minecraft.client.model.ModelPart;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Arm;
+import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.world.entity.HumanoidArm;
+import net.minecraft.world.entity.player.Player;
 import org.joml.Vector3f;
 
 public interface CastingPose {
     void beginAnimating();
 
-    boolean tick(PlayerEntity entity);
+    boolean tick(Player entity);
 
-    void apply(PlayerEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight);
+    void apply(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight);
 
     final class Drawing implements CastingPose {
         private final ArmPose leftArm = new ArmPose();
@@ -29,7 +29,7 @@ public interface CastingPose {
         }
 
         @Override
-        public boolean tick(PlayerEntity entity) {
+        public boolean tick(Player entity) {
             var effects = ClientCastingTracker.INSTANCE.effectSelectorFor(entity);
 
             DrawingEffect drawing = effects.selectAny(DrawingEffect.TYPE);
@@ -56,7 +56,7 @@ public interface CastingPose {
         }
 
         @Override
-        public void apply(PlayerEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight) {
+        public void apply(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight) {
             this.leftArm.apply(leftArm, tickDelta, weight);
             this.rightArm.apply(rightArm, tickDelta, weight);
         }
@@ -71,7 +71,7 @@ public interface CastingPose {
         }
 
         @Override
-        public boolean tick(PlayerEntity entity) {
+        public boolean tick(Player entity) {
             var effects = ClientCastingTracker.INSTANCE.effectSelectorFor(entity);
             var preparedSpell = effects.selectAny(PreparedSpellEffect.TYPE);
             if (preparedSpell == null) {
@@ -87,8 +87,8 @@ public interface CastingPose {
         }
 
         @Override
-        public void apply(PlayerEntity entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight) {
-            ModelPart armPart = entity.getMainArm() == Arm.LEFT ? leftArm : rightArm;
+        public void apply(Player entity, ModelPart leftArm, ModelPart rightArm, float tickDelta, float weight) {
+            ModelPart armPart = entity.getMainArm() == HumanoidArm.LEFT ? leftArm : rightArm;
             this.mainArm.apply(armPart, tickDelta, weight);
         }
     }

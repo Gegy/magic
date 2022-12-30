@@ -7,11 +7,11 @@ import dev.gegy.magic.casting.spell.SpellParameters;
 import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.math.ColorRgb;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.Heightmap;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -19,40 +19,40 @@ import java.util.Objects;
 import java.util.UUID;
 
 public final class ServerCastingTeleport {
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
     private final SpellParameters spell;
     private final List<TeleportTarget> targets;
     private boolean selectedTarget;
 
-    private ServerCastingTeleport(ServerPlayerEntity player, SpellParameters spell, List<TeleportTarget> targets) {
+    private ServerCastingTeleport(ServerPlayer player, SpellParameters spell, List<TeleportTarget> targets) {
         this.player = player;
         this.spell = spell;
         this.targets = targets;
     }
 
-    public static ServerCasting build(ServerPlayerEntity player, SpellParameters spell, ServerCastingBuilder casting) {
+    public static ServerCasting build(ServerPlayer player, SpellParameters spell, ServerCastingBuilder casting) {
         // TODO: hardcoded target
         var teleport = new ServerCastingTeleport(player, spell, List.of(
-                generateTarget(player, 'Y', Formatting.LIGHT_PURPLE),
-                generateTarget(player, 'G', Formatting.GREEN),
-                generateTarget(player, 'B', Formatting.BLUE),
-                generateTarget(player, 'R', Formatting.RED),
-                generateTarget(player, 'Y', Formatting.LIGHT_PURPLE),
-                generateTarget(player, 'G', Formatting.GREEN),
-                generateTarget(player, 'B', Formatting.BLUE),
-                generateTarget(player, 'R', Formatting.RED),
-                generateTarget(player, 'Y', Formatting.LIGHT_PURPLE),
-                generateTarget(player, 'G', Formatting.GREEN),
-                generateTarget(player, 'B', Formatting.BLUE),
-                generateTarget(player, 'R', Formatting.RED),
-                generateTarget(player, 'Y', Formatting.LIGHT_PURPLE),
-                generateTarget(player, 'G', Formatting.GREEN),
-                generateTarget(player, 'B', Formatting.BLUE),
-                generateTarget(player, 'R', Formatting.RED),
-                generateTarget(player, 'Y', Formatting.LIGHT_PURPLE),
-                generateTarget(player, 'G', Formatting.GREEN),
-                generateTarget(player, 'B', Formatting.BLUE),
-                generateTarget(player, 'R', Formatting.RED)
+                generateTarget(player, 'Y', ChatFormatting.LIGHT_PURPLE),
+                generateTarget(player, 'G', ChatFormatting.GREEN),
+                generateTarget(player, 'B', ChatFormatting.BLUE),
+                generateTarget(player, 'R', ChatFormatting.RED),
+                generateTarget(player, 'Y', ChatFormatting.LIGHT_PURPLE),
+                generateTarget(player, 'G', ChatFormatting.GREEN),
+                generateTarget(player, 'B', ChatFormatting.BLUE),
+                generateTarget(player, 'R', ChatFormatting.RED),
+                generateTarget(player, 'Y', ChatFormatting.LIGHT_PURPLE),
+                generateTarget(player, 'G', ChatFormatting.GREEN),
+                generateTarget(player, 'B', ChatFormatting.BLUE),
+                generateTarget(player, 'R', ChatFormatting.RED),
+                generateTarget(player, 'Y', ChatFormatting.LIGHT_PURPLE),
+                generateTarget(player, 'G', ChatFormatting.GREEN),
+                generateTarget(player, 'B', ChatFormatting.BLUE),
+                generateTarget(player, 'R', ChatFormatting.RED),
+                generateTarget(player, 'Y', ChatFormatting.LIGHT_PURPLE),
+                generateTarget(player, 'G', ChatFormatting.GREEN),
+                generateTarget(player, 'B', ChatFormatting.BLUE),
+                generateTarget(player, 'R', ChatFormatting.RED)
         ));
 
         casting.registerClientCasting(ClientCastingType.TELEPORT, teleport::buildParameters);
@@ -64,13 +64,13 @@ public final class ServerCastingTeleport {
         return casting.build();
     }
 
-    private static TeleportTarget generateTarget(ServerPlayerEntity player, char character, Formatting formatting) {
-        var symbol = new TeleportTargetSymbol(character, ColorRgb.of(Objects.requireNonNull(formatting.getColorValue(), "non-color formatting")));
+    private static TeleportTarget generateTarget(ServerPlayer player, char character, ChatFormatting formatting) {
+        var symbol = new TeleportTargetSymbol(character, ColorRgb.of(Objects.requireNonNull(formatting.getColor(), "non-color formatting")));
 
-        var world = player.getWorld();
-        var dimension = world.getRegistryKey();
+        var level = player.getLevel();
+        var dimension = level.dimension();
         var random = player.getRandom();
-        var pos = world.getTopPosition(Heightmap.Type.MOTION_BLOCKING, new BlockPos(
+        var pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(
                 random.nextInt(16) - random.nextInt(16),
                 0,
                 random.nextInt(16) - random.nextInt(16)
@@ -91,7 +91,7 @@ public final class ServerCastingTeleport {
     @Nullable
     private ServerCasting.Factory tick() {
         // TODO: proper cancel input
-        if (this.player.isSneaking() || this.selectedTarget) {
+        if (this.player.isShiftKeyDown() || this.selectedTarget) {
             return ServerCastingDrawing::build;
         }
 
@@ -99,9 +99,9 @@ public final class ServerCastingTeleport {
     }
 
     private void teleportPlayer(TeleportTarget target) {
-        var world = this.player.server.getWorld(target.dimension());
-        var pos = Vec3d.ofBottomCenter(target.pos());
-        this.player.teleport(world, pos.x, pos.y, pos.z, target.angle(), 0.0F);
+        var level = this.player.server.getLevel(target.dimension());
+        var pos = Vec3.atBottomCenterOf(target.pos());
+        this.player.teleportTo(level, pos.x, pos.y, pos.z, target.angle(), 0.0F);
     }
 
     @Nullable

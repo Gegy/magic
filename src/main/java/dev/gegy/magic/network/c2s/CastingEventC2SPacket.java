@@ -6,15 +6,15 @@ import dev.gegy.magic.casting.event.CastingEventSpec;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 public final class CastingEventC2SPacket {
-    private static final Identifier CHANNEL = Magic.identifier("casting_event");
+    private static final ResourceLocation CHANNEL = Magic.identifier("casting_event");
 
     static void registerReceiver() {
         ServerPlayNetworking.registerGlobalReceiver(CHANNEL, (server, player, handler, buf, responseSender) -> {
-            var id = buf.readIdentifier();
+            var id = buf.readResourceLocation();
             buf.retain();
 
             server.submit(() -> {
@@ -28,8 +28,8 @@ public final class CastingEventC2SPacket {
     }
 
     public static <T> void sendToServer(CastingEventSpec<T> spec, T event) {
-        PacketByteBuf buf = PacketByteBufs.create();
-        buf.writeIdentifier(spec.id());
+        FriendlyByteBuf buf = PacketByteBufs.create();
+        buf.writeResourceLocation(spec.id());
         spec.codec().encode(event, buf);
 
         ClientPlayNetworking.send(CHANNEL, buf);

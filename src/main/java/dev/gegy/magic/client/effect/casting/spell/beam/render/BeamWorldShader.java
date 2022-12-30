@@ -1,12 +1,12 @@
 package dev.gegy.magic.client.effect.casting.spell.beam.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.effect.shader.EffectShader;
 import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.render.gl.GlBinding;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
@@ -39,7 +39,7 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
                 resources,
                 Magic.identifier("beam/world"),
                 Magic.identifier("effect_world"),
-                VertexFormats.POSITION_TEXTURE
+                DefaultVertexFormat.POSITION_TEX
         );
 
         int uniformModelViewProject = program.getUniformLocation("ModelViewProject");

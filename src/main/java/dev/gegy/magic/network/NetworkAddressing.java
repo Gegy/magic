@@ -1,7 +1,7 @@
 package dev.gegy.magic.network;
 
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Unit;
 
 import java.util.function.BiConsumer;
@@ -21,15 +21,15 @@ public interface NetworkAddressing<T> {
         };
     }
 
-    static NetworkAddressing<ServerPlayerEntity> trackingClients(ServerPlayerEntity player) {
+    static NetworkAddressing<ServerPlayer> trackingClients(ServerPlayer player) {
         return new NetworkAddressing<>() {
             @Override
-            public void send(Consumer<ServerPlayerEntity> handler) {
+            public void send(Consumer<ServerPlayer> handler) {
                 handler.accept(player);
             }
 
             @Override
-            public void broadcast(Consumer<ServerPlayerEntity> handler) {
+            public void broadcast(Consumer<ServerPlayer> handler) {
                 for (var tracking : PlayerLookup.tracking(player)) {
                     handler.accept(tracking);
                 }

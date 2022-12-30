@@ -1,19 +1,19 @@
 package dev.gegy.magic.client.effect.shader;
 
+import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
+import com.mojang.blaze3d.shaders.Program;
+import com.mojang.blaze3d.shaders.ProgramManager;
+import com.mojang.blaze3d.shaders.Shader;
+import com.mojang.blaze3d.shaders.Uniform;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.render.gl.GlBindableObject;
 import dev.gegy.magic.client.render.gl.GlBinding;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import net.minecraft.client.gl.GLImportProcessor;
-import net.minecraft.client.gl.GlProgramManager;
-import net.minecraft.client.gl.GlUniform;
-import net.minecraft.client.gl.ShaderProgramSetupView;
-import net.minecraft.client.gl.ShaderStage;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.resource.Resource;
-import net.minecraft.resource.ResourceFactory;
-import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,90 +23,90 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Set;
 
-public final class EffectShaderProgram implements ShaderProgramSetupView, GlBindableObject {
+public final class EffectShaderProgram implements Shader, GlBindableObject {
     private static final Binding BINDING = new Binding();
 
     private final int programRef;
-    private final ShaderStage vertexShader;
-    private final ShaderStage fragmentShader;
+    private final Program vertexShader;
+    private final Program fragmentShader;
 
-    private EffectShaderProgram(int programRef, ShaderStage vertexShader, ShaderStage fragmentShader) {
+    private EffectShaderProgram(int programRef, Program vertexShader, Program fragmentShader) {
         this.programRef = programRef;
         this.vertexShader = vertexShader;
         this.fragmentShader = fragmentShader;
     }
 
-    public static EffectShaderProgram compile(ResourceManager resources, Identifier location, VertexFormat format) throws IOException {
+    public static EffectShaderProgram compile(ResourceManager resources, ResourceLocation location, VertexFormat format) throws IOException {
         return compile(resources, location, location, format);
     }
 
-    public static EffectShaderProgram compile(ResourceManager resources, Identifier vertexLocation, Identifier fragmentLocation, VertexFormat format) throws IOException {
-        ShaderStage vertexShader = compileShader(resources, ShaderStage.Type.VERTEX, vertexLocation);
-        ShaderStage fragmentShader = compileShader(resources, ShaderStage.Type.FRAGMENT, fragmentLocation);
+    public static EffectShaderProgram compile(ResourceManager resources, ResourceLocation vertexLocation, ResourceLocation fragmentLocation, VertexFormat format) throws IOException {
+        Program vertexShader = compileShader(resources, Program.Type.VERTEX, vertexLocation);
+        Program fragmentShader = compileShader(resources, Program.Type.FRAGMENT, fragmentLocation);
 
-        int programRef = GlProgramManager.createProgram();
+        int programRef = ProgramManager.createProgram();
         EffectShaderProgram shader = new EffectShaderProgram(programRef, vertexShader, fragmentShader);
         shader.bindAttributes(format);
 
-        GlProgramManager.linkProgram(shader);
+        ProgramManager.linkShader(shader);
 
         return shader;
     }
 
-    private static ShaderStage compileShader(ResourceManager resources, ShaderStage.Type type, Identifier location) throws IOException {
-        Identifier path = new Identifier(location.getNamespace(), "shaders/" + location.getPath() + type.getFileExtension());
+    private static Program compileShader(ResourceManager resources, Program.Type type, ResourceLocation location) throws IOException {
+        ResourceLocation path = new ResourceLocation(location.getNamespace(), "shaders/" + location.getPath() + type.getExtension());
         Resource resource = resources.getResourceOrThrow(path);
-        try (InputStream input = resource.getInputStream()) {
+        try (InputStream input = resource.open()) {
             ImportProcessor importProcessor = new ImportProcessor(location.getNamespace(), resources);
-            return ShaderStage.createFromResource(type, location.toString(), input, resource.getResourcePackName(), importProcessor);
+            return Program.compileShader(type, location.toString(), input, resource.sourcePackId(), importProcessor);
         }
     }
 
     private void bindAttributes(VertexFormat format) {
         int index = 0;
-        for (String attribute : format.getAttributeNames()) {
-            GlUniform.bindAttribLocation(this.programRef, index++, attribute);
+        for (String attribute : format.getElementAttributeNames()) {
+            Uniform.glBindAttribLocation(this.programRef, index++, attribute);
         }
     }
 
     public int getUniformLocation(String name) {
-        return GlUniform.getUniformLocation(this.programRef, name);
+        return Uniform.glGetUniformLocation(this.programRef, name);
     }
 
     @Override
-    public void attachReferencedShaders() {
-        this.fragmentShader.attachTo(this);
-        this.vertexShader.attachTo(this);
+    public void attachToProgram() {
+        this.fragmentShader.attachToShader(this);
+        this.vertexShader.attachToShader(this);
     }
 
     @Override
-    public int getGlRef() {
+    public int getId() {
         return this.programRef;
     }
 
     @Override
-    public ShaderStage getVertexShader() {
+    public Program getVertexProgram() {
         return this.vertexShader;
     }
 
     @Override
-    public ShaderStage getFragmentShader() {
+    public Program getFragmentProgram() {
         return this.fragmentShader;
     }
 
     @Override
-    public void markUniformsDirty() {
+    public void markDirty() {
     }
 
     @Override
     public Binding bind() {
-        GlProgramManager.useProgram(this.programRef);
+        ProgramManager.glUseProgram(this.programRef);
         return BINDING;
     }
 
     @Override
     public void delete() {
-        GlProgramManager.deleteProgram(this);
+        ProgramManager.releaseProgram(this);
     }
 
     public static final class Binding implements GlBinding {
@@ -115,25 +115,25 @@ public final class EffectShaderProgram implements ShaderProgramSetupView, GlBind
 
         @Override
         public void unbind() {
-            GlProgramManager.useProgram(0);
+            ProgramManager.glUseProgram(0);
         }
     }
 
-    private static final class ImportProcessor extends GLImportProcessor {
+    private static final class ImportProcessor extends GlslPreprocessor {
         private final String namespace;
-        private final ResourceFactory resources;
+        private final ResourceProvider resources;
 
-        private final Set<Identifier> visitedImports = new ObjectOpenHashSet<>();
+        private final Set<ResourceLocation> visitedImports = new ObjectOpenHashSet<>();
 
-        public ImportProcessor(String namespace, ResourceFactory resources) {
+        public ImportProcessor(String namespace, ResourceProvider resources) {
             this.namespace = namespace;
             this.resources = resources;
         }
 
         @Nullable
         @Override
-        public String loadImport(boolean inline, String name) {
-            Identifier importLocation = new Identifier(this.namespace, "shaders/include/" + name);
+        public String applyImport(boolean inline, String name) {
+            ResourceLocation importLocation = new ResourceLocation(this.namespace, "shaders/include/" + name);
             if (!this.visitedImports.add(importLocation)) {
                 return null;
             }
@@ -143,7 +143,7 @@ public final class EffectShaderProgram implements ShaderProgramSetupView, GlBind
                 return "# Missing resource: " + importLocation;
             }
 
-            try (InputStream input = resource.get().getInputStream()) {
+            try (InputStream input = resource.get().open()) {
                 return IOUtils.toString(input, StandardCharsets.UTF_8);
             } catch (IOException e) {
                 Magic.LOGGER.error("Could not open GLSL import {}", name, e);

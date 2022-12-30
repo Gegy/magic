@@ -3,9 +3,9 @@ package dev.gegy.magic.client.casting;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.client.casting.blend.CastingBlender;
 import dev.gegy.magic.client.effect.EffectSelector;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 public interface ClientCasting {
     ClientCasting NONE = new ClientCasting() {
@@ -15,7 +15,7 @@ public interface ClientCasting {
         }
 
         @Override
-        public void handleEvent(Identifier id, PacketByteBuf buf) {
+        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
             Magic.LOGGER.warn("Received unexpected inbound casting event '{}' while no casting is active", id);
         }
 
@@ -31,7 +31,7 @@ public interface ClientCasting {
 
     ClientCasting tick();
 
-    void handleEvent(Identifier id, PacketByteBuf buf);
+    void handleEvent(ResourceLocation id, FriendlyByteBuf buf);
 
     EffectSelector getEffects();
 
@@ -40,6 +40,6 @@ public interface ClientCasting {
     }
 
     interface Factory<P> {
-        ClientCasting build(PlayerEntity player, P parameters, ClientCastingBuilder casting);
+        ClientCasting build(Player player, P parameters, ClientCastingBuilder casting);
     }
 }

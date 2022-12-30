@@ -1,19 +1,19 @@
 package dev.gegy.magic.client.glyph;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public interface SpellSource {
     static SpellSource of(Entity sourceEntity) {
         return new SpellSource() {
             @Override
-            public Vec3d getPosition(float tickDelta) {
-                return sourceEntity.getCameraPosVec(tickDelta);
+            public Vec3 getPosition(float tickDelta) {
+                return sourceEntity.getEyePosition(tickDelta);
             }
 
             @Override
-            public Vec3d getLookVector(float tickDelta) {
-                return sourceEntity.getRotationVec(tickDelta);
+            public Vec3 getLookVector(float tickDelta) {
+                return sourceEntity.getViewVector(tickDelta);
             }
 
             @Override
@@ -23,9 +23,9 @@ public interface SpellSource {
         };
     }
 
-    Vec3d getPosition(float tickDelta);
+    Vec3 getPosition(float tickDelta);
 
-    Vec3d getLookVector(float tickDelta);
+    Vec3 getLookVector(float tickDelta);
 
     default boolean matchesEntity(Entity entity) {
         return false;

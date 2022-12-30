@@ -1,10 +1,10 @@
 package dev.gegy.magic.casting.drawing.event;
 
 import dev.gegy.magic.casting.ServerCastingBuilder;
-import dev.gegy.magic.casting.drawing.event.s2c.DrawGlyphS2CEvent;
-import dev.gegy.magic.casting.drawing.event.s2c.CancelDrawingS2CEvent;
-import dev.gegy.magic.casting.drawing.event.s2c.UpdateDrawingS2CEvent;
 import dev.gegy.magic.casting.drawing.ServerDrawingGlyph;
+import dev.gegy.magic.casting.drawing.event.s2c.CancelDrawingS2CEvent;
+import dev.gegy.magic.casting.drawing.event.s2c.DrawGlyphS2CEvent;
+import dev.gegy.magic.casting.drawing.event.s2c.UpdateDrawingS2CEvent;
 import dev.gegy.magic.network.NetworkSender;
 import org.jetbrains.annotations.NotNull;
 

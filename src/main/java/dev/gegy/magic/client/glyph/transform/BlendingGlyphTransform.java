@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.glyph.transform;
 
 import dev.gegy.magic.math.AnimationTimer;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
 public final class BlendingGlyphTransform implements GlyphTransform {
@@ -34,6 +34,6 @@ public final class BlendingGlyphTransform implements GlyphTransform {
         if (blendProgress <= 0.0F) return this.source.getDistance(tickDelta);
         else if (blendProgress >= 1.0F) return this.target.getDistance(tickDelta);
 
-        return MathHelper.lerp(blendProgress, this.source.getDistance(tickDelta), this.target.getDistance(tickDelta));
+        return Mth.lerp(blendProgress, this.source.getDistance(tickDelta), this.target.getDistance(tickDelta));
     }
 }

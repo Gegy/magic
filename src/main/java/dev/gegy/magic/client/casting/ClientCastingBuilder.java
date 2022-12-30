@@ -12,8 +12,8 @@ import dev.gegy.magic.client.effect.EffectMap;
 import dev.gegy.magic.client.effect.EffectSelector;
 import dev.gegy.magic.network.NetworkSender;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.Identifier;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Unit;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,7 +30,7 @@ public final class ClientCastingBuilder {
 
     private final CastingBlendBuilder blendBuilder = new CastingBlendBuilder();
 
-    private final Map<Identifier, InboundCastingEvent<?>> inboundEvents = new Object2ObjectOpenHashMap<>();
+    private final Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents = new Object2ObjectOpenHashMap<>();
 
     private final List<Ticker> tickers = new ArrayList<>();
     private final EffectMap effects = new EffectMap();
@@ -96,7 +96,7 @@ public final class ClientCastingBuilder {
     }
 
     private record Casting(
-            Map<Identifier, InboundCastingEvent<?>> inboundEvents,
+            Map<ResourceLocation, InboundCastingEvent<?>> inboundEvents,
             List<Ticker> tickers,
             EffectMap effects,
             CastingBlender blenderOut
@@ -110,7 +110,7 @@ public final class ClientCastingBuilder {
         }
 
         @Override
-        public void handleEvent(Identifier id, PacketByteBuf buf) {
+        public void handleEvent(ResourceLocation id, FriendlyByteBuf buf) {
             var event = this.inboundEvents.get(id);
             if (event != null) {
                 event.acceptBytes(buf);
