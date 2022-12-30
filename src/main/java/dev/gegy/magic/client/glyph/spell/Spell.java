@@ -29,33 +29,23 @@ public record Spell(
 
     public static Spell create(final Player player, final SpellParameters parameters, final SpellTransformType transformType) {
         final SpellSource source = SpellSource.of(player);
-
         final SpellTransform transform = transformType.create(source, parameters.direction(), parameters.glyphs().size());
-        final SpellGlyphs glyphs = new SpellGlyphs();
+        return create(source, transform, parameters.glyphs());
+    }
 
-        final List<GlyphForm> forms = parameters.glyphs();
+    private static Spell create(final SpellSource source, final SpellTransform transform, final List<GlyphForm> forms) {
+        final SpellGlyphs glyphs = new SpellGlyphs();
         for (int i = 0; i < forms.size(); i++) {
             final GlyphForm form = forms.get(i);
             final GlyphTransform glyphTransform = transform.getTransformForGlyph(i);
             glyphs.add(new SpellCastingGlyph(source, form, glyphTransform));
         }
-
         return new Spell(source, transform, glyphs);
     }
 
     public static Spell prepare(final SpellSource source, final SpellTransform transform, final List<ClientDrawingGlyph> drawingGlyphs) {
-        final SpellGlyphs glyphs = new SpellGlyphs();
-
-        for (int index = 0; index < drawingGlyphs.size(); index++) {
-            final ClientDrawingGlyph drawingGlyph = drawingGlyphs.get(index);
-
-            final GlyphForm form = drawingGlyph.asForm();
-            final GlyphTransform targetTransform = transform.getTransformForGlyph(index);
-
-            glyphs.add(new SpellCastingGlyph(source, form, targetTransform));
-        }
-
-        return new Spell(source, transform, glyphs);
+        final List<GlyphForm> forms = drawingGlyphs.stream().map(ClientDrawingGlyph::asForm).toList();
+        return create(source, transform, forms);
     }
 
     public void tick() {
