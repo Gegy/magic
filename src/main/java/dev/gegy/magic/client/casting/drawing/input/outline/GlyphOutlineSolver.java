@@ -4,7 +4,7 @@ import dev.gegy.magic.client.glyph.GlyphPlane;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -29,12 +29,12 @@ public class GlyphOutlineSolver {
     float radius;
 
     @Nullable
-    public GlyphOutline trySolve(List<Vec3f> points) {
+    public GlyphOutline trySolve(List<Vector3f> points) {
         if (points.size() < 3) {
             return null;
         }
 
-        Vec3f forward = this.getForwardVectorFor(points);
+        Vector3f forward = this.getForwardVectorFor(points);
         GlyphPlane plane = new GlyphPlane(forward, GlyphTransform.DRAW_DISTANCE);
 
         Vec2f[] projectedPoints = projectPoints(points, plane);
@@ -43,9 +43,7 @@ public class GlyphOutlineSolver {
         }
 
         if (this.trySolveFromPoints(projectedPoints)) {
-            forward = plane.projectToWorld(this.centerX, this.centerY);
-            forward.normalize();
-
+            forward = plane.projectToWorld(this.centerX, this.centerY).normalize();
             plane.set(forward, GlyphTransform.DRAW_DISTANCE);
 
             return new GlyphOutline(plane, this.radius);
@@ -174,46 +172,41 @@ public class GlyphOutlineSolver {
     }
 
     @Nullable
-    private static Vec2f[] projectPoints(List<Vec3f> points, GlyphPlane plane) {
+    private static Vec2f[] projectPoints(List<Vector3f> points, GlyphPlane plane) {
         Vec2f[] projectedPoints = new Vec2f[points.size()];
 
-        Vec3f projected = new Vec3f();
+        Vector3f projected = new Vector3f();
 
         for (int i = 0; i < projectedPoints.length; i++) {
-            Vec3f point = points.get(i);
+            Vector3f point = points.get(i);
 
-            var intersection = plane.raycast(Vec3f.ZERO, point);
+            var intersection = plane.raycast(new Vector3f(0.0F, 0.0F, 0.0F), point);
             if (intersection == null) {
                 return null;
             }
 
-            projected.set(intersection);
-            plane.projectFromWorld(projected);
-
-            projectedPoints[i] = new Vec2f(projected.getX(), projected.getY());
+            plane.projectFromWorld(projected.set(intersection));
+            projectedPoints[i] = new Vec2f(projected.x(), projected.y());
         }
 
         return projectedPoints;
     }
 
-    private Vec3f getForwardVectorFor(List<Vec3f> points) {
-        Vec3f forward = new Vec3f();
+    private Vector3f getForwardVectorFor(List<Vector3f> points) {
+        Vector3f forward = new Vector3f();
 
         float x = 0.0F;
         float y = 0.0F;
         float z = 0.0F;
 
         float weightPerPoint = 1.0F / points.size();
-        for (Vec3f point : points) {
-            x += point.getX() * weightPerPoint;
-            y += point.getY() * weightPerPoint;
-            z += point.getZ() * weightPerPoint;
+        for (Vector3f point : points) {
+            x += point.x() * weightPerPoint;
+            y += point.y() * weightPerPoint;
+            z += point.z() * weightPerPoint;
         }
 
-        forward.set(x, y, z);
-        forward.normalize();
-
-        return forward;
+        return forward.set(x, y, z).normalize();
     }
 
     private boolean isValidSquare(float minX, float minY, float maxX, float maxY) {

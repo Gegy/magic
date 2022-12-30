@@ -13,9 +13,9 @@
   },
   "mixins": ["magic.mixins.json"],
   "depends": {
-    "fabricloader": ">=0.11",
-    "fabric": ">=0.44",
-    "minecraft": "1.18.x",
+    "fabricloader": ">=0.14",
+    "fabric": ">=0.68",
+    "minecraft": ">=1.19.3",
     "java": ">=17"
   }
 }

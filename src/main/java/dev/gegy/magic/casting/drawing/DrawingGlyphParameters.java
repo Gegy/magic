@@ -3,11 +3,11 @@ package dev.gegy.magic.casting.drawing;
 import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 public final record DrawingGlyphParameters(
-        Vec3f direction,
+        Vector3f direction,
         float radius,
         int shape,
         @Nullable GlyphType formedGlyphType

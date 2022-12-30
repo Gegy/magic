@@ -7,7 +7,7 @@ import dev.gegy.magic.client.effect.casting.spell.PreparedSpellEffect;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.Arm;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 public interface CastingPose {
     void beginAnimating();
@@ -20,7 +20,7 @@ public interface CastingPose {
         private final ArmPose leftArm = new ArmPose();
         private final ArmPose rightArm = new ArmPose();
 
-        private final Vec3f target = new Vec3f();
+        private final Vector3f target = new Vector3f();
 
         @Override
         public void beginAnimating() {
@@ -38,19 +38,18 @@ public interface CastingPose {
             }
 
             ClientDrawingGlyph glyph = drawing.getGlyph();
-            Vec3f pointer = glyph.drawPointer();
+            Vector3f pointer = glyph.drawPointer();
             if (pointer == null) {
                 return false;
             }
 
-            float leftX = Math.abs(pointer.getX());
+            float leftX = Math.abs(pointer.x());
             float rightX = -leftX;
 
-            Vec3f target = this.target;
-            target.set(leftX, pointer.getY(), pointer.getZ());
+            Vector3f target = this.target.set(leftX, pointer.y(), pointer.z());
             this.leftArm.pointToPointOnPlane(entity, glyph.plane(), target);
 
-            target.set(rightX, pointer.getY(), pointer.getZ());
+            target.set(rightX, pointer.y(), pointer.z());
             this.rightArm.pointToPointOnPlane(entity, glyph.plane(), target);
 
             return true;

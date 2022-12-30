@@ -2,12 +2,10 @@ package dev.gegy.magic.client.render.gl;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.BufferRenderer;
-import org.lwjgl.opengl.GL15;
 
 public final class GlGeometry implements GlBindableObject {
     private final GlBuffer vertexBuffer;
-    private final RenderSystem.IndexBuffer indexBuffer;
+    private final RenderSystem.ShapeIndexBuffer indexBuffer;
     private final GlVertexArray vertexArray;
 
     private final int drawMode;
@@ -16,7 +14,7 @@ public final class GlGeometry implements GlBindableObject {
     private final Binding binding = new Binding();
 
     private GlGeometry(
-            GlBuffer vertexBuffer, RenderSystem.IndexBuffer indexBuffer, GlVertexArray vertexArray,
+            GlBuffer vertexBuffer, RenderSystem.ShapeIndexBuffer indexBuffer, GlVertexArray vertexArray,
             int drawMode, int vertexCount
     ) {
         this.vertexBuffer = vertexBuffer;
@@ -26,30 +24,22 @@ public final class GlGeometry implements GlBindableObject {
         this.vertexCount = vertexCount;
     }
 
-    public static GlGeometry upload(BufferBuilder builder) {
-        var data = builder.popData();
-        var parameters = data.getFirst();
-        var bytes = data.getSecond();
+    public static GlGeometry upload(BufferBuilder.BuiltBuffer buffer) {
+        var parameters = buffer.getParameters();
 
-        int drawMode = parameters.getMode().mode;
-        int vertexCount = parameters.getVertexCount();
+        int drawMode = parameters.mode().glMode;
+        int vertexCount = parameters.indexCount();
 
-        var vertexBuffer = GlBuffer.generate(GlBuffer.Target.VERTICES, GlBuffer.Usage.STATIC_DRAW);
         var vertexArray = GlVertexArray.generate();
-
-        var indexBuffer = RenderSystem.getSequentialBuffer(parameters.getMode(), vertexCount);
-
-        BufferRenderer.unbindAll();
+        var vertexBuffer = GlBuffer.generate(GlBuffer.Target.VERTICES, GlBuffer.Usage.STATIC_DRAW);
+        var indexBuffer = RenderSystem.getSequentialBuffer(parameters.mode());
 
         try (var vertexArrayBinding = vertexArray.bind()) {
             var vertexBufferBinding = vertexBuffer.bind();
+            vertexBufferBinding.put(buffer.getVertexBuffer());
+            indexBuffer.bindAndGrow(vertexCount);
 
-            bytes.limit(parameters.getLimit());
-            vertexBufferBinding.put(bytes);
-
-            GL15.glBindBuffer(GL15.GL_ELEMENT_ARRAY_BUFFER, indexBuffer.getId());
-
-            vertexArrayBinding.enableFormat(parameters.getVertexFormat());
+            vertexArrayBinding.enableFormat(parameters.format());
 
             return new GlGeometry(vertexBuffer, indexBuffer, vertexArray, drawMode, vertexCount);
         }
@@ -75,12 +65,11 @@ public final class GlGeometry implements GlBindableObject {
         }
 
         private void bind() {
-            BufferRenderer.unbindAll();
             this.vertexArrayBinding = GlGeometry.this.vertexArray.bind();
         }
 
         public void draw() {
-            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, GlGeometry.this.indexBuffer.getElementFormat().count);
+            RenderSystem.drawElements(GlGeometry.this.drawMode, GlGeometry.this.vertexCount, GlGeometry.this.indexBuffer.getIndexType().glType);
         }
 
         @Override
@@ -91,7 +80,6 @@ public final class GlGeometry implements GlBindableObject {
             }
 
             vertexArrayBinding.unbind();
-
             this.vertexArrayBinding = null;
         }
     }

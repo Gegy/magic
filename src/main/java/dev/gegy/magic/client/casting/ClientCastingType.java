@@ -1,17 +1,17 @@
 package dev.gegy.magic.client.casting;
 
 import dev.gegy.magic.Magic;
-import dev.gegy.magic.casting.spell.beam.BeamParameters;
 import dev.gegy.magic.casting.drawing.DrawingParameters;
+import dev.gegy.magic.casting.spell.beam.BeamParameters;
 import dev.gegy.magic.casting.spell.teleport.TeleportParameters;
-import dev.gegy.magic.client.casting.spell.beam.ClientCastingBeam;
 import dev.gegy.magic.client.casting.drawing.ClientCastingDrawing;
+import dev.gegy.magic.client.casting.spell.beam.ClientCastingBeam;
 import dev.gegy.magic.client.casting.spell.teleport.ClientCastingTeleport;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.SimpleRegistry;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.SimpleRegistry;
 
 public final class ClientCastingType<P> {
     public static final SimpleRegistry<ClientCastingType<?>> REGISTRY = FabricRegistryBuilder.createSimple(ClientCastingType.type(), Magic.identifier("casting"))
@@ -30,6 +30,9 @@ public final class ClientCastingType<P> {
     public ClientCastingType(ClientCasting.Factory<P> factory, PacketCodec<P> parametersCodec) {
         this.factory = factory;
         this.parametersCodec = parametersCodec;
+    }
+
+    public static void onInitialize() {
     }
 
     private static <P> ClientCastingType<P> register(String id, ClientCasting.Factory<P> factory, PacketCodec<P> parametersCodec) {

@@ -1,7 +1,7 @@
 package dev.gegy.magic.client.casting.drawing.input.outline;
 
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -16,25 +16,25 @@ public final class GlyphOutlineTracker {
     private static final float LOOP_CLOSE_DISTANCE_2 = LOOP_CLOSE_DISTANCE * LOOP_CLOSE_DISTANCE;
 
     // TODO: use a circular buffer to avoid shifting array
-    private final Vec3f[] samples;
+    private final Vector3f[] samples;
 
     private final GlyphOutlineSolver solver = new GlyphOutlineSolver();
 
-    private final Vec3f strokeDirection = new Vec3f();
-    private final Vec3f segmentDirection = new Vec3f();
+    private final Vector3f strokeDirection = new Vector3f();
+    private final Vector3f segmentDirection = new Vector3f();
 
     public GlyphOutlineTracker(int sampleBufferSize) {
-        this.samples = new Vec3f[sampleBufferSize];
+        this.samples = new Vector3f[sampleBufferSize];
     }
 
     @Nullable
     public GlyphOutline pushSample(Vec3d look) {
-        Vec3f sample = new Vec3f(look);
+        Vector3f sample = look.toVector3f();
 
-        Vec3f[] samples = this.samples;
+        Vector3f[] samples = this.samples;
         int sampleBufferSize = samples.length;
 
-        Vec3f lastSample = samples[sampleBufferSize - 1];
+        Vector3f lastSample = samples[sampleBufferSize - 1];
         if (lastSample == null) {
             samples[sampleBufferSize - 1] = sample;
             return null;
@@ -49,12 +49,12 @@ public final class GlyphOutlineTracker {
         }
 
         // push the sample buffer back and test for potential loop closes
-        Vec3f strokeDirection = null;
-        Vec3f segmentDirection = this.segmentDirection;
+        Vector3f strokeDirection = null;
+        Vector3f segmentDirection = this.segmentDirection;
 
         for (int i = 0; i < sampleBufferSize - 1; i++) {
-            Vec3f start = samples[i];
-            Vec3f end = samples[i + 1];
+            Vector3f start = samples[i];
+            Vector3f end = samples[i + 1];
 
             boolean isSegment = start != null && end != null && start != end;
             if (isSegment && this.canJoinLoopAt(sample, start)) {
@@ -91,21 +91,18 @@ public final class GlyphOutlineTracker {
         Arrays.fill(this.samples, null);
     }
 
-    private boolean canJoinLoopAt(Vec3f point, Vec3f to) {
-        float deltaX = point.getX() - to.getX();
-        float deltaY = point.getY() - to.getY();
-        float deltaZ = point.getZ() - to.getZ();
-        return deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ < LOOP_CLOSE_DISTANCE_2;
+    private boolean canJoinLoopAt(Vector3f point, Vector3f to) {
+        return point.distanceSquared(to) < LOOP_CLOSE_DISTANCE_2;
     }
 
     @Nullable
     private GlyphOutline trySolveOutlineFrom(int fromIdx) {
-        Vec3f[] samples = this.samples;
-        List<Vec3f> points = new ArrayList<>(samples.length - fromIdx);
+        Vector3f[] samples = this.samples;
+        List<Vector3f> points = new ArrayList<>(samples.length - fromIdx);
 
-        Vec3f lastPoint = null;
+        Vector3f lastPoint = null;
         for (int i = fromIdx; i < samples.length; i++) {
-            Vec3f point = samples[i];
+            Vector3f point = samples[i];
             if (point != lastPoint) {
                 points.add(point);
                 lastPoint = point;
@@ -115,16 +112,11 @@ public final class GlyphOutlineTracker {
         return this.solver.trySolve(points);
     }
 
-    private static void setSegmentDirection(Vec3f result, Vec3f from, Vec3f to) {
-        result.set(to.getX(), to.getY(), to.getZ());
-        result.subtract(from);
-        result.normalize();
+    private static void setSegmentDirection(Vector3f result, Vector3f from, Vector3f to) {
+        to.sub(from, result).normalize();
     }
 
-    private static boolean isValidSegment(Vec3f from, Vec3f to) {
-        float dx = to.getX() - from.getX();
-        float dy = to.getY() - from.getY();
-        float dz = to.getZ() - from.getZ();
-        return dx * dx + dy * dy + dz * dz >= MIN_SEGMENT_LENGTH_2;
+    private static boolean isValidSegment(Vector3f from, Vector3f to) {
+        return to.distanceSquared(from) >= MIN_SEGMENT_LENGTH_2;
     }
 }

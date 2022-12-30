@@ -8,7 +8,7 @@ import dev.gegy.magic.casting.drawing.event.c2s.PrepareSpellC2SEvent;
 import dev.gegy.magic.client.casting.ClientCastingBuilder;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.network.NetworkSender;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 public final class ClientDrawingEventSenders {
     private final NetworkSender<BeginGlyphC2SEvent> beginGlyph;
@@ -41,7 +41,7 @@ public final class ClientDrawingEventSenders {
         );
     }
 
-    public void beginGlyph(Vec3f direction, float radius) {
+    public void beginGlyph(Vector3f direction, float radius) {
         this.beginGlyph.send(new BeginGlyphC2SEvent(direction, radius));
     }
 

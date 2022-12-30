@@ -4,9 +4,9 @@ import dev.gegy.magic.Magic;
 import dev.gegy.magic.casting.event.CastingEventSpec;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
-public final record BeginGlyphC2SEvent(Vec3f direction, float radius) {
+public final record BeginGlyphC2SEvent(Vector3f direction, float radius) {
     public static final PacketCodec<BeginGlyphC2SEvent> CODEC = PacketCodec.of(BeginGlyphC2SEvent::encode, BeginGlyphC2SEvent::decode);
     public static final CastingEventSpec<BeginGlyphC2SEvent> SPEC = CastingEventSpec.of(Magic.identifier("begin_glyph"), CODEC);
 

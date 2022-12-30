@@ -3,23 +3,23 @@ package dev.gegy.magic.client.glyph.spell.transform;
 import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.SpellGlyphs;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 public final class TrackingSpellTransform implements SpellTransform {
     private final SpellSource source;
 
-    private final Vec3f direction;
-    private final Vec3f prevDirection;
+    private final Vector3f direction;
+    private final Vector3f prevDirection;
 
-    private final Vec3f resultDirection = new Vec3f();
+    private final Vector3f resultDirection = new Vector3f();
 
     private final float castingDistance;
 
     public TrackingSpellTransform(SpellSource source, float castingDistance) {
         this.source = source;
 
-        this.direction = new Vec3f(source.getLookVector(1.0F));
-        this.prevDirection = this.direction.copy();
+        this.direction = source.getLookVector(1.0F).toVector3f();
+        this.prevDirection = new Vector3f(this.direction);
 
         this.castingDistance = castingDistance;
     }
@@ -31,19 +31,16 @@ public final class TrackingSpellTransform implements SpellTransform {
         var direction = this.direction;
         this.prevDirection.set(direction);
 
-        direction.set(
-                direction.getX() + (float) (target.x - direction.getX()) * 0.5F,
-                direction.getY() + (float) (target.y - direction.getY()) * 0.5F,
-                direction.getZ() + (float) (target.z - direction.getZ()) * 0.5F
+        direction.add(
+                (float) (target.x - direction.x()) * 0.5F,
+                (float) (target.y - direction.y()) * 0.5F,
+                (float) (target.z - direction.z()) * 0.5F
         );
     }
 
     @Override
-    public Vec3f getDirection(float tickDelta) {
-        var result = this.resultDirection;
-        result.set(this.prevDirection);
-        result.lerp(this.direction, tickDelta);
-        return result;
+    public Vector3f getDirection(float tickDelta) {
+        return this.prevDirection.lerp(this.direction, tickDelta, this.resultDirection);
     }
 
     @Override
@@ -57,7 +54,7 @@ public final class TrackingSpellTransform implements SpellTransform {
 
         return new GlyphTransform() {
             @Override
-            public Vec3f getDirection(float tickDelta) {
+            public Vector3f getDirection(float tickDelta) {
                 return TrackingSpellTransform.this.getDirection(tickDelta);
             }
 

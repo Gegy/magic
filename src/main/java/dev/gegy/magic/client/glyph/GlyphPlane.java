@@ -1,69 +1,36 @@
 package dev.gegy.magic.client.glyph;
 
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
-import dev.gegy.magic.math.Matrix4fAccess;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.math.Vector4f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+import org.joml.Vector3f;
 
 public final class GlyphPlane {
-    private final Vec3f origin = new Vec3f();
-    private final Vec3f direction = new Vec3f();
-    private float distance;
+    private static final Vector3f UP = new Vector3f(0.0F, 1.0F, 0.0F);
 
-    private final Matrix4f lookAt = new Matrix4f();
+    private final Vector3f origin = new Vector3f();
+    private final Vector3f direction = new Vector3f();
+    private float distance;
 
     private final Matrix4f planeToWorld = new Matrix4f();
     private final Matrix4f worldToPlane = new Matrix4f();
 
-    private final Vec3f left = new Vec3f();
-    private final Vec3f up = new Vec3f();
-
-    private final Vec3f vec3 = new Vec3f();
-    private final Vector4f vec4 = new Vector4f();
+    private final Vector3f vec3 = new Vector3f();
 
     public GlyphPlane() {
     }
 
-    public GlyphPlane(Vec3f direction, float distance) {
+    public GlyphPlane(Vector3f direction, float distance) {
         this.set(direction, distance);
     }
 
-    public void set(Vec3f direction, float distance) {
-        var origin = this.origin;
-        origin.set(direction);
-        origin.scale(distance);
+    public void set(Vector3f direction, float distance) {
+        this.origin.set(direction).mul(distance);
         this.direction.set(direction);
         this.distance = distance;
 
-        var lookAt = this.computeLookAtMatrix(direction);
-
-        var planeToWorld = this.planeToWorld;
-        planeToWorld.loadIdentity();
-        planeToWorld.multiply(lookAt);
-        planeToWorld.multiplyByTranslation(0.0F, 0.0F, distance);
-
-        var worldToPlane = this.worldToPlane;
-        worldToPlane.load(planeToWorld);
-        worldToPlane.invert();
-    }
-
-    private Matrix4f computeLookAtMatrix(Vec3f direction) {
-        var left = this.left;
-        left.set(Vec3f.POSITIVE_Y);
-        left.cross(direction);
-        left.normalize();
-
-        var up = this.up;
-        up.set(direction);
-        up.cross(left);
-        up.normalize();
-
-        var lookAt = this.lookAt;
-        Matrix4fAccess.setLookAt(lookAt, left, up, direction);
-
-        return lookAt;
+        this.planeToWorld.rotationTowards(direction, UP).translate(0.0F, 0.0F, distance);
+        this.worldToPlane.set(this.planeToWorld).invert();
     }
 
     public void set(GlyphTransform transform, float tickDelta) {
@@ -75,70 +42,49 @@ public final class GlyphPlane {
     }
 
     @Nullable
-    public Vec3f raycast(Vec3f origin, Vec3f direction) {
+    public Vector3f raycast(Vector3f origin, Vector3f direction) {
         float denominator = direction.dot(this.direction);
         if (denominator > 1e-3F) {
-            var delta = this.vec3;
-            delta.set(this.origin);
-            delta.subtract(origin);
+            var delta = this.origin.sub(origin, this.vec3);
 
             float distance = delta.dot(this.direction) / denominator;
             if (distance >= 0.0F) {
-                var intersect = this.vec3;
-                intersect.set(direction);
-                intersect.scale(distance);
-                intersect.add(origin);
-                return intersect;
+                return direction.mul(distance, this.vec3).add(origin);
             }
         }
 
         return null;
     }
 
-    public void projectToWorld(Vec3f point) {
-        this.transformPoint(point, this.planeToWorld);
+    public Vector3f projectToWorld(Vector3f point) {
+        return point.mulPosition(this.planeToWorld);
     }
 
-    public Vec3f projectToWorld(float x, float y, float z) {
-        Vec3f point = new Vec3f(x, y, z);
-        this.projectToWorld(point);
-        return point;
+    public Vector3f projectToWorld(float x, float y, float z) {
+        return this.projectToWorld(new Vector3f(x, y, z));
     }
 
-    public Vec3f projectToWorld(float x, float y) {
+    public Vector3f projectToWorld(float x, float y) {
         return this.projectToWorld(x, y, 0.0F);
     }
 
-    public void projectFromWorld(Vec3f point) {
-        this.transformPoint(point, this.worldToPlane);
+    public Vector3f projectFromWorld(Vector3f point) {
+        return point.mulPosition(this.worldToPlane);
     }
 
-    public Vec3f projectFromWorld(float x, float y, float z) {
-        Vec3f point = new Vec3f(x, y, z);
-        this.projectFromWorld(point);
-        return point;
-    }
-
-    private void transformPoint(Vec3f point, Matrix4f matrix) {
-        var vec4 = this.vec4;
-        vec4.set(point.getX(), point.getY(), point.getZ(), 1.0F);
-        vec4.transform(matrix);
-        point.set(vec4.getX(), vec4.getY(), vec4.getZ());
-    }
-
-    public Matrix4f getPlaneToWorldMatrix() {
+    public Matrix4f planeToWorld() {
         return this.planeToWorld;
     }
 
-    public Vec3f getOrigin() {
+    public Vector3f origin() {
         return this.origin;
     }
 
-    public Vec3f getDirection() {
+    public Vector3f direction() {
         return this.direction;
     }
 
-    public float getDistance() {
+    public float distance() {
         return this.distance;
     }
 

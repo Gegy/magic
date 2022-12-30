@@ -13,7 +13,6 @@ import dev.gegy.magic.client.casting.ClientCastingType;
 import dev.gegy.magic.client.glyph.spell.SpellCasting;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -116,7 +115,7 @@ public final class ServerCastingDrawing {
                 .map(ServerDrawingGlyph::asForm)
                 .filter(Objects::nonNull)
                 .toList();
-        var direction = new Vec3f(this.player.getRotationVec(1.0F));
+        var direction = this.player.getRotationVec(1.0F).toVector3f();
 
         return new SpellParameters(glyphs, direction);
     }

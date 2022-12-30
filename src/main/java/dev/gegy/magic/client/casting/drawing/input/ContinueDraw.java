@@ -25,7 +25,7 @@ final class ContinueDraw implements DrawingInputState {
             GlyphOutline outline = this.outlineTracker.pushSample(player.getRotationVec(1.0F));
             if (outline != null) {
                 ClientDrawingGlyph glyph = outline.createGlyph(player);
-                casting.senders().beginGlyph(outline.plane().getDirection(), outline.radius());
+                casting.senders().beginGlyph(outline.plane().direction(), outline.radius());
                 return new DrawGlyph.OutsideCircle(glyph, outline.plane());
             }
         }

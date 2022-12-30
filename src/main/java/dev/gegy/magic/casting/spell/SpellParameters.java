@@ -11,13 +11,13 @@ import dev.gegy.magic.glyph.GlyphForm;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 import java.util.List;
 
 public final record SpellParameters(
         List<GlyphForm> glyphs,
-        Vec3f direction
+        Vector3f direction
 ) {
     public static final PacketCodec<SpellParameters> CODEC = PacketCodec.of(SpellParameters::encode, SpellParameters::decode);
 

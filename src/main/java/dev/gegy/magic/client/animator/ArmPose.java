@@ -4,61 +4,43 @@ import dev.gegy.magic.client.glyph.GlyphPlane;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 public final class ArmPose {
     private static final double HALF_PI = Math.PI / 2.0;
 
-    final Vec3f target = new Vec3f();
-    final Vec3f prevTarget = new Vec3f();
+    private final Vector3f target = new Vector3f();
+    private final Vector3f prevTarget = new Vector3f();
 
     public void resetInterpolation() {
         this.prevTarget.set(this.target);
     }
 
-    public void pointTo(LivingEntity entity, Vec3f newTarget) {
+    public void pointTo(LivingEntity entity, Vector3f newTarget) {
         this.prevTarget.set(this.target);
 
-        Vec3f target = this.target;
-        target.set(newTarget);
-
-        rotateVectorRelativeToBody(target, entity);
-        target.add(0.0F, entity.getStandingEyeHeight(), 0.0F);
+        var target = this.target.set(newTarget)
+                .rotateY(entity.bodyYaw * MathHelper.RADIANS_PER_DEGREE)
+                .add(0.0F, entity.getStandingEyeHeight(), 0.0F);
 
         target.set(
-                target.getX() * 16.0F,
-                24.0F - target.getY() * 16.0F,
-                target.getZ() * 16.0F
+                target.x() * 16.0F,
+                24.0F - target.y() * 16.0F,
+                target.z() * 16.0F
         );
     }
 
-    public static void rotateVectorRelativeToBody(Vec3f vector, LivingEntity entity) {
-        rotateVectorY(vector, (float) -Math.toRadians(entity.bodyYaw));
-    }
-
-    private static void rotateVectorY(Vec3f vector, float rotationY) {
-        float x = vector.getX();
-        float y = vector.getY();
-        float z = vector.getZ();
-        vector.set(
-                x * MathHelper.cos(rotationY) - z * MathHelper.sin(rotationY),
-                y,
-                x * MathHelper.sin(rotationY) + z * MathHelper.cos(rotationY)
-        );
-    }
-
-    public void pointToPointOnPlane(LivingEntity entity, GlyphPlane plane, Vec3f target) {
-        plane.projectToWorld(target);
-        this.pointTo(entity, target);
+    public void pointToPointOnPlane(LivingEntity entity, GlyphPlane plane, Vector3f target) {
+        this.pointTo(entity, plane.projectToWorld(target));
     }
 
     public void apply(ModelPart part, float tickDelta, float weight) {
-        Vec3f prevTarget = this.prevTarget;
-        Vec3f target = this.target;
+        Vector3f prevTarget = this.prevTarget;
+        Vector3f target = this.target;
 
-        float targetX = MathHelper.lerp(tickDelta, prevTarget.getX(), target.getX());
-        float targetY = MathHelper.lerp(tickDelta, prevTarget.getY(), target.getY());
-        float targetZ = MathHelper.lerp(tickDelta, prevTarget.getZ(), target.getZ());
+        float targetX = MathHelper.lerp(tickDelta, prevTarget.x(), target.x());
+        float targetY = MathHelper.lerp(tickDelta, prevTarget.y(), target.y());
+        float targetZ = MathHelper.lerp(tickDelta, prevTarget.z(), target.z());
 
         float deltaX = targetX - part.pivotX;
         float deltaY = targetY - part.pivotY;

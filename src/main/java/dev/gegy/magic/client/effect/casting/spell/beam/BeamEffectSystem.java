@@ -97,18 +97,18 @@ public final class BeamEffectSystem implements EffectSystem {
                 MathHelper.cos(theta) * radius
         );
 
-        var direction = plane.getDirection();
-        double velocityX = direction.getX() * 0.2 + this.random.nextGaussian() * 0.01;
-        double velocityY = direction.getY() * 0.2 + this.random.nextGaussian() * 0.01;
-        double velocityZ = direction.getZ() * 0.2 + this.random.nextGaussian() * 0.01;
+        var direction = plane.direction();
+        double velocityX = direction.x() * 0.2 + this.random.nextGaussian() * 0.01;
+        double velocityY = direction.y() * 0.2 + this.random.nextGaussian() * 0.01;
+        double velocityZ = direction.z() * 0.2 + this.random.nextGaussian() * 0.01;
 
         // TODO: despawn based on distance from beam
 
         particleManager.addParticle(
                 MagicParticles.SPARK,
-                sourcePos.x + origin.getX(),
-                sourcePos.y + origin.getY(),
-                sourcePos.z + origin.getZ(),
+                sourcePos.x + origin.x(),
+                sourcePos.y + origin.y(),
+                sourcePos.z + origin.z(),
                 velocityX, velocityY, velocityZ
         );
     }
@@ -123,15 +123,14 @@ public final class BeamEffectSystem implements EffectSystem {
                 MathHelper.sin(theta) * 0.5F,
                 MathHelper.cos(theta) * 0.5F,
                 0.0F
-        );
-        ejectVelocity.scale(0.2F);
+        ).mul(0.2F);
 
         particleManager.addParticle(
                 MagicParticles.SPARK,
-                sourcePos.x + origin.getX(),
-                sourcePos.y + origin.getY(),
-                sourcePos.z + origin.getZ(),
-                ejectVelocity.getX(), ejectVelocity.getY(), ejectVelocity.getZ()
+                sourcePos.x + origin.x(),
+                sourcePos.y + origin.y(),
+                sourcePos.z + origin.z(),
+                ejectVelocity.x(), ejectVelocity.y(), ejectVelocity.z()
         );
     }
 

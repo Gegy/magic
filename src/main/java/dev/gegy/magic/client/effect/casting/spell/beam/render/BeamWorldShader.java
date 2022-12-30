@@ -60,15 +60,12 @@ final class BeamWorldShader implements EffectShader<BeamRenderParameters> {
 
         RenderSystem.glUniform1i(this.uniformSampler, 0);
 
-        FloatBuffer modelViewProjectData = this.modelViewProjectData;
-        parameters.modelViewProject.writeColumnMajor(modelViewProjectData);
-        modelViewProjectData.clear();
-        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
-
-        FloatBuffer scaleData = this.scaleData;
-        scaleData.put(BeamTexture.SCALE_X).put(BeamTexture.SCALE_Y);
-        scaleData.clear();
-        RenderSystem.glUniform2(this.uniformScale, scaleData);
+        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false,
+                parameters.modelViewProject.get(this.modelViewProjectData)
+        );
+        RenderSystem.glUniform2(this.uniformScale,
+                this.scaleData.put(0, BeamTexture.SCALE_X).put(1, BeamTexture.SCALE_Y)
+        );
 
         return binding;
     }

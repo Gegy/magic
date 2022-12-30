@@ -9,8 +9,8 @@ import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.GlyphForm;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.minecraft.util.math.Matrix4f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 
 public final class GlyphRenderParameters {
     public final Matrix4f modelViewProject = new Matrix4f();
@@ -81,15 +81,14 @@ public final class GlyphRenderParameters {
         var cameraPos = context.camera().getPos();
         var sourcePos = source.getPosition(context.tickDelta());
 
-        var modelViewProject = this.modelViewProject;
-        modelViewProject.load(context.projectionMatrix());
-        modelViewProject.multiply(modelMatrix);
-        modelViewProject.multiplyByTranslation(
-                (float) (sourcePos.x - cameraPos.x),
-                (float) (sourcePos.y - cameraPos.y),
-                (float) (sourcePos.z - cameraPos.z)
-        );
-        modelViewProject.multiply(plane.getPlaneToWorldMatrix());
+        this.modelViewProject.set(context.projectionMatrix())
+                .mul(modelMatrix)
+                .translate(
+                        (float) (sourcePos.x - cameraPos.x),
+                        (float) (sourcePos.y - cameraPos.y),
+                        (float) (sourcePos.z - cameraPos.z)
+                )
+                .mul(plane.planeToWorld());
     }
 
     private void setForm(GlyphForm form) {

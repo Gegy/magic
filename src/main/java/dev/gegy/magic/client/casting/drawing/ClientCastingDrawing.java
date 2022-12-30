@@ -23,7 +23,6 @@ import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.math.AnimationTimer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -184,7 +183,7 @@ public final class ClientCastingDrawing {
         this.glyphs.sort(Comparator.comparingDouble(ClientDrawingGlyph::radius));
 
         var source = SpellSource.of(this.player);
-        var direction = new Vec3f(source.getLookVector(1.0F));
+        var direction = source.getLookVector(1.0F).toVector3f();
 
         var spellTransform = transformType.create(source, direction, this.glyphs.size());
         var spell = Spell.prepare(source, spellTransform, this.glyphs);

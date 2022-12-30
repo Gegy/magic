@@ -57,7 +57,7 @@ public final class ClientCastingBeam {
     private void bindInput(ClientCastingBuilder casting) {
         var active = new MutableBoolean();
         casting.registerTicker(() -> {
-            boolean holdingKey = CLIENT.options.keyAttack.isPressed();
+            boolean holdingKey = CLIENT.options.attackKey.isPressed();
             if (active.booleanValue() != holdingKey) {
                 active.setValue(holdingKey);
                 this.eventSenders.setActive(holdingKey);
@@ -74,9 +74,9 @@ public final class ClientCastingBeam {
 
         var beamSource = this.getBeamSource();
         var beamTarget = beamSource.add(
-                direction.getX() * maximumLength,
-                direction.getY() * maximumLength,
-                direction.getZ() * maximumLength
+                direction.x() * maximumLength,
+                direction.y() * maximumLength,
+                direction.z() * maximumLength
         );
 
         var cast = this.player.world.raycast(new RaycastContext(

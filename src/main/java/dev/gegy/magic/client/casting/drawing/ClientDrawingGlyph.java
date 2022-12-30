@@ -14,8 +14,8 @@ import dev.gegy.magic.math.Easings;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 public final class ClientDrawingGlyph {
     public static final int FORM_TICKS = 5;
@@ -33,7 +33,7 @@ public final class ClientDrawingGlyph {
 
     private GlyphStrokeTracker stroke;
 
-    private Vec3f drawPointer;
+    private Vector3f drawPointer;
     private Vec3d lastLook;
 
     private int formTicks;
@@ -69,10 +69,10 @@ public final class ClientDrawingGlyph {
         }
     }
 
-    private void tickStroke(Vec3f pointer, GlyphStrokeTracker stroke) {
+    private void tickStroke(Vector3f pointer, GlyphStrokeTracker stroke) {
         float radius = this.radius;
-        float x = Math.abs(pointer.getX() / radius);
-        float y = pointer.getY() / radius;
+        float x = Math.abs(pointer.x() / radius);
+        float y = pointer.y() / radius;
 
         float distance2 = x * x + y * y;
         if (distance2 >= 1.0F) {
@@ -85,8 +85,8 @@ public final class ClientDrawingGlyph {
     }
 
     @Nullable
-    private Vec3f computeDrawPointer(Vec3d look) {
-        var intersection = this.plane.raycast(Vec3f.ZERO, new Vec3f(look));
+    private Vector3f computeDrawPointer(Vec3d look) {
+        var intersection = this.plane.raycast(new Vector3f(0.0f, 0.0f, 0.0f), look.toVector3f());
         if (intersection != null) {
             this.plane.projectFromWorld(intersection);
             return intersection;
@@ -167,7 +167,7 @@ public final class ClientDrawingGlyph {
     }
 
     @Nullable
-    public Vec3f drawPointer() {
+    public Vector3f drawPointer() {
         return this.drawPointer;
     }
 

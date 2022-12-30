@@ -10,9 +10,9 @@ import dev.gegy.magic.casting.spell.teleport.ServerCastingTeleport;
 import dev.gegy.magic.network.codec.PacketCodec;
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.SimpleRegistry;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.SimpleRegistry;
 import org.jetbrains.annotations.Nullable;
 
 public final class GlyphType {
@@ -37,6 +37,9 @@ public final class GlyphType {
     private GlyphType(GlyphStyle style, CastFunction castFunction) {
         this.style = style;
         this.castFunction = castFunction;
+    }
+
+    public static void onInitialize() {
     }
 
     public static Builder builder() {

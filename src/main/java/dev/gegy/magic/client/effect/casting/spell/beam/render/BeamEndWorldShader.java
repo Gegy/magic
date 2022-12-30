@@ -7,7 +7,7 @@ import dev.gegy.magic.client.effect.shader.EffectShaderProgram;
 import dev.gegy.magic.client.render.GeometryBuilder;
 import dev.gegy.magic.client.render.gl.GlBinding;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL20;
 import org.lwjgl.system.MemoryUtil;
 
@@ -67,10 +67,9 @@ final class BeamEndWorldShader implements EffectShader<BeamRenderParameters> {
 
         RenderSystem.glUniform1i(this.uniformSampler, 0);
 
-        FloatBuffer modelViewProjectData = this.modelViewProjectData;
-        this.modelViewProject.apply(parameters).writeColumnMajor(modelViewProjectData);
-        modelViewProjectData.clear();
-        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
+        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false,
+                this.modelViewProject.apply(parameters).get(this.modelViewProjectData)
+        );
 
         GL20.glUniform1f(this.uniformScale, BeamTexture.END_SCALE);
 

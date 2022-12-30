@@ -55,10 +55,9 @@ final class GlyphWorldShader implements EffectShader<GlyphRenderParameters> {
 
         RenderSystem.glUniform1i(this.uniformSampler, 0);
 
-        FloatBuffer modelViewProjectData = this.modelViewProjectData;
-        parameters.modelViewProject.writeColumnMajor(modelViewProjectData);
-        modelViewProjectData.clear();
-        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false, modelViewProjectData);
+        RenderSystem.glUniformMatrix4(this.uniformModelViewProject, false,
+                parameters.modelViewProject.get(this.modelViewProjectData)
+        );
 
         GL20.glUniform1f(this.uniformScale, parameters.radius * GlyphTexture.RENDER_SCALE);
 

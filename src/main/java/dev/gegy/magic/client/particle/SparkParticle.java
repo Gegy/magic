@@ -10,13 +10,13 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public final class SparkParticle extends SpriteBillboardParticle {
     private final float scale;
-    private final Vec3f vector = new Vec3f();
+    private final Vector3f vector = new Vector3f();
 
     SparkParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
@@ -28,9 +28,9 @@ public final class SparkParticle extends SpriteBillboardParticle {
         this.maxAge = this.random.nextInt(20) + 20;
 
         // TODO
-        this.colorGreen = 0.4F;
-        this.colorBlue = 0.3F;
-        this.colorAlpha = 0.9F;
+        this.green = 0.4F;
+        this.blue = 0.3F;
+        this.alpha = 0.9F;
 
         this.gravityStrength = 0.0F;
         this.velocityMultiplier = 1.0F;
@@ -50,7 +50,7 @@ public final class SparkParticle extends SpriteBillboardParticle {
         float dy = (float) (MathHelper.lerp(tickDelta, this.prevPosY, this.y) - cameraPos.getY());
         float dz = (float) (MathHelper.lerp(tickDelta, this.prevPosZ, this.z) - cameraPos.getZ());
 
-        Quaternion cameraRotation = camera.getRotation();
+        Quaternionf cameraRotation = camera.getRotation();
 
         float scale = this.scale;
         int light = this.getBrightness(tickDelta);
@@ -69,19 +69,18 @@ public final class SparkParticle extends SpriteBillboardParticle {
 
     private void vertex(
             VertexConsumer writer,
-            Quaternion rotation, float dx, float dy, float dz,
+            Quaternionf rotation, float dx, float dy, float dz,
             float scale, int light, float alpha,
             float x, float y, float u, float v
     ) {
-        Vec3f vertex = this.vector;
-        vertex.set(x, y, 0.0F);
-        vertex.rotate(rotation);
-        vertex.scale(scale);
-        vertex.add(dx, dy, dz);
+        Vector3f vertex = this.vector.set(x, y, 0.0F)
+                .rotate(rotation)
+                .mul(scale)
+                .add(dx, dy, dz);
 
-        writer.vertex(vertex.getX(), vertex.getY(), vertex.getZ())
+        writer.vertex(vertex.x(), vertex.y(), vertex.z())
                 .texture(u, v)
-                .color(this.colorRed, this.colorGreen, this.colorBlue, alpha)
+                .color(this.red, this.green, this.blue, alpha)
                 .light(light)
                 .next();
     }
@@ -89,7 +88,7 @@ public final class SparkParticle extends SpriteBillboardParticle {
     private float getAlpha(float tickDelta) {
         float age = this.age + tickDelta;
         float animation = MathHelper.clamp((this.maxAge - age) / 5.0F, 0.0F, 1.0F);
-        return animation * this.colorAlpha;
+        return animation * this.alpha;
     }
 
     @Override

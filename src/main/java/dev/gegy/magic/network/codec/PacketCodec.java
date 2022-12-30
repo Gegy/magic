@@ -4,9 +4,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Vec3f;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.util.collection.IndexedIterable;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,13 +26,13 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
             PacketByteBuf::readUuid
     );
 
-    PacketCodec<Vec3f> VEC3F = PacketCodec.of(
+    PacketCodec<Vector3f> VEC3F = PacketCodec.of(
             (vec, buf) -> {
-                buf.writeFloat(vec.getX());
-                buf.writeFloat(vec.getY());
-                buf.writeFloat(vec.getZ());
+                buf.writeFloat(vec.x());
+                buf.writeFloat(vec.y());
+                buf.writeFloat(vec.z());
             },
-            buf -> new Vec3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
+            buf -> new Vector3f(buf.readFloat(), buf.readFloat(), buf.readFloat())
     );
 
     PacketCodec<Formatting> FORMATTING = PacketCodec.ofEnum(Formatting.class);
@@ -57,10 +57,10 @@ public interface PacketCodec<T> extends PacketEncoder<T>, PacketDecoder<T> {
         );
     }
 
-    static <T> PacketCodec<@Nullable T> ofRegistry(Registry<T> registry) {
+    static <T> PacketCodec<@Nullable T> ofRegistry(IndexedIterable<T> registry) {
         return PacketCodec.of(
-                (value, buf) -> buf.writeVarInt(registry.getRawId(value)),
-                buf -> registry.get(buf.readVarInt())
+                (value, buf) -> buf.writeRegistryValue(registry, value),
+                buf -> buf.readRegistryValue(registry)
         );
     }
 

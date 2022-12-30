@@ -4,11 +4,11 @@ import dev.gegy.magic.glyph.GlyphForm;
 import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 public final class ServerDrawingGlyph {
-    private final Vec3f direction;
+    private final Vector3f direction;
     private final float radius;
 
     private int shape;
@@ -16,12 +16,12 @@ public final class ServerDrawingGlyph {
 
     private GlyphNode stroke;
 
-    public ServerDrawingGlyph(Vec3f direction, float radius) {
+    public ServerDrawingGlyph(Vector3f direction, float radius) {
         this.direction = direction;
         this.radius = radius;
     }
 
-    public Vec3f direction() {
+    public Vector3f direction() {
         return this.direction;
     }
 

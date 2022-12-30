@@ -1,6 +1,7 @@
 package dev.gegy.magic.client.render.gl;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.render.BufferRenderer;
 import net.minecraft.client.render.VertexFormat;
 import org.lwjgl.opengl.GL30;
 
@@ -22,6 +23,7 @@ public final class GlVertexArray implements GlBindableObject {
 
     @Override
     public Binding bind() {
+        BufferRenderer.resetCurrentVertexBuffer();
         GL30.glBindVertexArray(this.id);
         return this.binding;
     }
@@ -34,7 +36,7 @@ public final class GlVertexArray implements GlBindableObject {
     private void enableFormat(VertexFormat format) {
         this.disableFormat();
 
-        format.startDrawing();
+        format.setupState();
         this.format = format;
     }
 
@@ -42,7 +44,7 @@ public final class GlVertexArray implements GlBindableObject {
         var format = this.format;
         if (format != null) {
             this.format = null;
-            format.endDrawing();
+            format.clearState();
         }
     }
 

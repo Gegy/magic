@@ -27,7 +27,7 @@ public final class TeleportEffectRenderer {
                 (float) (sourcePos.y - cameraPos.y),
                 (float) (sourcePos.z - cameraPos.z)
         );
-        matrixStack.multiplyPositionMatrix(effect.sourcePlane().getPlaneToWorldMatrix());
+        matrixStack.multiplyPositionMatrix(effect.sourcePlane().planeToWorld());
 
         float scale = 0.0625F * TeleportEffect.SYMBOL_SIZE;
         matrixStack.scale(-scale, -scale, scale);

@@ -11,7 +11,7 @@ import net.minecraft.client.render.VertexFormatElement;
 import java.util.function.Consumer;
 
 public final class GeometryBuilder {
-    public static final VertexFormatElement POSITION_2F_ELEMENT = new VertexFormatElement(0, VertexFormatElement.DataType.FLOAT, VertexFormatElement.Type.POSITION, 2);
+    public static final VertexFormatElement POSITION_2F_ELEMENT = new VertexFormatElement(0, VertexFormatElement.ComponentType.FLOAT, VertexFormatElement.Type.POSITION, 2);
 
     public static final VertexFormat POSITION_2F = new VertexFormat(ImmutableMap.of("Position", POSITION_2F_ELEMENT));
 
@@ -28,9 +28,7 @@ public final class GeometryBuilder {
     public static GlGeometry upload(Consumer<BufferBuilder> builderFunction) {
         var builder = new BufferBuilder(64);
         builderFunction.accept(builder);
-        builder.end();
-
-        return GlGeometry.upload(builder);
+        return GlGeometry.upload(builder.end());
     }
 
     public static void vertex2f(BufferVertexConsumer builder, float x, float y) {

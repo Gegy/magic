@@ -1,14 +1,14 @@
 package dev.gegy.magic.client.glyph.transform;
 
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 public interface GlyphTransform {
     float DRAW_DISTANCE = 1.5F;
 
-    static GlyphTransform of(Vec3f direction, float distance) {
+    static GlyphTransform of(Vector3f direction, float distance) {
         return new GlyphTransform() {
             @Override
-            public Vec3f getDirection(float tickDelta) {
+            public Vector3f getDirection(float tickDelta) {
                 return direction;
             }
 
@@ -19,13 +19,11 @@ public interface GlyphTransform {
         };
     }
 
-    default Vec3f getOrigin(float tickDelta) {
-        final Vec3f origin = this.getDirection(tickDelta).copy();
-        origin.scale(this.getDistance(tickDelta));
-        return origin;
-    }
-
-    Vec3f getDirection(float tickDelta);
+    Vector3f getDirection(float tickDelta);
 
     float getDistance(float tickDelta);
+
+    default Vector3f getOrigin(float tickDelta) {
+        return new Vector3f(this.getDirection(tickDelta)).mul(this.getDistance(tickDelta));
+    }
 }

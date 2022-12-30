@@ -8,8 +8,8 @@ import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3f;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 abstract class DrawGlyph implements DrawingInputState {
     // 15% of circle radius
@@ -29,15 +29,15 @@ abstract class DrawGlyph implements DrawingInputState {
 
     @Override
     public final DrawingInputState tick(ClientCastingDrawing casting, PlayerEntity player) {
-        Vec3f drawPointer = this.glyph.drawPointer();
+        Vector3f drawPointer = this.glyph.drawPointer();
         if (drawPointer == null || this.isPointerOutOfBounds(drawPointer)) {
             return this.cancelGlyph(casting);
         }
 
         float radius = this.glyph.radius();
         return this.tickDraw(casting,
-                Math.abs(drawPointer.getX() / radius),
-                drawPointer.getY() / radius
+                Math.abs(drawPointer.x() / radius),
+                drawPointer.y() / radius
         );
     }
 
@@ -46,10 +46,10 @@ abstract class DrawGlyph implements DrawingInputState {
         return new ContinueDraw();
     }
 
-    private boolean isPointerOutOfBounds(Vec3f drawPointer) {
+    private boolean isPointerOutOfBounds(Vector3f drawPointer) {
         float radius = this.glyph.radius();
-        float x = drawPointer.getX() / radius;
-        float y = drawPointer.getY() / radius;
+        float x = drawPointer.x() / radius;
+        float y = drawPointer.y() / radius;
         float distance2 = x * x + y * y;
 
         return distance2 >= 3.0F * 3.0F;

@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '0.10-SNAPSHOT'
+	id 'fabric-loom' version '1.0.+'
 	id 'maven-publish'
 }
 
@@ -13,6 +13,7 @@ group = project.maven_group
 repositories {
 	mavenCentral()
 	maven { url = "https://maven.gegy.dev/" }
+	maven { url = "https://api.modrinth.com/maven/" }
 }
 
 dependencies {
@@ -22,11 +23,9 @@ dependencies {
 
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modRuntimeOnly ("supercoder79:databreaker:0.2.8") {
-		exclude module : "fabric-loader"
-	}
-
 	implementation include('org.hsluv:hsluv:0.2')
+
+	modLocalRuntime 'maven.modrinth:lazydfu:0.1.3'
 }
 
 processResources {
