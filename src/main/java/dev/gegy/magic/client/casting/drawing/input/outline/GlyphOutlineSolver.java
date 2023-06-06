@@ -14,19 +14,19 @@ public class GlyphOutlineSolver {
     private static final float RADIUS_DEVIATION_THRESHOLD = 0.5f;
 
     // we can only have 30% of our points be outliers in terms of radius
-    private static final float MAX_RADIUS_DEVIATION_PERCENT = 0.3F;
+    private static final float MAX_RADIUS_DEVIATION_PERCENT = 0.3f;
 
     // we can only have 10% of our segments be outliers in terms of direction
-    private static final float MAX_DIRECTION_DEVIATION_PERCENT = 0.1F;
+    private static final float MAX_DIRECTION_DEVIATION_PERCENT = 0.1f;
 
     // short side of bounds is allowed to be at least 7/10 of long side
-    private static final float MIN_SQUARENESS = 0.7F;
+    private static final float MIN_SQUARENESS = 0.7f;
 
     private static final float MIN_RADIUS = 0.125f;
 
-    float centerX;
-    float centerY;
-    float radius;
+    private float centerX;
+    private float centerY;
+    private float radius;
 
     @Nullable
     public GlyphOutline trySolve(final List<Vector3f> points) {
@@ -59,12 +59,10 @@ public class GlyphOutlineSolver {
         float maxX = -Float.MAX_VALUE;
         float maxY = -Float.MAX_VALUE;
         for (final Vec2 point : points) {
-            final float x = point.x;
-            final float y = point.y;
-            if (x < minX) minX = x;
-            if (y < minY) minY = y;
-            if (x > maxX) maxX = x;
-            if (y > maxY) maxY = y;
+            minX = Math.min(point.x, minX);
+            minY = Math.min(point.y, minY);
+            maxX = Math.max(point.x, maxX);
+            maxY = Math.max(point.y, maxY);
         }
 
         // this is obviously not a circle if the player drew a rectangle
@@ -164,7 +162,7 @@ public class GlyphOutlineSolver {
         float directionX = to.x - from.x;
         float directionY = to.y - from.y;
 
-        final float normalize = Mth.fastInvSqrt(directionX * directionX + directionY * directionY);
+        final float normalize = Mth.invSqrt(directionX * directionX + directionY * directionY);
         directionX *= normalize;
         directionY *= normalize;
 

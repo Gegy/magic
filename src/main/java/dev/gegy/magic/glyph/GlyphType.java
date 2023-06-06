@@ -1,6 +1,5 @@
 package dev.gegy.magic.glyph;
 
-import com.google.common.base.Preconditions;
 import dev.gegy.magic.Magic;
 import dev.gegy.magic.casting.ServerCasting;
 import dev.gegy.magic.casting.ServerCastingBuilder;
@@ -12,11 +11,14 @@ import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
 import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public final class GlyphType {
-    public static final MappedRegistry<GlyphType> REGISTRY = FabricRegistryBuilder.createSimple(GlyphType.class, Magic.identifier("glyph_type"))
+    public static final MappedRegistry<GlyphType> REGISTRY = FabricRegistryBuilder.<GlyphType>createSimple(ResourceKey.createRegistryKey(Magic.identifier("glyph_type")))
             .attribute(RegistryAttribute.SYNCED)
             .buildAndRegister();
 
@@ -77,8 +79,8 @@ public final class GlyphType {
 
         public GlyphType build() {
             return new GlyphType(
-                    Preconditions.checkNotNull(style, "style not set"),
-                    Preconditions.checkNotNull(castFunction, "casting build function not set")
+                    Objects.requireNonNull(style, "style not set"),
+                    Objects.requireNonNull(castFunction, "casting build function not set")
             );
         }
     }

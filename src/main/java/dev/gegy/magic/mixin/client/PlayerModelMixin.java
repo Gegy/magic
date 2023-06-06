@@ -35,7 +35,7 @@ public abstract class PlayerModelMixin<T extends LivingEntity> extends HumanoidM
             return;
         }
 
-        if (entity instanceof CastingAnimatableEntity animatable) {
+        if (entity instanceof final CastingAnimatableEntity animatable) {
             final CastingAnimator animator = animatable.getCastingAnimator();
             animator.applyToModel((Player) entity, leftArm, rightArm, client.getFrameTime());
         }

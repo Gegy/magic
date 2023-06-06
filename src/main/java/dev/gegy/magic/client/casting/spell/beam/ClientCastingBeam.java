@@ -81,7 +81,7 @@ public final class ClientCastingBeam {
                 direction.z() * maximumLength
         );
 
-        final BlockHitResult cast = player.level.clip(new ClipContext(
+        final BlockHitResult cast = player.level().clip(new ClipContext(
                 beamSource, beamTarget,
                 ClipContext.Block.OUTLINE,
                 ClipContext.Fluid.ANY,

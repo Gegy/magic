@@ -40,7 +40,7 @@ public final class ClientCastingTeleport {
         final TeleportEffect effect = casting.attachEffect(TeleportEffect.create(
                 sourceGlyph,
                 parameters.targets().values(),
-                player.level.getGameTime()
+                player.level().getGameTime()
         ));
         SpellEffects.attach(spell, casting);
 

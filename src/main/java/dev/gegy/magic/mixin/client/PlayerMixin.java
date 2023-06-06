@@ -28,7 +28,7 @@ public abstract class PlayerMixin extends LivingEntity implements CastingAnimata
 
     @Inject(method = "tick", at = @At("TAIL"))
     private void tick(final CallbackInfo ci) {
-        if (level.isClientSide) {
+        if (level().isClientSide) {
             castingAnimator.tick((Player) (Object) this);
         }
     }

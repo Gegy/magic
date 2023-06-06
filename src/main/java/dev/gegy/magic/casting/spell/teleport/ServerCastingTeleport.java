@@ -71,7 +71,7 @@ public final class ServerCastingTeleport {
     private static TeleportTarget generateTarget(final ServerPlayer player, final char character, final ChatFormatting formatting) {
         final TeleportTargetSymbol symbol = new TeleportTargetSymbol(character, ColorRgb.of(Objects.requireNonNull(formatting.getColor(), "non-color formatting")));
 
-        final ServerLevel level = player.getLevel();
+        final ServerLevel level = player.serverLevel();
         final ResourceKey<Level> dimension = level.dimension();
         final RandomSource random = player.getRandom();
         final BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, new BlockPos(

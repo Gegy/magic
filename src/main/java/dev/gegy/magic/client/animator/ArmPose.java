@@ -45,13 +45,12 @@ public final class ArmPose {
         final float deltaX = targetX - part.x;
         final float deltaY = targetY - part.y;
         final float deltaZ = targetZ - part.z;
-        final double deltaXZ = Math.sqrt(deltaX * deltaX + deltaZ * deltaZ);
+        final double deltaXZ = Mth.length(deltaX, deltaZ);
 
-        final float targetYaw = (float) -Math.atan2(deltaX, deltaZ);
-        final float targetPitch = (float) (Math.atan2(deltaY, deltaXZ) - HALF_PI);
+        final float targetYRot = (float) -Math.atan2(deltaX, deltaZ);
+        final float targetXRot = (float) (Math.atan2(deltaY, deltaXZ) - HALF_PI);
 
-        final float invWeight = 1.0f - weight;
-        part.yRot = weight * targetYaw + part.yRot * invWeight;
-        part.xRot = weight * targetPitch + part.xRot * invWeight;
+        part.yRot = Mth.lerp(part.yRot, targetYRot, weight);
+        part.xRot = Mth.lerp(part.xRot, targetXRot, weight);
     }
 }

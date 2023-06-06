@@ -24,8 +24,6 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	implementation include('org.hsluv:hsluv:0.2')
-
-	modLocalRuntime 'maven.modrinth:lazydfu:0.1.3'
 }
 
 processResources {

@@ -76,7 +76,7 @@ public final class ClientDrawingGlyph {
 
         final float distance2 = x * x + y * y;
         if (distance2 >= 1.0f) {
-            final float factor = Mth.fastInvSqrt(distance2);
+            final float factor = Mth.invSqrt(distance2);
             x *= factor;
             y *= factor;
         }
