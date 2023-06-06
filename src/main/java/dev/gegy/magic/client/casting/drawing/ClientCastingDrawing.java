@@ -23,6 +23,7 @@ import dev.gegy.magic.client.glyph.spell.transform.SpellTransform;
 import dev.gegy.magic.client.glyph.spell.transform.SpellTransformType;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.GlyphType;
+import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.math.AnimationTimer;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
 import net.minecraft.world.entity.player.Player;
@@ -168,7 +169,7 @@ public final class ClientCastingDrawing {
         return glyph;
     }
 
-    private ClientDrawingGlyph createGlyph(final GlyphPlane plane, final float radius, final int shape) {
+    private ClientDrawingGlyph createGlyph(final GlyphPlane plane, final float radius, final GlyphShape shape) {
         final ClientDrawingGlyph glyph = new ClientDrawingGlyph(SpellSource.of(player), plane, radius);
         glyph.setShape(shape);
         return glyph;

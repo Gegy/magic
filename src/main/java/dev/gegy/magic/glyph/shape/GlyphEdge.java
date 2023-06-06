@@ -77,7 +77,7 @@ public enum GlyphEdge {
         return null;
     }
 
-    public int asBit() {
+    public int mask() {
         return 1 << ordinal();
     }
 

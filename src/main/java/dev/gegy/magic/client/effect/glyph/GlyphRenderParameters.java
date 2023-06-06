@@ -8,6 +8,7 @@ import dev.gegy.magic.client.glyph.SpellSource;
 import dev.gegy.magic.client.glyph.spell.SpellCastingGlyph;
 import dev.gegy.magic.client.glyph.transform.GlyphTransform;
 import dev.gegy.magic.glyph.GlyphForm;
+import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.math.AnimatedColor;
 import dev.gegy.magic.math.ColorRgb;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
@@ -21,7 +22,7 @@ public final class GlyphRenderParameters {
     public float opacity;
     public float primaryRed, primaryGreen, primaryBlue;
     public float secondaryRed, secondaryGreen, secondaryBlue;
-    public int shape;
+    public GlyphShape shape = GlyphShape.EMPTY;
 
     public boolean highlightNodes;
 

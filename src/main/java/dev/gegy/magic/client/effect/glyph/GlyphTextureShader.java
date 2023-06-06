@@ -102,7 +102,7 @@ final class GlyphTextureShader implements EffectShader<GlyphRenderParameters> {
     }
 
     private int getGlyphFlags(final GlyphRenderParameters parameters) {
-        int flags = parameters.shape;
+        int flags = parameters.shape.mask();
         if (parameters.stroke != null) flags |= STROKE_ACTIVE_BIT;
         if (parameters.highlightNodes) flags |= HIGHLIGHT_NODES_BIT;
 

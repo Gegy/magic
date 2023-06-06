@@ -3,6 +3,7 @@ package dev.gegy.magic.casting.drawing;
 import dev.gegy.magic.glyph.GlyphForm;
 import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.glyph.shape.GlyphShapeStorage;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -11,7 +12,7 @@ public final class ServerDrawingGlyph {
     private final Vector3f direction;
     private final float radius;
 
-    private int shape;
+    private GlyphShape shape;
     private GlyphType formedType;
 
     private GlyphNode stroke;
@@ -29,7 +30,7 @@ public final class ServerDrawingGlyph {
         return radius;
     }
 
-    public void setShape(final int shape) {
+    public void setShape(final GlyphShape shape) {
         this.shape = shape;
     }
 
@@ -38,7 +39,7 @@ public final class ServerDrawingGlyph {
     }
 
     public boolean tryForm(final GlyphShapeStorage glyphShapes) {
-        final int shape = this.shape;
+        final GlyphShape shape = this.shape;
         final GlyphType matchingType = glyphShapes.getGlyphForShape(shape);
         if (matchingType != null) {
             formedType = matchingType;
@@ -63,7 +64,7 @@ public final class ServerDrawingGlyph {
         }
     }
 
-    public int getShape() {
+    public GlyphShape getShape() {
         return shape;
     }
 

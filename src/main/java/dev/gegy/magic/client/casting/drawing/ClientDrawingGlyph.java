@@ -8,6 +8,7 @@ import dev.gegy.magic.glyph.GlyphStyle;
 import dev.gegy.magic.glyph.GlyphType;
 import dev.gegy.magic.glyph.shape.GlyphEdge;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.math.AnimatedColor;
 import dev.gegy.magic.math.AnimationTimer;
 import dev.gegy.magic.math.Easings;
@@ -29,7 +30,7 @@ public final class ClientDrawingGlyph {
     private final AnimatedColor primaryColor = new AnimatedColor(GlyphStyle.WILD.primaryColor());
     private final AnimatedColor secondaryColor = new AnimatedColor(GlyphStyle.WILD.secondaryColor());
 
-    private int shape;
+    private GlyphShape shape = GlyphShape.EMPTY;
 
     private GlyphStrokeTracker stroke;
 
@@ -95,18 +96,17 @@ public final class ClientDrawingGlyph {
         }
     }
 
-    public void setShape(final int shape) {
+    public void setShape(final GlyphShape shape) {
         this.shape = shape;
     }
 
     public boolean putEdge(final GlyphEdge edge) {
-        final int newShape = shape | edge.asBit();
-        if (shape != newShape) {
+        final GlyphShape newShape = shape.withEdge(edge);
+        if (!shape.equals(newShape)) {
             shape = newShape;
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
     public float getOpacity(final float tickDelta) {
@@ -149,7 +149,7 @@ public final class ClientDrawingGlyph {
         return radius;
     }
 
-    public int shape() {
+    public GlyphShape shape() {
         return shape;
     }
 

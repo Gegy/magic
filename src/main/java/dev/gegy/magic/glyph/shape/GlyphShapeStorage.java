@@ -40,15 +40,15 @@ public final class GlyphShapeStorage extends SavedData {
         return persistent.computeIfAbsent(GlyphShapeStorage::loadNbt, GlyphShapeStorage::new, KEY);
     }
 
-    public int getShapeForGlyph(final GlyphType glyph) {
+    public GlyphShape getShapeForGlyph(final GlyphType glyph) {
         generateGlyphShapes();
-        return glyphToShape.getInt(glyph);
+        return new GlyphShape(glyphToShape.getInt(glyph));
     }
 
     @Nullable
-    public GlyphType getGlyphForShape(final int shape) {
+    public GlyphType getGlyphForShape(final GlyphShape shape) {
         generateGlyphShapes();
-        return shapeToGlyph.get(shape);
+        return shapeToGlyph.get(shape.mask());
     }
 
     private void generateGlyphShapes() {
@@ -72,7 +72,7 @@ public final class GlyphShapeStorage extends SavedData {
             GlyphShape shape;
             do {
                 shape = glyphs.remove(random.nextInt(glyphs.size()));
-            } while (!registerGlyphShape(glyph, shape.asBits()));
+            } while (!registerGlyphShape(glyph, shape.mask()));
         }
 
         setDirty(true);

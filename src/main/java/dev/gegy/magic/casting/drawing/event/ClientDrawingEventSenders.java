@@ -7,6 +7,7 @@ import dev.gegy.magic.casting.drawing.event.c2s.DrawGlyphStrokeC2SEvent;
 import dev.gegy.magic.casting.drawing.event.c2s.PrepareSpellC2SEvent;
 import dev.gegy.magic.client.casting.ClientCastingBuilder;
 import dev.gegy.magic.glyph.shape.GlyphNode;
+import dev.gegy.magic.glyph.shape.GlyphShape;
 import dev.gegy.magic.network.NetworkSender;
 import org.joml.Vector3f;
 
@@ -49,7 +50,7 @@ public final class ClientDrawingEventSenders {
         cancelGlyph.send(new CancelGlyphC2SEvent());
     }
 
-    public void drawGlyphShape(final int shape) {
+    public void drawGlyphShape(final GlyphShape shape) {
         drawGlyphShape.send(new DrawGlyphShapeC2SEvent(shape));
     }
 

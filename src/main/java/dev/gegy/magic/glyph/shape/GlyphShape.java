@@ -1,46 +1,47 @@
 package dev.gegy.magic.glyph.shape;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.common.collect.Iterators;
+import dev.gegy.magic.network.codec.PacketCodec;
 
-public final class GlyphShape {
-    public static final GlyphShape EMPTY = new GlyphShape(new GlyphEdge[0]);
+import java.util.Arrays;
+import java.util.Iterator;
 
-    public final GlyphEdge[] edges;
-    public final int size;
-    private final int bits;
+public record GlyphShape(int mask) implements Iterable<GlyphEdge> {
+    private static final int ALL_EDGES = toMask(GlyphEdge.EDGES);
+    private static final int CENTER_LINE = toMask(GlyphEdge.CENTER_LINE);
 
-    public GlyphShape(final GlyphEdge[] edges, final int size) {
-        this.edges = edges;
-        this.size = size;
-        bits = edgesToBits(edges);
+    public static final GlyphShape EMPTY = new GlyphShape(0);
+
+    public static final PacketCodec<GlyphShape> PACKET_CODEC = PacketCodec.of(
+            (shape, buf) -> buf.writeShort(shape.mask),
+            buf -> new GlyphShape(buf.readShort())
+    );
+
+    public GlyphShape {
+        mask &= ALL_EDGES;
     }
 
-    public GlyphShape(final int bits) {
-        edges = bitsToEdges(bits);
-        size = getSize(edges);
-        this.bits = bits;
+    public boolean contains(final GlyphEdge edge) {
+        return (mask & edge.mask()) != 0;
     }
 
-    public GlyphShape(final GlyphEdge[] edges) {
-        this(edges, getSize(edges));
+    public GlyphShape withEdge(final GlyphEdge edge) {
+        return new GlyphShape(mask | edge.mask());
     }
 
-    static int getSize(final GlyphEdge[] glyph) {
-        if (!canSimplify(glyph)) {
-            return glyph.length;
+    public int size() {
+        final int edgeCount = Integer.bitCount(mask);
+        if (!canSimplify(mask)) {
+            return edgeCount;
         }
 
         // all the points along the center are colinear, and to give an accurate measurement of the "size" of a glyph,
         // the merged line across is more meaningful.
-        final GlyphEdge[] centerLine = GlyphEdge.CENTER_LINE;
-
-        int simplifiedSize = glyph.length;
-
+        int simplifiedSize = edgeCount;
         int mergedLength = 0;
 
-        for (final GlyphEdge edge : centerLine) {
-            if (containsEdge(glyph, edge)) {
+        for (final GlyphEdge edge : GlyphEdge.CENTER_LINE) {
+            if (contains(edge)) {
                 mergedLength++;
                 simplifiedSize--;
             } else {
@@ -58,65 +59,18 @@ public final class GlyphShape {
         return simplifiedSize;
     }
 
-    static int edgesToBits(final GlyphEdge[] glyph) {
-        int mask = 0;
-        for (final GlyphEdge edge : glyph) {
-            mask |= edge.asBit();
-        }
-        return mask;
-    }
-
-    static GlyphEdge[] bitsToEdges(final int bits) {
-        final List<GlyphEdge> edges = new ArrayList<>(GlyphEdge.EDGES.length);
-        for (final GlyphEdge edge : GlyphEdge.EDGES) {
-            if ((bits & edge.asBit()) != 0) {
-                edges.add(edge);
-            }
-        }
-        return edges.toArray(new GlyphEdge[0]);
-    }
-
-    private static boolean canSimplify(final GlyphEdge[] glyph) {
+    private static boolean canSimplify(final int glyph) {
         // we can potentially simplify if we have 2+ edges in the center
-        int count = 0;
-        for (final GlyphEdge edge : glyph) {
-            if (isCenterEdge(edge)) {
-                if (++count >= 2) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    private static boolean isCenterEdge(final GlyphEdge edge) {
-        return containsEdge(GlyphEdge.CENTER_LINE, edge);
-    }
-
-    static boolean containsEdge(final GlyphEdge[] glyph, final GlyphEdge edge) {
-        for (final GlyphEdge other : glyph) {
-            if (edge == other) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public int asBits() {
-        return bits;
+        final int edgesInCenterLine = glyph & CENTER_LINE;
+        return Integer.bitCount(edgesInCenterLine) >= 2;
     }
 
     @Override
-    public boolean equals(final Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        return obj instanceof GlyphShape && ((GlyphShape) obj).bits == bits;
+    public Iterator<GlyphEdge> iterator() {
+        return Iterators.filter(Iterators.forArray(GlyphEdge.EDGES), this::contains);
     }
 
-    @Override
-    public int hashCode() {
-        return bits * 31;
+    private static int toMask(final GlyphEdge[] edges) {
+        return Arrays.stream(edges).mapToInt(GlyphEdge::mask).reduce(0, (a, b) -> a | b);
     }
 }

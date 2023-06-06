@@ -32,7 +32,7 @@ public final class GlyphDebugRenderer {
 
         final Byte2ObjectMap<List<GlyphShape>> bySize = new Byte2ObjectOpenHashMap<>();
         for (final GlyphShape glyph : all) {
-            bySize.computeIfAbsent((byte) glyph.size, s -> new ArrayList<>()).add(glyph);
+            bySize.computeIfAbsent((byte) glyph.size(), s -> new ArrayList<>()).add(glyph);
         }
 
         final Random random = new Random();
@@ -63,7 +63,7 @@ public final class GlyphDebugRenderer {
         graphics.drawOval(IMAGE_PADDING, IMAGE_PADDING, GLYPH_DIAMETER, GLYPH_DIAMETER);
 
         graphics.setColor(Color.BLUE);
-        for (final GlyphEdge edge : glyph.edges) {
+        for (final GlyphEdge edge : glyph) {
             final Vec2 from = edge.from.getPoint();
             final Vec2 to = edge.to.getPoint();
 
